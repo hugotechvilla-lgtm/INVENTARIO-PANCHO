@@ -1,6 +1,5 @@
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 from datetime import datetime
-import numpy as np
 import os
 import re
 
