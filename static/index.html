@@ -1,0 +1,1721 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PANCHO · Sistema de Bebidas y Cuentas de Cobro</title>
+  <meta name="theme-color" content="#FFAA00">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="PANCHO">
+  <link rel="icon" type="image/png" href="/logo.png">
+  <link rel="apple-touch-icon" href="/logo.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-main: #121214;
+      --bg-card: #1c1c21;
+      --bg-card-hover: #26262d;
+      --border-color: #2e2e38;
+      --text-main: #f4f4f6;
+      --text-muted: #9e9ea7;
+      --brand-orange: #FFAA00;
+      --brand-red: #E8003A;
+      --brand-grad: linear-gradient(135deg, #FFAA00 0%, #E8003A 100%);
+      --accent-green: #10b981;
+      --accent-red: #ef4444;
+      --accent-blue: #3b82f6;
+      --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
+      --shadow-lg: 0 10px 25px rgba(0,0,0,0.5);
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* HEADER */
+    header {
+      background-color: rgba(28, 28, 33, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 12px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      object-fit: cover;
+      background: #000;
+      border: 1px solid var(--border-color);
+    }
+    .brand-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      background: var(--brand-grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 0.5px;
+    }
+    .brand-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent-green);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .dot { width: 8px; height: 8px; background: var(--accent-green); border-radius: 50%; display: inline-block; animation: pulse 2s infinite; }
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+
+    /* NAVIGATION TABS */
+    nav {
+      display: flex;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border-color);
+      padding: 4px 16px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    nav::-webkit-scrollbar { display: none; }
+    .nav-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 12px 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 3px solid transparent;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .nav-btn:hover { color: var(--text-main); }
+    .nav-btn.active {
+      color: #FFAA00;
+      border-bottom-color: #E8003A;
+    }
+
+    /* MAIN CONTAINER */
+    main {
+      flex: 1;
+      padding: 20px;
+      max-width: 1300px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; animation: fadeIn 0.2s ease-in; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* LAYOUT: ANOTAR CONSUMO (VENTA RÁPIDA) */
+    .pos-grid {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 20px;
+      align-items: start;
+    }
+    @media (max-width: 900px) {
+      .pos-grid { grid-template-columns: 1fr; }
+    }
+
+    /* SELECCIÓN CLIENTE */
+    .section-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 18px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-sm);
+    }
+    .section-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .client-picker {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .select-custom {
+      flex: 1;
+      background: var(--bg-main);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      outline: none;
+    }
+    .select-custom:focus { border-color: #FFAA00; }
+    .btn-new-client {
+      background: rgba(255, 170, 0, 0.15);
+      color: #FFAA00;
+      border: 1px solid rgba(255, 170, 0, 0.4);
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    /* FILTROS CATEGORÍA */
+    .cat-pills {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 16px;
+      scrollbar-width: none;
+    }
+    .cat-pills::-webkit-scrollbar { display: none; }
+    .cat-pill {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .cat-pill:hover { border-color: var(--text-muted); color: var(--text-main); }
+    .cat-pill.active {
+      background: var(--brand-grad);
+      color: #fff;
+      border-color: transparent;
+    }
+
+    /* GRID BEBIDAS */
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 14px;
+    }
+    .product-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.15s, border-color 0.15s;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+    }
+    .product-card:hover { border-color: #FFAA00; transform: translateY(-2px); }
+    .p-cat { font-size: 0.7rem; font-weight: 700; color: #FFAA00; text-transform: uppercase; margin-bottom: 4px; }
+    .p-name { font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px; line-height: 1.3; }
+    .p-price { font-size: 1.15rem; font-weight: 800; color: #fff; margin-bottom: 10px; }
+    .p-stock {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 6px;
+      display: inline-block;
+      margin-bottom: 12px;
+      width: fit-content;
+    }
+    .stock-ok { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
+    .stock-low { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); }
+
+    .p-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-main);
+      border-radius: 10px;
+      padding: 4px;
+      border: 1px solid var(--border-color);
+    }
+    .btn-qty {
+      width: 34px;
+      height: 34px;
+      background: var(--bg-card);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+    }
+    .btn-qty:hover { background: #E8003A; color: #fff; }
+    .btn-qty.plus:hover { background: #FFAA00; color: #000; }
+    .qty-display { font-weight: 800; font-size: 1rem; width: 30px; text-align: center; }
+
+    /* PANEL LATERAL DE ORDEN */
+    .order-sidebar {
+      position: sticky;
+      top: 84px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow-lg);
+    }
+    .order-header {
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 12px;
+      margin-bottom: 14px;
+    }
+    .order-client-badge {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+    .order-client-name {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: #FFAA00;
+    }
+    .order-items {
+      max-height: 280px;
+      overflow-y: auto;
+      margin-bottom: 16px;
+      padding-right: 4px;
+    }
+    .order-item-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px dashed rgba(255,255,255,0.08);
+      font-size: 0.9rem;
+    }
+    .order-item-info { flex: 1; }
+    .order-item-name { font-weight: 600; }
+    .order-item-sub { font-size: 0.75rem; color: var(--text-muted); }
+    .order-item-price { font-weight: 700; margin-right: 10px; }
+    .btn-remove-item {
+      background: none;
+      border: none;
+      color: var(--accent-red);
+      cursor: pointer;
+      font-size: 1.1rem;
+      padding: 4px;
+    }
+
+    .order-total-box {
+      background: var(--bg-main);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border-color);
+    }
+    .order-total-label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; }
+    .order-total-val { font-size: 2rem; font-weight: 800; color: #fff; }
+
+    .btn-save-tab {
+      width: 100%;
+      background: var(--brand-grad);
+      color: #fff;
+      border: none;
+      padding: 14px;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 4px 15px rgba(232, 0, 58, 0.4);
+      transition: transform 0.15s, filter 0.15s;
+    }
+    .btn-save-tab:hover { filter: brightness(1.1); transform: translateY(-2px); }
+    .btn-save-tab:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* TAB: CUENTAS SEMANALES */
+    .summary-metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .metric-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 18px;
+    }
+    .m-lbl { font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; }
+    .m-val { font-size: 1.8rem; font-weight: 800; color: #fff; }
+    .m-val.highlight { color: #FFAA00; }
+
+    .clients-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+    }
+    .client-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: border-color 0.2s;
+    }
+    .client-card:hover { border-color: #FFAA00; }
+    .client-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+    .c-name { font-size: 1.25rem; font-weight: 800; color: var(--text-main); }
+    .c-debt {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #FFAA00;
+      background: rgba(255, 170, 0, 0.1);
+      padding: 4px 10px;
+      border-radius: 8px;
+    }
+    .c-debt.zero { color: var(--accent-green); background: rgba(16, 185, 129, 0.1); font-size: 1rem; }
+
+    .c-details-list {
+      background: var(--bg-main);
+      border-radius: 8px;
+      padding: 10px;
+      max-height: 140px;
+      overflow-y: auto;
+      font-size: 0.8rem;
+      margin-bottom: 14px;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .c-item-row { display: flex; justify-content: space-between; padding: 4px 0; color: var(--text-muted); }
+    .c-item-row b { color: var(--text-main); }
+
+    .btn-charge-week {
+      width: 100%;
+      background: var(--brand-grad);
+      color: #fff;
+      border: none;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-charge-week:hover { filter: brightness(1.1); }
+    .btn-charge-week:disabled { opacity: 0.4; cursor: not-allowed; background: var(--bg-card-hover); }
+
+    /* TAB: INVENTARIO */
+    .inv-table-wrapper {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      overflow-x: auto;
+    }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th {
+      background: var(--bg-main);
+      padding: 14px 18px;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      font-weight: 700;
+      border-bottom: 1px solid var(--border-color);
+    }
+    td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 0.95rem;
+    }
+    tr:last-child td { border-bottom: none; }
+    .btn-restock {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent-green);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-right: 6px;
+      font-size: 0.85rem;
+    }
+    .btn-restock:hover { background: var(--accent-green); color: #000; }
+
+    /* MODAL TICKET GENERADO */
+    .modal-backdrop {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 20px;
+    }
+    .modal-backdrop.show { display: flex; animation: fadeIn 0.2s ease-out; }
+    .modal-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      max-width: 580px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 24px;
+      position: relative;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+    }
+    .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: #fff;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-weight: 800;
+      font-size: 1.1rem;
+    }
+    .ticket-preview-img {
+      width: 100%;
+      max-width: 360px;
+      border-radius: 14px;
+      display: block;
+      margin: 16px auto;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    }
+    .modal-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 18px;
+    }
+    .btn-action-modal {
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+    .btn-wa { background: #25D366; color: #000; }
+    .btn-dl { background: #FFAA00; color: #000; }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #1c1c21;
+      border: 1px solid #FFAA00;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-weight: 700;
+      box-shadow: var(--shadow-lg);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 200;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+  </style>
+</head>
+<body>
+
+  <!-- ENCABEZADO -->
+  <header>
+    <div class="brand-box">
+      <img src="logo.png" alt="PANCHO Logo" class="brand-logo" onerror="this.style.display='none'">
+      <div>
+        <h1 class="brand-title">PANCHO</h1>
+        <div class="brand-sub">Bebidas & Cuentas Semanales</div>
+      </div>
+    </div>
+    <div class="header-badge">
+      <span class="dot"></span>
+      <span id="ipDisplay">Conectado Local</span>
+    </div>
+  </header>
+
+  <!-- NAVEGACIÓN -->
+  <nav>
+    <button class="nav-btn active" onclick="switchTab('anotar')">🍺 Anotar Consumo Diario</button>
+    <button class="nav-btn" onclick="switchTab('cuentas')">📋 Cuentas Semanales (<span id="countDebtors">0</span>)</button>
+    <button class="nav-btn" onclick="switchTab('inventario')">📦 Inventario de Bebidas</button>
+    <button class="nav-btn" onclick="switchTab('balance')">📊 Costos y Ganancias</button>
+    <button class="nav-btn" onclick="switchTab('historial')">💰 Historial de Cobros</button>
+  </nav>
+
+  <!-- CONTENEDOR PRINCIPAL -->
+  <main>
+
+    <!-- ============================================== -->
+    <!-- 1. PESTAÑA: ANOTAR CONSUMO (VENTA RÁPIDA) -->
+    <!-- ============================================== -->
+    <section id="tab-anotar" class="tab-content active">
+      <div class="pos-grid">
+        
+        <!-- CATÁLOGO DE BEBIDAS -->
+        <div>
+          <!-- SELECCIÓN DE CLIENTE -->
+          <div class="section-card">
+            <div class="section-title">
+              <span>👤 Cliente para la cuenta:</span>
+              <span id="currentClientBadge" style="font-size: 0.85rem; color: #FFAA00;">Ninguno seleccionado</span>
+            </div>
+            <div class="client-picker">
+              <select id="clientSelect" class="select-custom" onchange="onSelectClient()">
+                <option value="">-- Elige un Cliente --</option>
+              </select>
+              <button class="btn-new-client" onclick="promptNewClient()">+ Nuevo Cliente</button>
+            </div>
+          </div>
+
+          <!-- FILTRO POR CATEGORÍAS -->
+          <div class="cat-pills" id="catPills">
+            <button class="cat-pill active" onclick="filterCategory('Todas')">✨ Todas (17)</button>
+            <button class="cat-pill" onclick="filterCategory('Cervezas')">🍺 Cervezas</button>
+            <button class="cat-pill" onclick="filterCategory('Micheladas y Especiales')">🌶️ Micheladas y Especiales</button>
+            <button class="cat-pill" onclick="filterCategory('Limonadas y Granizados')">🍋 Limonadas y Granizados</button>
+            <button class="cat-pill" onclick="filterCategory('Energizantes')">⚡ Energizantes</button>
+          </div>
+
+          <!-- CUADRÍCULA DE PRODUCTOS -->
+          <div class="products-grid" id="productsGrid">
+            <!-- Se llena con JS -->
+          </div>
+        </div>
+
+        <!-- PANEL DE PEDIDO / CONSUMO -->
+        <div class="order-sidebar">
+          <div class="order-header">
+            <div class="order-client-badge">Anotando consumo para:</div>
+            <div class="order-client-name" id="orderClientTitle">SELECCIONA CLIENTE</div>
+          </div>
+
+          <div class="order-items" id="orderItemsList">
+            <div style="text-align: center; color: var(--text-muted); padding: 30px 10px;">
+              Toca <b>+</b> en las bebidas que consumió el cliente hoy.
+            </div>
+          </div>
+
+          <div class="order-total-box">
+            <div class="order-total-label">Subtotal del Día</div>
+            <div class="order-total-val" id="orderTotalDisplay">$ 0</div>
+          </div>
+
+          <button id="btnSaveTab" class="btn-save-tab" onclick="guardarConsumoEnCuenta()" disabled>
+            💾 Sumar a la Semana del Cliente
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- 2. PESTAÑA: CUENTAS SEMANALES -->
+    <!-- ============================================== -->
+    <section id="tab-cuentas" class="tab-content">
+      <div class="summary-metrics">
+        <div class="metric-card">
+          <div class="m-lbl">Total por Cobrar en la Semana</div>
+          <div class="m-val highlight" id="metricTotalPending">$ 0</div>
+        </div>
+        <div class="metric-card">
+          <div class="m-lbl">Clientes con Consumo Activo</div>
+          <div class="m-val" id="metricActiveClients">0</div>
+        </div>
+      </div>
+
+      <div class="section-title" style="margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+        <span>Cuentas Abiertas de Clientes</span>
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="searchClient" placeholder="🔍 Buscar cliente..." class="select-custom" style="max-width: 240px;" oninput="renderCuentas()">
+          <button onclick="borrarTodosLosClientes()" title="Limpiar lista completa de clientes" style="background: rgba(239, 68, 68, 0.15); color: var(--accent-red); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 10px; padding: 8px 14px; font-size: 0.85rem; font-weight: 700; cursor: pointer;">
+            🗑️ Vaciar Lista
+          </button>
+        </div>
+      </div>
+
+      <div class="clients-grid" id="clientsCardsGrid">
+        <!-- Se llena con JS -->
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- 3. PESTAÑA: INVENTARIO -->
+    <!-- ============================================== -->
+    <section id="tab-inventario" class="tab-content">
+      <div class="section-card">
+        <div class="section-title">
+          <span>📦 Stock de Bebidas en Bodega</span>
+          <button class="btn-new-client" onclick="promptNewProduct()">+ Nueva Bebida</button>
+        </div>
+
+        <div class="inv-table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Bebida</th>
+                <th>Categoría</th>
+                <th>Costo Compra</th>
+                <th>Precio Venta</th>
+                <th>Stock Físico (Bodega)</th>
+                <th>Ingresar Llegada</th>
+              </tr>
+            </thead>
+            <tbody id="inventoryTableBody">
+              <!-- Se llena con JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- 4. PESTAÑA: COSTOS, GANANCIAS Y BALANCE -->
+    <!-- ============================================== -->
+    <section id="tab-balance" class="tab-content">
+      <div class="summary-metrics">
+        <div class="metric-card">
+          <div class="m-lbl">Ventas Semanales Acumuladas</div>
+          <div class="m-val highlight" id="balanceTotalVentas">$ 0</div>
+        </div>
+        <div class="metric-card">
+          <div class="m-lbl">Costo de Mercancía Vendida</div>
+          <div class="m-val" style="color: #ef4444;" id="balanceTotalCostos">$ 0</div>
+        </div>
+        <div class="metric-card">
+          <div class="m-lbl">Ganancia Neta (Plata Limpia)</div>
+          <div class="m-val" style="color: #10b981;" id="balanceGananciaNeta">$ 0</div>
+        </div>
+        <div class="metric-card">
+          <div class="m-lbl">Rentabilidad Promedio</div>
+          <div class="m-val" id="balanceMargenPorcentaje">0%</div>
+        </div>
+      </div>
+
+      <!-- TABLA 1: VALOR COSTO VS VENTA POR UNIDAD -->
+      <div class="section-card">
+        <div class="section-title">
+          <span>💰 Precios de Compra (Costo) vs Precio de Venta por Unidad</span>
+          <span style="font-size: 0.82rem; color: var(--text-muted);">Configurados desde 📦 Inventario de Bebidas</span>
+        </div>
+        <div class="inv-table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Bebida</th>
+                <th>Categoría</th>
+                <th>Valor Compra (Costo)</th>
+                <th>Valor Venta</th>
+                <th>Ganancia por Unidad</th>
+                <th>Margen %</th>
+              </tr>
+            </thead>
+            <tbody id="unitProfitTableBody">
+              <!-- Se llena con JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TABLA 2: BALANCE DE VENTAS DE LA SEMANA -->
+      <div class="section-card">
+        <div class="section-title">
+          <span>📈 Balance de Ventas de la Semana por Bebida</span>
+        </div>
+        <div class="inv-table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Bebida</th>
+                <th>Unidades Vendidas</th>
+                <th>Total Ingresos Venta</th>
+                <th>Costo Total</th>
+                <th>Ganancia Neta Ganada</th>
+              </tr>
+            </thead>
+            <tbody id="weeklySalesBalanceBody">
+              <!-- Se llena con JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- 5. PESTAÑA: HISTORIAL -->
+    <!-- ============================================== -->
+    <section id="tab-historial" class="tab-content">
+      <div class="section-card">
+        <div class="section-title">
+          <span>Historial de Cuentas de Cobro Emitidas</span>
+          <button onclick="borrarHistorialCobros()" title="Limpiar todo el historial de cobros" style="background: rgba(239, 68, 68, 0.15); color: var(--accent-red); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 10px; padding: 8px 14px; font-size: 0.85rem; font-weight: 700; cursor: pointer;">
+            🗑️ Vaciar Historial
+          </button>
+        </div>
+        <div class="inv-table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha Cierre</th>
+                <th>Comprobante</th>
+                <th>Cliente</th>
+                <th>Concepto</th>
+                <th>Total Cobrado</th>
+                <th>Ver Ticket</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody">
+              <!-- Se llena con JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL: TICKET GENERADO -->
+  <div class="modal-backdrop" id="ticketModal">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeModal()">✕</button>
+      <h2 style="font-size: 1.3rem; font-weight: 800; text-align: center; color: #FFAA00;">
+        ¡Ticket de Cobro PANCHO Generado!
+      </h2>
+      <p style="text-align: center; color: var(--text-muted); font-size: 0.85rem; margin-top: 4px;" id="modalTicketSub">
+        Cuenta cerrada y registrada exitosamente
+      </p>
+
+      <img id="modalTicketImg" src="" alt="Ticket PANCHO" class="ticket-preview-img">
+
+      <!-- TIPS GUÍA -->
+      <div style="background: rgba(255, 170, 0, 0.1); border: 1px solid rgba(255, 170, 0, 0.3); border-radius: 10px; padding: 12px; margin: 12px 0; font-size: 0.82rem; color: #ffca65; line-height: 1.5; text-align: center;">
+        💡 <b>Cómo enviar la imagen por WhatsApp:</b><br>
+        • <b>En Celular:</b> Toca <i>📲 Enviar a WhatsApp</i> y se adjunta la imagen automáticamente.<br>
+        • <b>En PC:</b> Al tocar <i>📲 Enviar</i> la imagen se copia. En WhatsApp solo presiona <b>Ctrl + V</b> (Pegar) y Enviar.
+      </div>
+
+      <div class="modal-actions" style="display: flex; flex-direction: column; gap: 10px;">
+        <button id="btnWhatsAppShare" onclick="enviarWhatsAppConImagen()" class="btn-action-modal btn-wa" style="font-size: 1.05rem; padding: 14px;">
+          📲 Enviar Ticket a WhatsApp
+        </button>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <button onclick="copiarImagenActual()" class="btn-action-modal" style="background: #2e2e38; color: #fff; border: 1px solid #444;">
+            📋 Copiar Imagen (Ctrl+V)
+          </button>
+          <a id="btnDownloadTicket" href="#" download class="btn-action-modal btn-dl">
+            ⬇️ Descargar Imagen
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="toast">Mensaje guardado</div>
+
+  <script>
+    // ESTADO GLOBAL
+    let inventario = [];
+    let clientes = [];
+    let historial = [];
+    let currentCategory = 'Todas';
+    let selectedClientId = '';
+    let cart = {}; // { prodId: quantity }
+
+    const formatMoney = (val) => '$ ' + Number(val).toLocaleString('es-CO');
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.innerText = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2800);
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById('tab-' + tabId).classList.add('active');
+      event.currentTarget.classList.add('active');
+      if (tabId === 'cuentas') renderCuentas();
+      if (tabId === 'inventario') renderInventario();
+      if (tabId === 'balance') renderBalance();
+      if (tabId === 'historial') renderHistorial();
+    }
+
+    // CARGA DE DATOS INICIALES
+    async function loadData() {
+      try {
+        const [resInv, resCli, resHist, resEst] = await Promise.all([
+          fetch('/api/inventario').then(r => r.json()),
+          fetch('/api/clientes').then(r => r.json()),
+          fetch('/api/historial').then(r => r.json()),
+          fetch('/api/estado').then(r => r.json())
+        ]);
+        inventario = resInv;
+        clientes = resCli;
+        historial = resHist;
+
+        if (resEst && resEst.ip_local) {
+          document.getElementById('ipDisplay').innerText = resEst.ip_local + ':5000';
+        }
+
+        try { renderClientSelect(); } catch (err) { console.error("Error renderClientSelect:", err); }
+        try { renderProducts(); } catch (err) { console.error("Error renderProducts:", err); }
+        try { renderCuentas(); } catch (err) { console.error("Error renderCuentas:", err); }
+        try { renderInventario(); } catch (err) { console.error("Error renderInventario:", err); }
+        try { renderBalance(); } catch (err) { console.error("Error renderBalance:", err); }
+        try { renderHistorial(); } catch (err) { console.error("Error renderHistorial:", err); }
+      } catch (e) {
+        console.error("Error al cargar datos:", e);
+      }
+    }
+
+    // RENDER SELECT CLIENTES
+    function renderClientSelect() {
+      const select = document.getElementById('clientSelect');
+      select.innerHTML = '<option value="">-- Elige un Cliente --</option>';
+      clientes.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = `${c.nombre} ${c.saldo_actual > 0 ? '(Debe: ' + formatMoney(c.saldo_actual) + ')' : ''}`;
+        select.appendChild(opt);
+      });
+      if (selectedClientId) select.value = selectedClientId;
+    }
+
+    function onSelectClient() {
+      const select = document.getElementById('clientSelect');
+      selectedClientId = select.value;
+      const client = clientes.find(c => c.id === selectedClientId);
+      const title = document.getElementById('orderClientTitle');
+      const badge = document.getElementById('currentClientBadge');
+
+      if (client) {
+        title.innerText = client.nombre;
+        badge.innerText = `Saldo acumulado esta semana: ${formatMoney(client.saldo_actual)}`;
+      } else {
+        title.innerText = 'SELECCIONA CLIENTE';
+        badge.innerText = 'Ninguno seleccionado';
+      }
+      updateSaveButton();
+    }
+
+    async function promptNewClient() {
+      const nombre = prompt("Ingresa el nombre del nuevo cliente:");
+      if (!nombre || !nombre.trim()) return;
+      try {
+        const res = await fetch('/api/clientes/crear', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nombre: nombre.trim().toUpperCase() })
+        });
+        const nuevo = await res.json();
+        clientes.push(nuevo);
+        renderClientSelect();
+        selectedClientId = nuevo.id;
+        document.getElementById('clientSelect').value = nuevo.id;
+        onSelectClient();
+        showToast(`Cliente '${nuevo.nombre}' creado.`);
+      } catch (e) {
+        alert("Error creando cliente: " + e);
+      }
+    }
+
+    // FILTRO Y RENDER CATÁLOGO
+    function filterCategory(cat) {
+      currentCategory = cat;
+      document.querySelectorAll('.cat-pill').forEach(p => {
+        p.classList.toggle('active', p.innerText.includes(cat) || (cat === 'Todas' && p.innerText.includes('Todas')));
+      });
+      renderProducts();
+    }
+
+    function obtenerStock(p) {
+      if (p.descuenta_de_id) {
+        const base = inventario.find(b => b.id === p.descuenta_de_id);
+        return base ? (base.stock || 0) : 0;
+      }
+      return p.stock || 0;
+    }
+
+    function renderProducts() {
+      const grid = document.getElementById('productsGrid');
+      grid.innerHTML = '';
+      const filtrados = currentCategory === 'Todas' ? inventario : inventario.filter(p => p.categoria === currentCategory);
+
+      if (filtrados.length === 0) {
+        grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 40px; font-size: 1.1rem;">No hay productos en esta categoría o catálogo vacío.</div>';
+        return;
+      }
+
+      filtrados.forEach(p => {
+        const qty = cart[p.id] || 0;
+        const stockActual = obtenerStock(p);
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        card.innerHTML = `
+          <div>
+            <div class="p-cat">${p.categoria}</div>
+            <div class="p-name">${p.nombre}</div>
+            <div class="p-price" style="display: flex; align-items: center; justify-content: space-between;">
+              <span>${formatMoney(p.precio)}</span>
+              <button onclick="editarPrecioRapido('${p.id}')" title="Modificar precio" style="background: none; border: none; cursor: pointer; font-size: 0.85rem; color: #FFAA00;">✏️</button>
+            </div>
+            <div class="p-stock ${stockActual <= (p.min_stock !== undefined ? p.min_stock : 5) ? 'stock-low' : 'stock-ok'}">
+              ${stockActual} en stock ${p.descuenta_de_id ? '<small style="opacity: 0.75;">(Cerveza base)</small>' : ''}
+            </div>
+          </div>
+          <div class="p-actions">
+            <button class="btn-qty" onclick="changeQty('${p.id}', -1)">-</button>
+            <span class="qty-display" id="qty-${p.id}">${qty}</span>
+            <button class="btn-qty plus" onclick="changeQty('${p.id}', 1)">+</button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function changeQty(prodId, delta) {
+      const prod = inventario.find(p => p.id === prodId);
+      if (!prod) return;
+      const current = cart[prodId] || 0;
+      const nuevo = Math.max(0, current + delta);
+      const stockDisponible = obtenerStock(prod);
+
+      if (delta > 0 && nuevo > stockDisponible) {
+        if (stockDisponible <= 0) {
+          const proceder = confirm(`⚠️ Atención: En bodega figuran 0 unidades de '${prod.nombre}'.\n\n¿Deseas agregar el consumo a la cuenta del cliente de todas formas?`);
+          if (!proceder) return;
+        } else {
+          showToast(`¡Solo quedan ${stockDisponible} unidades disponibles en bodega!`);
+          return;
+        }
+      }
+
+      if (nuevo === 0) {
+        delete cart[prodId];
+      } else {
+        cart[prodId] = nuevo;
+      }
+
+      const display = document.getElementById(`qty-${prodId}`);
+      if (display) display.innerText = nuevo;
+      renderCart();
+    }
+
+    function renderCart() {
+      const list = document.getElementById('orderItemsList');
+      const totalDisplay = document.getElementById('orderTotalDisplay');
+      const itemIds = Object.keys(cart);
+
+      if (itemIds.length === 0) {
+        list.innerHTML = `
+          <div style="text-align: center; color: var(--text-muted); padding: 30px 10px;">
+            Toca <b>+</b> en las bebidas que consumió el cliente hoy.
+          </div>
+        `;
+        totalDisplay.innerText = '$ 0';
+        updateSaveButton();
+        return;
+      }
+
+      let total = 0;
+      list.innerHTML = '';
+      itemIds.forEach(id => {
+        const p = inventario.find(item => item.id === id);
+        if (!p) return;
+        const qty = cart[id];
+        const sub = p.precio * qty;
+        total += sub;
+
+        const row = document.createElement('div');
+        row.className = 'order-item-row';
+        row.innerHTML = `
+          <div class="order-item-info">
+            <div class="order-item-name">${p.nombre}</div>
+            <div class="order-item-sub">${qty} x ${formatMoney(p.precio)}</div>
+          </div>
+          <div class="order-item-price">${formatMoney(sub)}</div>
+          <button class="btn-remove-item" onclick="changeQty('${id}', -${qty})">✕</button>
+        `;
+        list.appendChild(row);
+      });
+
+      totalDisplay.innerText = formatMoney(total);
+      updateSaveButton();
+    }
+
+    function updateSaveButton() {
+      const btn = document.getElementById('btnSaveTab');
+      const hasItems = Object.keys(cart).length > 0;
+      const hasClient = !!selectedClientId;
+      btn.disabled = !(hasItems && hasClient);
+    }
+
+    async function guardarConsumoEnCuenta() {
+      if (!selectedClientId) {
+        alert("Por favor selecciona un cliente.");
+        return;
+      }
+      const itemIds = Object.keys(cart);
+      if (itemIds.length === 0) return;
+
+      const items = itemIds.map(id => {
+        const p = inventario.find(item => item.id === id);
+        return {
+          id: p.id,
+          nombre: p.nombre,
+          cantidad: cart[id],
+          precio_unitario: p.precio,
+          subtotal: p.precio * cart[id]
+        };
+      });
+
+      try {
+        const res = await fetch('/api/clientes/consumo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cliente_id: selectedClientId, items })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          showToast(`✅ Consumo guardado en la cuenta de ${data.cliente.nombre}`);
+          // Actualizar datos locales
+          inventario = data.inventario;
+          const idx = clientes.findIndex(c => c.id === selectedClientId);
+          if (idx !== -1) clientes[idx] = data.cliente;
+
+          cart = {};
+          renderProducts();
+          renderCart();
+          renderClientSelect();
+          onSelectClient();
+          renderCuentas();
+          renderBalance();
+        } else {
+          alert("Error: " + data.error);
+        }
+      } catch (e) {
+        alert("Error de conexión: " + e);
+      }
+    }
+
+    // RENDER PESTAÑA CUENTAS SEMANALES
+    function renderCuentas() {
+      const query = (document.getElementById('searchClient').value || '').toUpperCase();
+      const grid = document.getElementById('clientsCardsGrid');
+      grid.innerHTML = '';
+
+      let totalPending = 0;
+      let debtorsCount = 0;
+
+      const filtered = clientes.filter(c => c.nombre.includes(query));
+
+      filtered.forEach(c => {
+        if (c.saldo_actual > 0) {
+          totalPending += c.saldo_actual;
+          debtorsCount++;
+        }
+
+        const card = document.createElement('div');
+        card.className = 'client-card';
+
+        let consumosHtml = '';
+        if (c.consumos_semana && c.consumos_semana.length > 0) {
+          consumosHtml = c.consumos_semana.map(item => `
+            <div class="c-item-row">
+              <span>${item.cantidad}x ${item.nombre}</span>
+              <b>${formatMoney(item.subtotal)}</b>
+            </div>
+          `).join('');
+        } else {
+          consumosHtml = `<div style="text-align: center; color: var(--text-muted); padding: 8px;">Sin consumos pendientes esta semana</div>`;
+        }
+
+        card.innerHTML = `
+          <div>
+            <div class="client-top">
+              <div class="c-name">${c.nombre}</div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div class="c-debt ${c.saldo_actual === 0 ? 'zero' : ''}">
+                  ${c.saldo_actual > 0 ? formatMoney(c.saldo_actual) : 'Al día'}
+                </div>
+                <button onclick="eliminarCliente('${c.id}', '${c.nombre}')" title="Eliminar cliente" style="background: none; border: none; cursor: pointer; color: var(--accent-red); font-size: 1.15rem; padding: 2px;">🗑️</button>
+              </div>
+            </div>
+            <div class="c-details-list">
+              ${consumosHtml}
+            </div>
+          </div>
+          <div style="display: flex; gap: 8px; margin-top: 10px;">
+            <button class="btn-charge-week" style="flex: 1;" ${c.saldo_actual <= 0 ? 'disabled' : ''} onclick="cerrarSemana('${c.id}')">
+              🎫 Cerrar y Ticket
+            </button>
+            ${c.saldo_actual > 0 ? `
+              <button onclick="reiniciarCuentaCliente('${c.id}', '${c.nombre}')" title="Limpiar consumos y volver a $0 sin ticket" style="background: rgba(255,255,255,0.08); border: 1px solid var(--border-color); color: var(--text-muted); border-radius: 10px; padding: 0 12px; cursor: pointer; font-size: 0.85rem; font-weight: 700;">
+                🔄 $0
+              </button>
+            ` : ''}
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+
+      document.getElementById('metricTotalPending').innerText = formatMoney(totalPending);
+      document.getElementById('metricActiveClients').innerText = debtorsCount;
+      document.getElementById('countDebtors').innerText = debtorsCount;
+    }
+
+    async function eliminarCliente(id, nombre) {
+      const confirmar = confirm(`¿Estás seguro de que deseas eliminar al cliente '${nombre}' de la lista?`);
+      if (!confirmar) return;
+      try {
+        const res = await fetch('/api/clientes/eliminar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cliente_id: id })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          clientes = data.clientes;
+          if (selectedClientId === id) {
+            selectedClientId = '';
+            onSelectClient();
+          }
+          renderClientSelect();
+          renderCuentas();
+          showToast(`Cliente '${nombre}' eliminado.`);
+        }
+      } catch (e) {
+        alert("Error eliminando cliente: " + e);
+      }
+    }
+
+    async function reiniciarCuentaCliente(id, nombre) {
+      const confirmar = confirm(`¿Deseas reiniciar la cuenta de '${nombre}' a $0 y borrar sus consumos sin generar ticket?`);
+      if (!confirmar) return;
+      try {
+        const res = await fetch('/api/clientes/reiniciar-cuenta', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cliente_id: id })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          clientes = data.clientes;
+          renderClientSelect();
+          renderCuentas();
+          showToast(`Cuenta de '${nombre}' reiniciada a $0.`);
+        }
+      } catch (e) {
+        alert("Error reiniciando cuenta: " + e);
+      }
+    }
+
+    async function borrarTodosLosClientes() {
+      const confirmar = confirm("⚠️ ATENCIÓN: ¿Deseas borrar TODOS los clientes de la lista para empezar desde cero con una lista vacía?");
+      if (!confirmar) return;
+      try {
+        const res = await fetch('/api/clientes/borrar-todos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        if (data.ok) {
+          clientes = [];
+          selectedClientId = '';
+          renderClientSelect();
+          onSelectClient();
+          renderCuentas();
+          showToast("Lista de clientes vaciada por completo.");
+        }
+      } catch (e) {
+        alert("Error vaciando lista: " + e);
+      }
+    }
+
+    async function cerrarSemana(clienteId) {
+      const c = clientes.find(item => item.id === clienteId);
+      if (!c) return;
+
+      const confirmar = confirm(`¿Deseas cerrar la semana de ${c.nombre} por un valor total de ${formatMoney(c.saldo_actual)} y generar el Ticket Oficial de PANCHO?`);
+      if (!confirmar) return;
+
+      try {
+        const res = await fetch('/api/clientes/cerrar-semana', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cliente_id: clienteId })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          showModalTicket(data.ticket_url, data.cliente_nombre, data.total, data.comprobante);
+          await loadData();
+        } else {
+          alert("Error: " + data.error);
+        }
+      } catch (e) {
+        alert("Error generando ticket: " + e);
+      }
+    }
+
+    let currentTicketData = null;
+
+    function showModalTicket(url, clienteNombre, total, comprobante) {
+      currentTicketData = { url, clienteNombre, total, comprobante };
+      const modal = document.getElementById('ticketModal');
+      const img = document.getElementById('modalTicketImg');
+      const sub = document.getElementById('modalTicketSub');
+      const btnDl = document.getElementById('btnDownloadTicket');
+
+      img.src = url + '?t=' + Date.now();
+      sub.innerText = `${clienteNombre} · ${comprobante} · ${formatMoney(total)}`;
+      btnDl.href = url;
+      btnDl.download = `${clienteNombre}_TICKET.png`;
+
+      modal.classList.add('show');
+    }
+
+    async function copiarImagenActual() {
+      if (!currentTicketData) return;
+      try {
+        const res = await fetch(currentTicketData.url);
+        const blob = await res.blob();
+        await navigator.clipboard.write([
+          new ClipboardItem({ 'image/png': blob })
+        ]);
+        showToast("✅ ¡Imagen copiada! Pégala en WhatsApp con Ctrl + V");
+        return true;
+      } catch (err) {
+        console.error("Error al copiar:", err);
+        showToast("ℹ️ Usa el botón de Descargar Imagen");
+        return false;
+      }
+    }
+
+    async function enviarWhatsAppConImagen() {
+      if (!currentTicketData) return;
+      const { url, clienteNombre, total, comprobante } = currentTicketData;
+      const textoWA = `Hola ${clienteNombre}, te adjunto tu cuenta de cobro digital de PANCHO por valor de ${formatMoney(total)} (Comprobante ${comprobante}). Quedamos atentos al comprobante de transferencia a Nequi. ¡Muchas gracias!`;
+
+      // 1. Intentar compartir archivo directo (Celular Android / iOS)
+      try {
+        const res = await fetch(url);
+        const blob = await res.blob();
+        const file = new File([blob], `${clienteNombre}_TICKET.png`, { type: 'image/png' });
+
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: `Ticket de cobro PANCHO - ${clienteNombre}`,
+            text: textoWA
+          });
+          return;
+        }
+      } catch (e) {
+        console.log("Web Share API no soportada con archivos:", e);
+      }
+
+      // 2. En PC / Navegador estándar: Copiar imagen automáticamente y abrir WhatsApp
+      await copiarImagenActual();
+      const urlWA = `https://api.whatsapp.com/send?text=${encodeURIComponent(textoWA)}`;
+      window.open(urlWA, '_blank');
+
+      alert(`✅ ¡IMAGEN COPIADA AL PORTAPAPELES!\n\nEn tu WhatsApp:\n1. Entra al chat de ${clienteNombre}.\n2. Presiona: Ctrl + V (Pegar).\n3. ¡Y listo! La imagen del ticket se enviará completa.`);
+    }
+
+    function closeModal() {
+      document.getElementById('ticketModal').classList.remove('show');
+    }
+
+    // RENDER INVENTARIO
+    function renderInventario() {
+      const tbody = document.getElementById('inventoryTableBody');
+      tbody.innerHTML = '';
+      // Solo mostrar productos físicos de bodega (sin micheladas ni recetas)
+      const productosBodega = inventario.filter(p => !p.descuenta_de_id && !p.nombre.toUpperCase().includes('MICHELADA') && !p.nombre.toUpperCase().includes('ENDIABLADA'));
+
+      productosBodega.forEach(p => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><b>${p.nombre}</b></td>
+          <td><span class="p-cat">${p.categoria}</span></td>
+          <td>
+            <button class="btn-restock" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border-color: rgba(239, 68, 68, 0.3);" onclick="editarCostoRapido('${p.id}')" title="Clic para editar costo de compra">
+              ✏️ ${formatMoney(p.precio_costo || 0)}
+            </button>
+          </td>
+          <td>
+            <button class="btn-restock" style="background: rgba(255,170,0,0.15); color: #FFAA00; border-color: rgba(255,170,0,0.3);" onclick="editarPrecioRapido('${p.id}')" title="Clic para editar precio de venta">
+              ✏️ ${formatMoney(p.precio)}
+            </button>
+          </td>
+          <td>
+            <button class="btn-restock" style="background: rgba(255,255,255,0.08); color: #fff; border-color: var(--border-color);" onclick="ajustarStockExacto('${p.id}')" title="Clic para escribir el conteo exacto de stock">
+              ✏️ ${p.stock} unidades
+            </button>
+          </td>
+          <td>
+            <button class="btn-restock" style="padding: 8px 18px; font-weight: 700; font-size: 0.9rem;" onclick="reponerStockCustom('${p.id}')">
+              📦 + Sumar Llegada
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function editarPrecioRapido(prodId) {
+      const p = inventario.find(item => item.id === prodId);
+      if (!p) return;
+      const nuevo = prompt(`Nuevo precio para ${p.nombre} (actual: ${formatMoney(p.precio)}):`, p.precio);
+      if (!nuevo || isNaN(nuevo) || Number(nuevo) <= 0) return;
+      try {
+        const res = await fetch('/api/inventario/editar-precio', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ producto_id: prodId, precio: parseInt(nuevo) })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          inventario = data.inventario;
+          renderProducts();
+          renderInventario();
+          renderCart();
+          showToast(`Precio de ${p.nombre} actualizado a ${formatMoney(nuevo)}`);
+        }
+      } catch (e) {
+        alert("Error actualizando precio: " + e);
+      }
+    }
+
+    async function reponerStock(prodId, cantidad) {
+      try {
+        const res = await fetch('/api/inventario/reponer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ producto_id: prodId, cantidad })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          inventario = data.inventario;
+          renderInventario();
+          renderProducts();
+          showToast(`+${cantidad} unidades agregadas a stock.`);
+        }
+      } catch (e) {
+        alert("Error al reponer stock: " + e);
+      }
+    }
+
+    async function reponerStockCustom(prodId) {
+      const p = inventario.find(item => item.id === prodId);
+      const nombre = p ? p.nombre : "esta bebida";
+      const cant = prompt(`¿Cuántas unidades de '${nombre}' llegaron para sumar a bodega?`);
+      if (!cant || isNaN(cant) || Number(cant) <= 0) return;
+      reponerStock(prodId, parseInt(cant));
+    }
+
+    async function ajustarStockExacto(prodId) {
+      const p = inventario.find(item => item.id === prodId);
+      if (!p) return;
+      const nuevo = prompt(`¿Cuántas unidades físicas contadas de '${p.nombre}' hay en bodega actualmente?\n(Conteo actual: ${p.stock}):`, p.stock);
+      if (nuevo === null || isNaN(nuevo) || Number(nuevo) < 0) return;
+      try {
+        const res = await fetch('/api/inventario/ajustar-stock', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ producto_id: prodId, stock: parseInt(nuevo) })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          inventario = data.inventario;
+          renderInventario();
+          renderProducts();
+          renderBalance();
+          showToast(`Stock de ${p.nombre} ajustado a ${nuevo} unidades.`);
+        }
+      } catch (e) {
+        alert("Error ajustando stock: " + e);
+      }
+    }
+
+    async function promptNewProduct() {
+      const nombre = prompt("Nombre de la nueva bebida (ej: Cerveza Andina):");
+      if (!nombre) return;
+      const categoria = prompt("Categoría (Cervezas / Licores y Botellas / Tragos y Cocteles / Gaseosas y Energizantes / Pasabocas y Varios):", "Cervezas");
+      const precio = prompt("Precio de venta (ej: 4000):", "4000");
+      const stock = prompt("Stock inicial (unidades):", "24");
+
+      if (!precio || isNaN(precio) || !stock || isNaN(stock)) return;
+
+      try {
+        const res = await fetch('/api/inventario/agregar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            nombre: nombre.trim(),
+            categoria: categoria.trim(),
+            precio: parseInt(precio),
+            stock: parseInt(stock),
+            min_stock: 6
+          })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          inventario = data.inventario;
+          renderInventario();
+          renderProducts();
+          showToast("Bebida agregada al inventario.");
+        }
+      } catch (e) {
+        alert("Error creando producto: " + e);
+      }
+    }
+
+    // RENDER BALANCE Y GANANCIAS
+    function renderBalance() {
+      // 1. Tabla de Costo vs Venta por Unidad
+      const unitTbody = document.getElementById('unitProfitTableBody');
+      unitTbody.innerHTML = '';
+
+      inventario.forEach(p => {
+        const costo = p.precio_costo || 0;
+        const venta = p.precio || 0;
+        const ganancia = venta - costo;
+        const margen = venta > 0 ? Math.round((ganancia / venta) * 100) : 0;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><b>${p.nombre}</b></td>
+          <td><span class="p-cat">${p.categoria}</span></td>
+          <td><b style="color: #ef4444;">${formatMoney(costo)}</b></td>
+          <td><b style="color: #FFAA00;">${formatMoney(venta)}</b></td>
+          <td><b style="color: #10b981;">+ ${formatMoney(ganancia)}</b></td>
+          <td><b>${margen}%</b></td>
+        `;
+        unitTbody.appendChild(tr);
+      });
+
+      // 2. Calcular Ventas y Costos de la Semana
+      const weeklyItemsMap = {};
+      let totalVentasSemana = 0;
+      let totalCostosSemana = 0;
+
+      // Consumos activos en las cuentas de clientes
+      clientes.forEach(c => {
+        if (c.consumos_semana) {
+          c.consumos_semana.forEach(item => {
+            const p = inventario.find(inv => inv.id === item.producto_id || inv.nombre === item.nombre);
+            const costoUnit = (p && p.precio_costo !== undefined) ? p.precio_costo : (item.precio_costo || 0);
+            const cant = item.cantidad || 0;
+            const subVenta = item.subtotal || (item.precio_unitario * cant);
+            const subCosto = costoUnit * cant;
+
+            const key = item.producto_id || item.nombre;
+            if (!weeklyItemsMap[key]) {
+              weeklyItemsMap[key] = { nombre: item.nombre, cantidad: 0, totalVenta: 0, totalCosto: 0 };
+            }
+            weeklyItemsMap[key].cantidad += cant;
+            weeklyItemsMap[key].totalVenta += subVenta;
+            weeklyItemsMap[key].totalCosto += subCosto;
+
+            totalVentasSemana += subVenta;
+            totalCostosSemana += subCosto;
+          });
+        }
+      });
+
+      // Cobros semanales cerrados en el historial
+      historial.forEach(h => {
+        if (h.consumos) {
+          h.consumos.forEach(item => {
+            const p = inventario.find(inv => inv.id === item.producto_id || inv.nombre === item.nombre);
+            const costoUnit = (p && p.precio_costo !== undefined) ? p.precio_costo : (item.precio_costo || 0);
+            const cant = item.cantidad || 0;
+            const subVenta = item.subtotal || (item.precio_unitario * cant);
+            const subCosto = costoUnit * cant;
+
+            const key = item.producto_id || item.nombre;
+            if (!weeklyItemsMap[key]) {
+              weeklyItemsMap[key] = { nombre: item.nombre, cantidad: 0, totalVenta: 0, totalCosto: 0 };
+            }
+            weeklyItemsMap[key].cantidad += cant;
+            weeklyItemsMap[key].totalVenta += subVenta;
+            weeklyItemsMap[key].totalCosto += subCosto;
+
+            totalVentasSemana += subVenta;
+            totalCostosSemana += subCosto;
+          });
+        }
+      });
+
+      const gananciaNeta = totalVentasSemana - totalCostosSemana;
+      const margenSemana = totalVentasSemana > 0 ? Math.round((gananciaNeta / totalVentasSemana) * 100) : 0;
+
+      document.getElementById('balanceTotalVentas').innerText = formatMoney(totalVentasSemana);
+      document.getElementById('balanceTotalCostos').innerText = formatMoney(totalCostosSemana);
+      document.getElementById('balanceGananciaNeta').innerText = formatMoney(gananciaNeta);
+      document.getElementById('balanceMargenPorcentaje').innerText = margenSemana + '%';
+
+      // Tabla de rendimiento por producto
+      const salesTbody = document.getElementById('weeklySalesBalanceBody');
+      salesTbody.innerHTML = '';
+      const itemsVendidos = Object.values(weeklyItemsMap);
+
+      if (itemsVendidos.length === 0) {
+        salesTbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 18px;">Aún no hay consumos registrados en esta semana.</td></tr>`;
+      } else {
+        itemsVendidos.forEach(v => {
+          const util = v.totalVenta - v.totalCosto;
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><b>${v.nombre}</b></td>
+            <td><b>${v.cantidad} uds</b></td>
+            <td><b>${formatMoney(v.totalVenta)}</b></td>
+            <td><span style="color: #ef4444;">${formatMoney(v.totalCosto)}</span></td>
+            <td><b style="color: #10b981;">+ ${formatMoney(util)}</b></td>
+          `;
+          salesTbody.appendChild(tr);
+        });
+      }
+    }
+
+    async function editarCostoRapido(prodId) {
+      const p = inventario.find(item => item.id === prodId);
+      if (!p) return;
+      const nuevo = prompt(`¿Cuánto te cuesta comprar una unidad de ${p.nombre}?\n(Costo actual: ${formatMoney(p.precio_costo || 0)}):`, p.precio_costo || 0);
+      if (nuevo === null || isNaN(nuevo) || Number(nuevo) < 0) return;
+      try {
+        const res = await fetch('/api/inventario/editar-costo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ producto_id: prodId, costo: parseInt(nuevo) })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          inventario = data.inventario;
+          renderBalance();
+          renderInventario();
+          showToast(`Costo de ${p.nombre} actualizado a ${formatMoney(nuevo)}`);
+        }
+      } catch (e) {
+        alert("Error actualizando costo: " + e);
+      }
+    }
+
+    // RENDER HISTORIAL
+    function renderHistorial() {
+      const tbody = document.getElementById('historyTableBody');
+      tbody.innerHTML = '';
+      if (historial.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 20px;">Aún no se han cerrado cuentas de cobro.</td></tr>`;
+        return;
+      }
+      historial.slice().reverse().forEach(h => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${h.fecha}</td>
+          <td><b>${h.comprobante}</b></td>
+          <td>${h.cliente}</td>
+          <td>${h.concepto}</td>
+          <td><b style="color: #FFAA00;">${formatMoney(h.total)}</b></td>
+          <td>
+            <button class="btn-restock" onclick="showModalTicket('${h.ticket_url}', '${h.cliente}', ${h.total}, '${h.comprobante}')">
+              👁️ Ver Ticket
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function borrarHistorialCobros() {
+      const confirmar = confirm("⚠️ ATENCIÓN: ¿Deseas borrar TODO el historial de cobros de prueba para empezar desde cero?\n\n(Esto también reiniciará el número de comprobante a #CC-2026-0001)");
+      if (!confirmar) return;
+      try {
+        const res = await fetch('/api/historial/borrar-todos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        if (data.ok) {
+          historial = [];
+          renderHistorial();
+          renderBalance();
+          showToast("Historial de cobros vaciado por completo.");
+        }
+      } catch (e) {
+        alert("Error vaciando historial: " + e);
+      }
+    }
+
+    // INICIAR AL CARGAR
+    window.addEventListener('DOMContentLoaded', loadData);
+  </script>
+</body>
+</html>

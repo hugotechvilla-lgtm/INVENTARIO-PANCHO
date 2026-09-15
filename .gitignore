@@ -1,0 +1,17 @@
+# Entorno virtual
+.venv/
+env/
+venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# IDE
+.idea/
+.vscode/
+
+# Archivos temporales
+*.tmp
+*.bak
+

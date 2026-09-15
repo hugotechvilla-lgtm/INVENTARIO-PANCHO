@@ -1,0 +1,163 @@
+[
+  {
+    "id": "cerv-aguila-light",
+    "nombre": "CERVEZA AGUILA LIGHT",
+    "categoria": "Cervezas",
+    "precio": 4000,
+    "precio_costo": 2333,
+    "stock": 0,
+    "min_stock": 6
+  },
+  {
+    "id": "cerv-poker",
+    "nombre": "CERVEZA POKER",
+    "categoria": "Cervezas",
+    "precio": 4000,
+    "precio_costo": 2500,
+    "stock": 0,
+    "min_stock": 6
+  },
+  {
+    "id": "cerv-club-dorada",
+    "nombre": "CERVEZA CLUB DORADA",
+    "categoria": "Cervezas",
+    "precio": 4000,
+    "precio_costo": 2700,
+    "stock": 0,
+    "min_stock": 6
+  },
+  {
+    "id": "cerv-corona",
+    "nombre": "CERVEZA CORONA",
+    "categoria": "Cervezas",
+    "precio": 6000,
+    "precio_costo": 3750,
+    "stock": 0,
+    "min_stock": 6
+  },
+  {
+    "id": "mich-aguila-light",
+    "nombre": "MICHELADA DE AGUILA LIGHT",
+    "categoria": "Micheladas y Especiales",
+    "precio": 6000,
+    "precio_costo": 2800,
+    "descuenta_de_id": "cerv-aguila-light",
+    "min_stock": 6
+  },
+  {
+    "id": "mich-poker",
+    "nombre": "MICHELADA DE POKER",
+    "categoria": "Micheladas y Especiales",
+    "precio": 6000,
+    "precio_costo": 2800,
+    "descuenta_de_id": "cerv-poker",
+    "min_stock": 6
+  },
+  {
+    "id": "mich-club-dorada",
+    "nombre": "MICHELADA DE CLUB DORADA",
+    "categoria": "Micheladas y Especiales",
+    "precio": 6000,
+    "precio_costo": 3000,
+    "descuenta_de_id": "cerv-club-dorada",
+    "min_stock": 6
+  },
+  {
+    "id": "mich-corona",
+    "nombre": "MICHELADA DE CORONA",
+    "categoria": "Micheladas y Especiales",
+    "precio": 7000,
+    "precio_costo": 4300,
+    "descuenta_de_id": "cerv-corona",
+    "min_stock": 6
+  },
+  {
+    "id": "mich-soda",
+    "nombre": "MICHELADA DE SODA",
+    "categoria": "Micheladas y Especiales",
+    "precio": 6000,
+    "precio_costo": 2500,
+    "stock": 0,
+    "min_stock": 6
+  },
+  {
+    "id": "mich-tamarindo",
+    "nombre": "MICHELADA DE TAMARINDO",
+    "categoria": "Micheladas y Especiales",
+    "precio": 6000,
+    "precio_costo": 2800,
+    "stock": 0,
+    "min_stock": 6
+  },
+  {
+    "id": "mich-ginger",
+    "nombre": "MICHELADA DE GINGER",
+    "categoria": "Micheladas y Especiales",
+    "precio": 6000,
+    "precio_costo": 2800,
+    "stock": 0,
+    "min_stock": 6
+  },
+  {
+    "id": "corona-endiablada",
+    "nombre": "CORONA ENDIABLADA",
+    "categoria": "Micheladas y Especiales",
+    "precio": 12000,
+    "precio_costo": 5500,
+    "descuenta_de_id": "cerv-corona",
+    "min_stock": 4
+  },
+  {
+    "id": "lim-natural",
+    "nombre": "LIMONADA NATURAL",
+    "categoria": "Limonadas y Granizados",
+    "precio": 7000,
+    "precio_costo": 2000,
+    "stock": 0,
+    "min_stock": 5
+  },
+  {
+    "id": "lim-cerezada",
+    "nombre": "LIMONADA CEREZADA",
+    "categoria": "Limonadas y Granizados",
+    "precio": 12000,
+    "precio_costo": 4000,
+    "stock": 0,
+    "min_stock": 5
+  },
+  {
+    "id": "lim-coco",
+    "nombre": "LIMONADA DE COCO",
+    "categoria": "Limonadas y Granizados",
+    "precio": 12000,
+    "precio_costo": 4500,
+    "stock": 0,
+    "min_stock": 5
+  },
+  {
+    "id": "gran-cafe",
+    "nombre": "GRANIZADO DE CAFE",
+    "categoria": "Limonadas y Granizados",
+    "precio": 12000,
+    "precio_costo": 3500,
+    "stock": 0,
+    "min_stock": 5
+  },
+  {
+    "id": "red-bull",
+    "nombre": "RED BULL",
+    "categoria": "Energizantes",
+    "precio": 10000,
+    "precio_costo": 7000,
+    "stock": 0,
+    "min_stock": 5
+  },
+  {
+    "id": "gatorade-18",
+    "nombre": "GATORADE",
+    "categoria": "energizante",
+    "precio": 5000,
+    "stock": 0,
+    "min_stock": 6
+  }
+]

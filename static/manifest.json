@@ -1,0 +1,16 @@
+{
+  "name": "PANCHO Bebidas",
+  "short_name": "PANCHO",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#121214",
+  "theme_color": "#FFAA00",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png"
+    }
+  ]
+}
+
