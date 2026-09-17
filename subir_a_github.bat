@@ -6,7 +6,7 @@ echo   Subiendo actualizaciones a GitHub...
 echo ======================================================
 git rm -r --cached .idea 2>nul
 git add .
-git commit -m "Inventario estandar para limonadas y granizados con control de stock y eliminacion"
+git commit -m "Carga robusta de fuentes tipograficas para el ticket en Linux"
 git branch -M main
 git remote remove origin 2>nul
 git remote add origin https://github.com/hugotechvilla-lgtm/INVENTARIO-PANCHO.git

@@ -98,25 +98,39 @@ def generar_ticket_cobro(cliente, concepto, monto_val, titular_nequi="HUGO BRION
 
     # Tipografías
     def cargar_fuente(nombre, tam):
-        for candidate in [nombre, nombre.lower(), nombre.upper()]:
-            ruta = os.path.join(BASE_DIR, candidate)
-            if os.path.exists(ruta):
-                try:
-                    return ImageFont.truetype(ruta, tam)
-                except:
-                    pass
+        # 1. Búsqueda directa exacta
+        ruta_directa = os.path.join(BASE_DIR, nombre)
+        if os.path.exists(ruta_directa):
+            try:
+                return ImageFont.truetype(ruta_directa, tam)
+            except Exception as e:
+                print(f"[!] Error cargando fuente directa {nombre}: {e}")
+
+        # 2. Búsqueda inteligente en BASE_DIR (para Linux donde PANCHO15.otf tiene mayúsculas y minúsculas)
+        nombre_clean = os.path.splitext(os.path.basename(nombre))[0].lower()
+        nombre_lower = os.path.basename(nombre).lower()
+        if os.path.exists(BASE_DIR):
+            for archivo in os.listdir(BASE_DIR):
+                arch_lower = archivo.lower()
+                arch_clean = os.path.splitext(arch_lower)[0]
+                if arch_lower == nombre_lower or arch_clean == nombre_clean:
+                    ruta_real = os.path.join(BASE_DIR, archivo)
+                    try:
+                        return ImageFont.truetype(ruta_real, tam)
+                    except Exception as e:
+                        print(f"[!] Error cargando fuente {archivo}: {e}")
         return ImageFont.load_default()
 
-    font_titulo = cargar_fuente("PANCHO15.OTF", 46)
-    font_sub = cargar_fuente("PANCHO6.OTF", 14)
-    font_lbl_cobro = cargar_fuente("PANCHO6.OTF", 15)
-    font_monto = cargar_fuente("PANCHO15.OTF", 48)
-    font_campo_lbl = cargar_fuente("PANCHO6.OTF", 15)
-    font_campo_val = cargar_fuente("PANCHO15.OTF", 20)
-    font_pago_tit = cargar_fuente("PANCHO15.OTF", 18)
-    font_pago_num = cargar_fuente("PANCHO15.OTF", 26)
-    font_nota = cargar_fuente("PANCHO6.OTF", 13)
-    font_pie = cargar_fuente("PANCHO6.OTF", 14)
+    font_titulo = cargar_fuente("PANCHO15.otf", 46)
+    font_sub = cargar_fuente("PANCHO6.otf", 14)
+    font_lbl_cobro = cargar_fuente("PANCHO6.otf", 15)
+    font_monto = cargar_fuente("PANCHO15.otf", 48)
+    font_campo_lbl = cargar_fuente("PANCHO6.otf", 15)
+    font_campo_val = cargar_fuente("PANCHO15.otf", 20)
+    font_pago_tit = cargar_fuente("PANCHO15.otf", 18)
+    font_pago_num = cargar_fuente("PANCHO15.otf", 26)
+    font_nota = cargar_fuente("PANCHO6.otf", 13)
+    font_pie = cargar_fuente("PANCHO6.otf", 14)
 
     cx = ancho // 2
 

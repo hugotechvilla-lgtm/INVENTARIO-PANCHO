@@ -1,0 +1,1 @@
+cd ~/INVENTARIO-PANCHO && git fetch origin main && git checkout origin/main -- generador_ticket.py
