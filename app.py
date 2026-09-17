@@ -602,6 +602,19 @@ class PanchoHandler(SimpleHTTPRequestHandler):
             self.send_json({"ok": True, "inventario": inventario})
             return
 
+        # 8. API: ELIMINAR PRODUCTO DE INVENTARIO
+        elif path == "/api/inventario/eliminar":
+            producto_id = body.get("producto_id")
+            if not producto_id:
+                self.send_json({"ok": False, "error": "ID de producto requerido"}, status=400)
+                return
+            with data_lock:
+                inventario = leer_json(RUTA_INVENTARIO, [])
+                inventario = [p for p in inventario if p["id"] != producto_id]
+                guardar_json(RUTA_INVENTARIO, inventario)
+            self.send_json({"ok": True, "inventario": inventario})
+            return
+
         self.send_error(404, "Endpoint no encontrado")
 
 import sys

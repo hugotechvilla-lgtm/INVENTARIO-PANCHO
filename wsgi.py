@@ -423,6 +423,16 @@ def application(environ, start_response):
                 guardar_json(RUTA_INVENTARIO, inventario)
             return respond_json({"ok": True, "inventario": inventario})
 
+        elif path == "/api/inventario/eliminar":
+            producto_id = body.get("producto_id")
+            if not producto_id:
+                return respond_json({"ok": False, "error": "ID requerido"}, '400 Bad Request')
+            with data_lock:
+                inventario = leer_json(RUTA_INVENTARIO, [])
+                inventario = [p for p in inventario if p["id"] != producto_id]
+                guardar_json(RUTA_INVENTARIO, inventario)
+            return respond_json({"ok": True, "inventario": inventario})
+
         start_response('404 Not Found', [('Content-Type', 'text/plain')])
         return [b'Endpoint no encontrado']
 

@@ -72,33 +72,6 @@
     "min_stock": 6
   },
   {
-    "id": "mich-soda",
-    "nombre": "MICHELADA DE SODA",
-    "categoria": "Micheladas y Especiales",
-    "precio": 6000,
-    "precio_costo": 2500,
-    "stock": 0,
-    "min_stock": 6
-  },
-  {
-    "id": "mich-tamarindo",
-    "nombre": "MICHELADA DE TAMARINDO",
-    "categoria": "Micheladas y Especiales",
-    "precio": 6000,
-    "precio_costo": 2800,
-    "stock": 0,
-    "min_stock": 6
-  },
-  {
-    "id": "mich-ginger",
-    "nombre": "MICHELADA DE GINGER",
-    "categoria": "Micheladas y Especiales",
-    "precio": 6000,
-    "precio_costo": 2800,
-    "stock": 0,
-    "min_stock": 6
-  },
-  {
     "id": "corona-endiablada",
     "nombre": "CORONA ENDIABLADA",
     "categoria": "Micheladas y Especiales",
@@ -155,8 +128,36 @@
   {
     "id": "gatorade-18",
     "nombre": "GATORADE",
-    "categoria": "energizante",
+    "categoria": "Energizantes",
     "precio": 5000,
+    "precio_costo": 3250,
+    "stock": 0,
+    "min_stock": 6
+  },
+  {
+    "id": "soda-19",
+    "nombre": "SODA",
+    "categoria": "Gaseosas y Bebidas",
+    "precio": 6000,
+    "precio_costo": 1933,
+    "stock": 0,
+    "min_stock": 6
+  },
+  {
+    "id": "tamarindo-20",
+    "nombre": "TAMARINDO",
+    "categoria": "Gaseosas y Bebidas",
+    "precio": 6000,
+    "precio_costo": 1733,
+    "stock": 0,
+    "min_stock": 6
+  },
+  {
+    "id": "ginger-21",
+    "nombre": "GINGER",
+    "categoria": "Gaseosas y Bebidas",
+    "precio": 6000,
+    "precio_costo": 2133,
     "stock": 0,
     "min_stock": 6
   }

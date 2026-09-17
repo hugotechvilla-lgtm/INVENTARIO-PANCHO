@@ -732,9 +732,14 @@
     <!-- ============================================== -->
     <section id="tab-inventario" class="tab-content">
       <div class="section-card">
-        <div class="section-title">
+        <div class="section-title" style="flex-wrap: wrap; gap: 10px;">
           <span>📦 Stock de Bebidas en Bodega</span>
-          <button class="btn-new-client" onclick="promptNewProduct()">+ Nueva Bebida</button>
+          <div style="display: flex; gap: 8px;">
+            <button id="btnToggleAllProducts" class="btn-restock" style="background: rgba(255,255,255,0.08); color: #fff; border-color: var(--border-color);" onclick="toggleVerTodasBebidas()">
+              👁️ Ver Todo el Catálogo
+            </button>
+            <button class="btn-new-client" onclick="promptNewProduct()">+ Nueva Bebida</button>
+          </div>
         </div>
 
         <div class="inv-table-wrapper">
@@ -747,6 +752,7 @@
                 <th>Precio Venta</th>
                 <th>Stock Físico (Bodega)</th>
                 <th>Ingresar Llegada</th>
+                <th style="text-align: center;">Eliminar</th>
               </tr>
             </thead>
             <tbody id="inventoryTableBody">
@@ -1473,17 +1479,36 @@
       document.getElementById('ticketModal').classList.remove('show');
     }
 
+    let verTodoElCatalogo = false;
+
+    function toggleVerTodasBebidas() {
+      verTodoElCatalogo = !verTodoElCatalogo;
+      const btn = document.getElementById('btnToggleAllProducts');
+      if (btn) {
+        btn.innerText = verTodoElCatalogo ? "📦 Solo Físico (Bodega)" : "👁️ Ver Todo el Catálogo";
+        btn.style.background = verTodoElCatalogo ? "rgba(255,170,0,0.2)" : "rgba(255,255,255,0.08)";
+        btn.style.color = verTodoElCatalogo ? "#FFAA00" : "#fff";
+      }
+      renderInventario();
+    }
+
     // RENDER INVENTARIO
     function renderInventario() {
       const tbody = document.getElementById('inventoryTableBody');
       tbody.innerHTML = '';
-      // Solo mostrar productos físicos de bodega (sin micheladas ni recetas)
-      const productosBodega = inventario.filter(p => !p.descuenta_de_id && !p.nombre.toUpperCase().includes('MICHELADA') && !p.nombre.toUpperCase().includes('ENDIABLADA'));
 
-      productosBodega.forEach(p => {
+      const lista = verTodoElCatalogo
+        ? inventario
+        : inventario.filter(p => !p.descuenta_de_id && !p.nombre.toUpperCase().includes('MICHELADA') && !p.nombre.toUpperCase().includes('ENDIABLADA'));
+
+      lista.forEach(p => {
+        const esReceta = !!p.descuenta_de_id;
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td><b>${p.nombre}</b></td>
+          <td>
+            <b>${p.nombre}</b>
+            ${esReceta ? '<br><small style="color: #FFAA00;">(Receta: descuenta cerveza base)</small>' : ''}
+          </td>
           <td><span class="p-cat">${p.categoria}</span></td>
           <td>
             <button class="btn-restock" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border-color: rgba(239, 68, 68, 0.3);" onclick="editarCostoRapido('${p.id}')" title="Clic para editar costo de compra">
@@ -1496,18 +1521,51 @@
             </button>
           </td>
           <td>
-            <button class="btn-restock" style="background: rgba(255,255,255,0.08); color: #fff; border-color: var(--border-color);" onclick="ajustarStockExacto('${p.id}')" title="Clic para escribir el conteo exacto de stock">
-              ✏️ ${p.stock} unidades
-            </button>
+            ${esReceta ? '<span style="color: var(--text-muted); font-size: 0.85rem;">Vinculada a stock base</span>' : `
+              <button class="btn-restock" style="background: rgba(255,255,255,0.08); color: #fff; border-color: var(--border-color);" onclick="ajustarStockExacto('${p.id}')" title="Clic para escribir el conteo exacto de stock">
+                ✏️ ${p.stock !== undefined ? p.stock : 0} unidades
+              </button>
+            `}
           </td>
           <td>
-            <button class="btn-restock" style="padding: 8px 18px; font-weight: 700; font-size: 0.9rem;" onclick="reponerStockCustom('${p.id}')">
-              📦 + Sumar Llegada
+            ${esReceta ? '-' : `
+              <button class="btn-restock" style="padding: 8px 18px; font-weight: 700; font-size: 0.9rem;" onclick="reponerStockCustom('${p.id}')">
+                📦 + Sumar Llegada
+              </button>
+            `}
+          </td>
+          <td style="text-align: center;">
+            <button onclick="eliminarProductoInventario('${p.id}', '${p.nombre}')" title="Eliminar bebida permanentemente" style="background: none; border: none; cursor: pointer; color: var(--accent-red); font-size: 1.25rem; padding: 4px;">
+              🗑️
             </button>
           </td>
         `;
         tbody.appendChild(tr);
       });
+    }
+
+    async function eliminarProductoInventario(id, nombre) {
+      const confirmar = confirm(`¿Estás seguro de que deseas eliminar '${nombre}' del sistema?`);
+      if (!confirmar) return;
+      try {
+        const res = await fetch('/api/inventario/eliminar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ producto_id: id })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          inventario = data.inventario;
+          renderInventario();
+          renderProducts();
+          renderBalance();
+          showToast(`'${nombre}' eliminado del inventario.`);
+        } else {
+          alert("Error: " + data.error);
+        }
+      } catch (e) {
+        alert("Error eliminando producto: " + e);
+      }
     }
 
     async function editarPrecioRapido(prodId) {
