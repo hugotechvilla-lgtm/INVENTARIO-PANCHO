@@ -196,6 +196,93 @@ def application(environ, start_response):
                 guardar_json(RUTA_CLIENTES, clientes)
             return respond_json({"ok": True, "cliente": cliente, "inventario": inventario})
 
+        elif path == "/api/clientes/pago-contado":
+            cliente_id = body.get("cliente_id")
+            items = body.get("items", [])
+            nombre_custom = body.get("nombre_cliente", "").strip().upper()
+
+            if not items:
+                return respond_json({"ok": False, "error": "No hay productos en el pedido"}, '400 Bad Request')
+
+            with data_lock:
+                clientes = leer_json(RUTA_CLIENTES, [])
+                inventario = leer_json(RUTA_INVENTARIO, [])
+                historial = leer_json(RUTA_HISTORIAL, [])
+
+                cliente = next((c for c in clientes if c["id"] == cliente_id), None)
+                nombre_cliente = cliente["nombre"] if cliente else (nombre_custom or "CLIENTE DE CONTADO")
+
+                for item in items:
+                    prod = next((p for p in inventario if p["id"] == item["id"]), None)
+                    if prod:
+                        id_base = prod.get("descuenta_de_id") or prod["id"]
+                        prod_base = next((p for p in inventario if p["id"] == id_base), prod)
+                        if "stock" in prod_base:
+                            prod_base["stock"] = max(0, prod_base["stock"] - item["cantidad"])
+
+                ahora_str = datetime.now().strftime("%Y-%m-%d %H:%M")
+                subtotal_pedido = 0
+                consumos_detallados = []
+                for item in items:
+                    sub = item.get("subtotal", item["precio_unitario"] * item["cantidad"])
+                    subtotal_pedido += sub
+                    p_obj = next((p for p in inventario if p["id"] == item["id"]), None)
+                    costo_u = p_obj.get("precio_costo", 0) if p_obj else 0
+                    consumos_detallados.append({
+                        "fecha": ahora_str,
+                        "producto_id": item["id"],
+                        "nombre": item["nombre"],
+                        "cantidad": item["cantidad"],
+                        "precio_unitario": item["precio_unitario"],
+                        "precio_costo": costo_u,
+                        "subtotal": sub
+                    })
+
+                resumen_cantidades = {}
+                for c_item in consumos_detallados:
+                    nom = c_item["nombre"].replace("Cerveza ", "").replace("Trago / Shot de ", "SHOT ").strip()
+                    resumen_cantidades[nom] = resumen_cantidades.get(nom, 0) + c_item["cantidad"]
+                concepto_texto = " + ".join([f"{cant} {nom}" for nom, cant in resumen_cantidades.items()])
+                if not concepto_texto:
+                    concepto_texto = "PAGO DE CONTADO"
+
+                try:
+                    ruta_img, filename, comprobante = generar_ticket_cobro(
+                        cliente=nombre_cliente,
+                        concepto=concepto_texto,
+                        monto_val=subtotal_pedido,
+                        titular_nequi="HUGO BRION"
+                    )
+                except Exception as err:
+                    print(f"[!] Error generando ticket contado en WSGI: {err}")
+                    return respond_json({"ok": False, "error": f"Error generando ticket: {err}"}, '500 Internal Server Error')
+
+                registro_historial = {
+                    "fecha": datetime.now().strftime("%d/%m/%Y %H:%M"),
+                    "cliente": nombre_cliente,
+                    "total": subtotal_pedido,
+                    "comprobante": comprobante,
+                    "concepto": concepto_texto,
+                    "consumos": consumos_detallados,
+                    "ticket_url": f"/tickets/{filename}",
+                    "metodo": "CONTADO"
+                }
+                historial.append(registro_historial)
+
+                guardar_json(RUTA_INVENTARIO, inventario)
+                guardar_json(RUTA_HISTORIAL, historial)
+
+            return respond_json({
+                "ok": True,
+                "ticket_url": f"/tickets/{filename}",
+                "cliente_nombre": nombre_cliente,
+                "total": subtotal_pedido,
+                "comprobante": comprobante,
+                "concepto": concepto_texto,
+                "inventario": inventario,
+                "historial": historial
+            })
+
         elif path == "/api/clientes/cerrar-semana":
             cliente_id = body.get("cliente_id")
             with data_lock:

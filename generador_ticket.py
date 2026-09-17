@@ -98,12 +98,13 @@ def generar_ticket_cobro(cliente, concepto, monto_val, titular_nequi="HUGO BRION
 
     # Tipografías
     def cargar_fuente(nombre, tam):
-        ruta = os.path.join(BASE_DIR, nombre)
-        if os.path.exists(ruta):
-            try:
-                return ImageFont.truetype(ruta, tam)
-            except:
-                pass
+        for candidate in [nombre, nombre.lower(), nombre.upper()]:
+            ruta = os.path.join(BASE_DIR, candidate)
+            if os.path.exists(ruta):
+                try:
+                    return ImageFont.truetype(ruta, tam)
+                except:
+                    pass
         return ImageFont.load_default()
 
     font_titulo = cargar_fuente("PANCHO15.OTF", 46)

@@ -316,6 +316,101 @@ class PanchoHandler(SimpleHTTPRequestHandler):
             })
             return
 
+        # 2.1 API: REGISTRAR VENTA DE CONTADO (PAGO INMEDIATO)
+        elif path == "/api/clientes/pago-contado":
+            cliente_id = body.get("cliente_id")
+            items = body.get("items", [])
+            nombre_custom = body.get("nombre_cliente", "").strip().upper()
+
+            if not items:
+                self.send_json({"ok": False, "error": "No hay productos en el pedido"}, status=400)
+                return
+
+            with data_lock:
+                clientes = leer_json(RUTA_CLIENTES, [])
+                inventario = leer_json(RUTA_INVENTARIO, [])
+                historial = leer_json(RUTA_HISTORIAL, [])
+
+                cliente = next((c for c in clientes if c["id"] == cliente_id), None)
+                nombre_cliente = cliente["nombre"] if cliente else (nombre_custom or "CLIENTE DE CONTADO")
+
+                # 1. Descontar stock de inventario (soporta recetas)
+                for item in items:
+                    prod = next((p for p in inventario if p["id"] == item["id"]), None)
+                    if prod:
+                        id_base = prod.get("descuenta_de_id") or prod["id"]
+                        prod_base = next((p for p in inventario if p["id"] == id_base), prod)
+                        if "stock" in prod_base:
+                            prod_base["stock"] = max(0, prod_base["stock"] - item["cantidad"])
+
+                # 2. Calcular total y preparar consumos para balance y ganancia
+                ahora_str = datetime.now().strftime("%Y-%m-%d %H:%M")
+                subtotal_pedido = 0
+                consumos_detallados = []
+                for item in items:
+                    sub = item.get("subtotal", item["precio_unitario"] * item["cantidad"])
+                    subtotal_pedido += sub
+                    p_obj = next((p for p in inventario if p["id"] == item["id"]), None)
+                    costo_u = p_obj.get("precio_costo", 0) if p_obj else 0
+                    consumos_detallados.append({
+                        "fecha": ahora_str,
+                        "producto_id": item["id"],
+                        "nombre": item["nombre"],
+                        "cantidad": item["cantidad"],
+                        "precio_unitario": item["precio_unitario"],
+                        "precio_costo": costo_u,
+                        "subtotal": sub
+                    })
+
+                # 3. Armar texto del concepto
+                resumen_cantidades = {}
+                for c_item in consumos_detallados:
+                    nom = c_item["nombre"].replace("Cerveza ", "").replace("Trago / Shot de ", "SHOT ").strip()
+                    resumen_cantidades[nom] = resumen_cantidades.get(nom, 0) + c_item["cantidad"]
+                concepto_texto = " + ".join([f"{cant} {nom}" for nom, cant in resumen_cantidades.items()])
+                if not concepto_texto:
+                    concepto_texto = "PAGO DE CONTADO"
+
+                # 4. Generar el ticket oficial
+                try:
+                    ruta_img, filename, comprobante = generar_ticket_cobro(
+                        cliente=nombre_cliente,
+                        concepto=concepto_texto,
+                        monto_val=subtotal_pedido
+                    )
+                except Exception as err:
+                    print(f"[!] Error generando ticket contado: {err}")
+                    self.send_json({"ok": False, "error": f"Error generando ticket: {err}"}, status=500)
+                    return
+
+                # 5. Registrar en historial de cobros (PAGADO - no suma deuda)
+                registro_historial = {
+                    "fecha": datetime.now().strftime("%d/%m/%Y %H:%M"),
+                    "cliente": nombre_cliente,
+                    "total": subtotal_pedido,
+                    "comprobante": comprobante,
+                    "concepto": concepto_texto,
+                    "consumos": consumos_detallados,
+                    "ticket_url": f"/tickets/{filename}",
+                    "metodo": "CONTADO"
+                }
+                historial.append(registro_historial)
+
+                guardar_json(RUTA_INVENTARIO, inventario)
+                guardar_json(RUTA_HISTORIAL, historial)
+
+            self.send_json({
+                "ok": True,
+                "ticket_url": f"/tickets/{filename}",
+                "cliente_nombre": nombre_cliente,
+                "total": subtotal_pedido,
+                "comprobante": comprobante,
+                "concepto": concepto_texto,
+                "inventario": inventario,
+                "historial": historial
+            })
+            return
+
         # 3. API: CERRAR SEMANA Y GENERAR TICKET OFICIAL PANCHO
         elif path == "/api/clientes/cerrar-semana":
             cliente_id = body.get("cliente_id")

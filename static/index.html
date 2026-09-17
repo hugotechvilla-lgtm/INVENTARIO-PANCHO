@@ -375,6 +375,27 @@
     .btn-save-tab:hover { filter: brightness(1.1); transform: translateY(-2px); }
     .btn-save-tab:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
+    .btn-instant-pay {
+      width: 100%;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #fff;
+      border: none;
+      padding: 14px;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);
+      transition: transform 0.15s, filter 0.15s;
+      margin-top: 10px;
+    }
+    .btn-instant-pay:hover { filter: brightness(1.1); transform: translateY(-2px); }
+    .btn-instant-pay:disabled { opacity: 0.4; cursor: not-allowed; transform: none; background: #26262d; box-shadow: none; }
+
     /* TAB: CUENTAS SEMANALES */
     .summary-metrics {
       display: grid;
@@ -667,6 +688,9 @@
 
           <button id="btnSaveTab" class="btn-save-tab" onclick="guardarConsumoEnCuenta()" disabled>
             💾 Sumar a la Semana del Cliente
+          </button>
+          <button id="btnInstantPay" class="btn-instant-pay" onclick="guardarPagoContado()" disabled>
+            ⚡ Pago Inmediato (De Contado)
           </button>
         </div>
 
@@ -1110,10 +1134,67 @@
     }
 
     function updateSaveButton() {
-      const btn = document.getElementById('btnSaveTab');
+      const btnSave = document.getElementById('btnSaveTab');
+      const btnInstant = document.getElementById('btnInstantPay');
       const hasItems = Object.keys(cart).length > 0;
       const hasClient = !!selectedClientId;
-      btn.disabled = !(hasItems && hasClient);
+      if (btnSave) btnSave.disabled = !(hasItems && hasClient);
+      if (btnInstant) btnInstant.disabled = !hasItems;
+    }
+
+    async function guardarPagoContado() {
+      const itemIds = Object.keys(cart);
+      if (itemIds.length === 0) return;
+
+      let nombreCliente = "CLIENTE DE CONTADO";
+      if (selectedClientId) {
+        const c = clientes.find(item => item.id === selectedClientId);
+        if (c) nombreCliente = c.nombre;
+      } else {
+        const custom = prompt("¿Nombre del cliente para el comprobante de contado? (O deja así para venta general):", "CLIENTE DE CONTADO");
+        if (custom === null) return;
+        if (custom.trim()) nombreCliente = custom.trim().toUpperCase();
+      }
+
+      const items = itemIds.map(id => {
+        const p = inventario.find(item => item.id === id);
+        return {
+          id: p.id,
+          nombre: p.nombre,
+          cantidad: cart[id],
+          precio_unitario: p.precio,
+          subtotal: p.precio * cart[id]
+        };
+      });
+
+      try {
+        const res = await fetch('/api/clientes/pago-contado', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            cliente_id: selectedClientId || null,
+            nombre_cliente: nombreCliente,
+            items: items
+          })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          showToast(`⚡ ¡Venta de contado registrada! Stock y ganancias actualizadas.`);
+          inventario = data.inventario;
+          if (data.historial) historial = data.historial;
+          cart = {};
+          renderProducts();
+          renderCart();
+          renderInventario();
+          renderBalance();
+          renderHistorial();
+          showModalTicket(data.ticket_url, data.cliente_nombre, data.total, data.comprobante);
+        } else {
+          alert("Error: " + data.error);
+        }
+      } catch (e) {
+        alert("Error procesando pago de contado: " + e);
+      }
     }
 
     async function guardarConsumoEnCuenta() {
