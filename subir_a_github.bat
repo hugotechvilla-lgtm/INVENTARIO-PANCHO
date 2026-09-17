@@ -6,7 +6,7 @@ echo   Subiendo actualizaciones a GitHub...
 echo ======================================================
 git rm -r --cached .idea 2>nul
 git add .
-git commit -m "Soporte completo WSGI para PythonAnywhere"
+git commit -m "Correccion en generador de tickets para cierre de cuentas"
 git branch -M main
 git remote remove origin 2>nul
 git remote add origin https://github.com/hugotechvilla-lgtm/INVENTARIO-PANCHO.git

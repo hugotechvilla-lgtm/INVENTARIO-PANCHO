@@ -209,12 +209,16 @@ def application(environ, start_response):
                     items_resumen[c["nombre"]] = items_resumen.get(c["nombre"], 0) + c["cantidad"]
                 concepto_texto = " + ".join([f"{cant} {nom}" for nom, cant in items_resumen.items()])
                 total_saldo = cliente["saldo_actual"]
-                ruta_img, filename, comprobante = generar_ticket_cobro(
-                    cliente=cliente["nombre"],
-                    concepto=concepto_texto,
-                    monto_val=total_saldo,
-                    titular_nequi="HUGO BRION"
-                )
+                try:
+                    ruta_img, filename, comprobante = generar_ticket_cobro(
+                        cliente=cliente["nombre"],
+                        concepto=concepto_texto,
+                        monto_val=total_saldo,
+                        titular_nequi="HUGO BRION"
+                    )
+                except Exception as err:
+                    print(f"[!] Error generando ticket en WSGI: {err}")
+                    return respond_json({"ok": False, "error": f"Error generando imagen de ticket: {err}"}, '500 Internal Server Error')
                 registro = {
                     "fecha": datetime.now().strftime("%d/%m/%Y %H:%M"),
                     "cliente": cliente["nombre"],

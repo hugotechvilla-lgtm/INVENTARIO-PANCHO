@@ -63,16 +63,16 @@ def generar_ticket_cobro(cliente, concepto, monto_val, titular_nequi="HUGO BRION
     color_texto = "#1A1A1A"
     color_secundario = "#4A4A4A"
 
-    # Degradado
-    gradient = np.zeros((alto, ancho, 3), dtype=np.uint8)
+    # Degradado (100% nativo Pillow, sin depender de librerías externas)
+    grad_base = Image.new("RGB", (1, alto))
     for y in range(alto):
         t = y / alto
         r = int(color_top[0] + (color_bot[0] - color_top[0]) * t)
         g = int(color_top[1] + (color_bot[1] - color_top[1]) * t)
         b = int(color_top[2] + (color_bot[2] - color_top[2]) * t)
-        gradient[y, :] = [r, g, b]
+        grad_base.putpixel((0, y), (r, g, b))
 
-    ticket = Image.fromarray(gradient).convert("RGBA")
+    ticket = grad_base.resize((ancho, alto), Image.Resampling.BILINEAR).convert("RGBA")
 
     # Mascara redondeada
     mask = Image.new("L", (ancho, alto), 0)

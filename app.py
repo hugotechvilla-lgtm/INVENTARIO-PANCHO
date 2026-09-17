@@ -343,12 +343,17 @@ class PanchoHandler(SimpleHTTPRequestHandler):
                 if not concepto_texto:
                     concepto_texto = "CONSUMO SEMANAL"
 
-                # Generar el ticket usando Pillow oficial
-                ruta_img, filename, comprobante = generar_ticket_cobro(
-                    cliente=cliente["nombre"],
-                    concepto=concepto_texto,
-                    monto_val=total_saldo
-                )
+                try:
+                    # Generar el ticket usando Pillow oficial
+                    ruta_img, filename, comprobante = generar_ticket_cobro(
+                        cliente=cliente["nombre"],
+                        concepto=concepto_texto,
+                        monto_val=total_saldo
+                    )
+                except Exception as err:
+                    print(f"[!] Error generando ticket: {err}")
+                    self.send_json({"ok": False, "error": f"Error generando imagen de ticket: {err}"}, status=500)
+                    return
 
                 # Registrar en historial de cobros
                 historial = leer_json(RUTA_HISTORIAL, [])
