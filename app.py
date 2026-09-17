@@ -282,7 +282,7 @@ class PanchoHandler(SimpleHTTPRequestHandler):
                     if prod:
                         id_base = prod.get("descuenta_de_id") or prod["id"]
                         prod_base = next((p for p in inventario if p["id"] == id_base), prod)
-                        if "stock" in prod_base:
+                        if "stock" in prod_base and prod_base.get("stock") is not None and not prod_base.get("es_preparado") and prod_base.get("categoria") != "Limonadas y Granizados":
                             prod_base["stock"] = max(0, prod_base["stock"] - item["cantidad"])
 
                 # Sumar a consumos del cliente
@@ -340,7 +340,7 @@ class PanchoHandler(SimpleHTTPRequestHandler):
                     if prod:
                         id_base = prod.get("descuenta_de_id") or prod["id"]
                         prod_base = next((p for p in inventario if p["id"] == id_base), prod)
-                        if "stock" in prod_base:
+                        if "stock" in prod_base and prod_base.get("stock") is not None and not prod_base.get("es_preparado") and prod_base.get("categoria") != "Limonadas y Granizados":
                             prod_base["stock"] = max(0, prod_base["stock"] - item["cantidad"])
 
                 # 2. Calcular total y preparar consumos para balance y ganancia

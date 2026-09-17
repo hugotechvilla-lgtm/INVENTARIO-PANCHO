@@ -1024,7 +1024,12 @@
       renderProducts();
     }
 
+    function esBebidaPreparada(p) {
+      return !!p.es_preparado || p.categoria === 'Limonadas y Granizados';
+    }
+
     function obtenerStock(p) {
+      if (esBebidaPreparada(p)) return 999;
       if (p.descuenta_de_id) {
         const base = inventario.find(b => b.id === p.descuenta_de_id);
         return base ? (base.stock || 0) : 0;
@@ -1045,6 +1050,7 @@
       filtrados.forEach(p => {
         const qty = cart[p.id] || 0;
         const stockActual = obtenerStock(p);
+        const esPrep = esBebidaPreparada(p);
         const card = document.createElement('div');
         card.className = 'product-card';
         card.innerHTML = `
@@ -1055,9 +1061,12 @@
               <span>${formatMoney(p.precio)}</span>
               <button onclick="editarPrecioRapido('${p.id}')" title="Modificar precio" style="background: none; border: none; cursor: pointer; font-size: 0.85rem; color: #FFAA00;">✏️</button>
             </div>
-            <div class="p-stock ${stockActual <= (p.min_stock !== undefined ? p.min_stock : 5) ? 'stock-low' : 'stock-ok'}">
-              ${stockActual} en stock ${p.descuenta_de_id ? '<small style="opacity: 0.75;">(Cerveza base)</small>' : ''}
-            </div>
+            ${esPrep 
+              ? `<div class="p-stock stock-ok" style="background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3); font-weight: 700;">✨ Preparada al instante</div>`
+              : `<div class="p-stock ${stockActual <= (p.min_stock !== undefined ? p.min_stock : 5) ? 'stock-low' : 'stock-ok'}">
+                  ${stockActual} en stock ${p.descuenta_de_id ? '<small style="opacity: 0.75;">(Cerveza base)</small>' : ''}
+                </div>`
+            }
           </div>
           <div class="p-actions">
             <button class="btn-qty" onclick="changeQty('${p.id}', -1)">-</button>
@@ -1076,7 +1085,7 @@
       const nuevo = Math.max(0, current + delta);
       const stockDisponible = obtenerStock(prod);
 
-      if (delta > 0 && nuevo > stockDisponible) {
+      if (!esBebidaPreparada(prod) && delta > 0 && nuevo > stockDisponible) {
         if (stockDisponible <= 0) {
           const proceder = confirm(`⚠️ Atención: En bodega figuran 0 unidades de '${prod.nombre}'.\n\n¿Deseas agregar el consumo a la cuenta del cliente de todas formas?`);
           if (!proceder) return;
@@ -1499,15 +1508,17 @@
 
       const lista = verTodoElCatalogo
         ? inventario
-        : inventario.filter(p => !p.descuenta_de_id && !p.nombre.toUpperCase().includes('MICHELADA') && !p.nombre.toUpperCase().includes('ENDIABLADA'));
+        : inventario.filter(p => !p.descuenta_de_id && !esBebidaPreparada(p) && !p.nombre.toUpperCase().includes('MICHELADA') && !p.nombre.toUpperCase().includes('ENDIABLADA'));
 
       lista.forEach(p => {
         const esReceta = !!p.descuenta_de_id;
+        const esPrep = esBebidaPreparada(p);
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>
             <b>${p.nombre}</b>
             ${esReceta ? '<br><small style="color: #FFAA00;">(Receta: descuenta cerveza base)</small>' : ''}
+            ${esPrep ? '<br><small style="color: #10b981;">(Preparada al instante)</small>' : ''}
           </td>
           <td><span class="p-cat">${p.categoria}</span></td>
           <td>
@@ -1521,14 +1532,15 @@
             </button>
           </td>
           <td>
-            ${esReceta ? '<span style="color: var(--text-muted); font-size: 0.85rem;">Vinculada a stock base</span>' : `
+            ${esReceta ? '<span style="color: var(--text-muted); font-size: 0.85rem;">Vinculada a stock base</span>' : 
+              esPrep ? '<span style="color: #10b981; font-size: 0.85rem; font-weight: 700;">✨ Al instante</span>' : `
               <button class="btn-restock" style="background: rgba(255,255,255,0.08); color: #fff; border-color: var(--border-color);" onclick="ajustarStockExacto('${p.id}')" title="Clic para escribir el conteo exacto de stock">
                 ✏️ ${p.stock !== undefined ? p.stock : 0} unidades
               </button>
             `}
           </td>
           <td>
-            ${esReceta ? '-' : `
+            ${(esReceta || esPrep) ? '-' : `
               <button class="btn-restock" style="padding: 8px 18px; font-weight: 700; font-size: 0.9rem;" onclick="reponerStockCustom('${p.id}')">
                 📦 + Sumar Llegada
               </button>

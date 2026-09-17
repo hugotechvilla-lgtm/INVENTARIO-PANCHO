@@ -6,7 +6,7 @@ echo   Subiendo actualizaciones a GitHub...
 echo ======================================================
 git rm -r --cached .idea 2>nul
 git add .
-git commit -m "Boton eliminar bebida y vista de todo el catalogo en inventario"
+git commit -m "Soporte para bebidas preparadas al instante sin stock de bodega y boton eliminar"
 git branch -M main
 git remote remove origin 2>nul
 git remote add origin https://github.com/hugotechvilla-lgtm/INVENTARIO-PANCHO.git
