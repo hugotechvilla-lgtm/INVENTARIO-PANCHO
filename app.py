@@ -8,7 +8,7 @@ import os
 import re
 from datetime import datetime
 
-from generador_ticket import generar_ticket_cobro
+from generador_ticket import generar_ticket_cobro, agrupar_consumos_por_categoria
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATOS_DIR = os.path.join(BASE_DIR, "datos")
@@ -362,20 +362,15 @@ class PanchoHandler(SimpleHTTPRequestHandler):
                         "subtotal": sub
                     })
 
-                # 3. Armar texto del concepto
-                resumen_cantidades = {}
-                for c_item in consumos_detallados:
-                    nom = c_item["nombre"].replace("Cerveza ", "").replace("Trago / Shot de ", "SHOT ").strip()
-                    resumen_cantidades[nom] = resumen_cantidades.get(nom, 0) + c_item["cantidad"]
-                concepto_texto = " + ".join([f"{cant} {nom}" for nom, cant in resumen_cantidades.items()])
-                if not concepto_texto:
-                    concepto_texto = "PAGO DE CONTADO"
+                # 3. Armar texto del concepto agrupado por categoría (ej: 10 CERVEZAS)
+                partes_concepto = agrupar_consumos_por_categoria(consumos_detallados)
+                concepto_texto = " · ".join(partes_concepto)
 
-                # 4. Generar el ticket oficial
+                # 4. Generar el ticket oficial remodelado
                 try:
                     ruta_img, filename, comprobante = generar_ticket_cobro(
                         cliente=nombre_cliente,
-                        concepto=concepto_texto,
+                        concepto=partes_concepto,
                         monto_val=subtotal_pedido
                     )
                 except Exception as err:
@@ -426,23 +421,15 @@ class PanchoHandler(SimpleHTTPRequestHandler):
                     self.send_json({"ok": False, "error": "El cliente no tiene saldo pendiente"}, status=400)
                     return
 
-                # Agrupar productos consumidos para un concepto limpio
-                resumen_cantidades = {}
-                for c_item in cliente["consumos_semana"]:
-                    nom = c_item["nombre"].replace("Cerveza ", "").replace("Trago / Shot de ", "SHOT ").strip()
-                    resumen_cantidades[nom] = resumen_cantidades.get(nom, 0) + c_item["cantidad"]
-
-                # Armar texto del concepto (ej: 6 AGUILA + 2 CORONA)
-                partes_concepto = [f"{cant} {nom}" for nom, cant in resumen_cantidades.items()]
-                concepto_texto = " + ".join(partes_concepto)
-                if not concepto_texto:
-                    concepto_texto = "CONSUMO SEMANAL"
+                # Agrupar productos consumidos por categoría para un concepto limpio (ej: 10 CERVEZAS)
+                partes_concepto = agrupar_consumos_por_categoria(cliente.get("consumos_semana", []))
+                concepto_texto = " · ".join(partes_concepto)
 
                 try:
-                    # Generar el ticket usando Pillow oficial
+                    # Generar el ticket usando Pillow oficial remodelado
                     ruta_img, filename, comprobante = generar_ticket_cobro(
                         cliente=cliente["nombre"],
-                        concepto=concepto_texto,
+                        concepto=partes_concepto,
                         monto_val=total_saldo
                     )
                 except Exception as err:

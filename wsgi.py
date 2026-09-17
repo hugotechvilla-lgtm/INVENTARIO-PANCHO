@@ -14,7 +14,7 @@ from app import (
     RUTA_INVENTARIO, RUTA_CLIENTES, RUTA_HISTORIAL,
     TICKETS_DIR, STATIC_DIR, BASE_DIR,
     leer_json, guardar_json, data_lock, get_local_ip,
-    generar_ticket_cobro
+    generar_ticket_cobro, agrupar_consumos_por_categoria
 )
 
 def application(environ, start_response):
@@ -238,18 +238,13 @@ def application(environ, start_response):
                         "subtotal": sub
                     })
 
-                resumen_cantidades = {}
-                for c_item in consumos_detallados:
-                    nom = c_item["nombre"].replace("Cerveza ", "").replace("Trago / Shot de ", "SHOT ").strip()
-                    resumen_cantidades[nom] = resumen_cantidades.get(nom, 0) + c_item["cantidad"]
-                concepto_texto = " + ".join([f"{cant} {nom}" for nom, cant in resumen_cantidades.items()])
-                if not concepto_texto:
-                    concepto_texto = "PAGO DE CONTADO"
+                partes_concepto = agrupar_consumos_por_categoria(consumos_detallados)
+                concepto_texto = " · ".join(partes_concepto)
 
                 try:
                     ruta_img, filename, comprobante = generar_ticket_cobro(
                         cliente=nombre_cliente,
-                        concepto=concepto_texto,
+                        concepto=partes_concepto,
                         monto_val=subtotal_pedido,
                         titular_nequi="HUGO BRION"
                     )
@@ -291,15 +286,13 @@ def application(environ, start_response):
                 cliente = next((c for c in clientes if c["id"] == cliente_id), None)
                 if not cliente or cliente["saldo_actual"] <= 0:
                     return respond_json({"ok": False, "error": "No hay saldo"}, '400 Bad Request')
-                items_resumen = {}
-                for c in cliente["consumos_semana"]:
-                    items_resumen[c["nombre"]] = items_resumen.get(c["nombre"], 0) + c["cantidad"]
-                concepto_texto = " + ".join([f"{cant} {nom}" for nom, cant in items_resumen.items()])
+                partes_concepto = agrupar_consumos_por_categoria(cliente.get("consumos_semana", []))
+                concepto_texto = " · ".join(partes_concepto)
                 total_saldo = cliente["saldo_actual"]
                 try:
                     ruta_img, filename, comprobante = generar_ticket_cobro(
                         cliente=cliente["nombre"],
-                        concepto=concepto_texto,
+                        concepto=partes_concepto,
                         monto_val=total_saldo,
                         titular_nequi="HUGO BRION"
                     )
