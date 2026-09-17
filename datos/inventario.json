@@ -86,7 +86,8 @@
     "categoria": "Limonadas y Granizados",
     "precio": 7000,
     "precio_costo": 2000,
-    "es_preparado": true
+    "stock": 0,
+    "min_stock": 5
   },
   {
     "id": "lim-cerezada",
@@ -94,7 +95,8 @@
     "categoria": "Limonadas y Granizados",
     "precio": 12000,
     "precio_costo": 4000,
-    "es_preparado": true
+    "stock": 0,
+    "min_stock": 5
   },
   {
     "id": "lim-coco",
@@ -102,7 +104,8 @@
     "categoria": "Limonadas y Granizados",
     "precio": 12000,
     "precio_costo": 4500,
-    "es_preparado": true
+    "stock": 0,
+    "min_stock": 5
   },
   {
     "id": "gran-cafe",
@@ -110,7 +113,8 @@
     "categoria": "Limonadas y Granizados",
     "precio": 12000,
     "precio_costo": 3500,
-    "es_preparado": true
+    "stock": 0,
+    "min_stock": 5
   },
   {
     "id": "red-bull",
