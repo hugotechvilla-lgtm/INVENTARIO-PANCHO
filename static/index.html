@@ -16,30 +16,42 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
+    /* ==========================================================================
+       🎨 PALETA MAESTRA DE COLORES Y ESTILOS DE PANCHO
+       Modifica estos valores para cambiar el aspecto de toda la página web:
+       ========================================================================== */
     :root {
-      --bg-main: #121214;
-      --bg-card: #1c1c21;
-      --bg-card-hover: #26262d;
-      --border-color: #2e2e38;
-      --text-main: #f4f4f6;
-      --text-muted: #9e9ea7;
-      --brand-orange: #FFAA00;
-      --brand-red: #E8003A;
-      --brand-grad: linear-gradient(135deg, #FFAA00 0%, #E8003A 100%);
-      --accent-green: #10b981;
-      --accent-red: #ef4444;
-      --accent-blue: #3b82f6;
-      --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
-      --shadow-lg: 0 10px 25px rgba(0,0,0,0.5);
-      --radius: 14px;
+      --bg-main: #121214;        /* Fondo oscuro principal de toda la pantalla */
+      --bg-card: #1c1c21;        /* Fondo de los cuadros, tarjetas y contenedores */
+      --bg-card-hover: #26262d;  /* Color del cuadro cuando pasas el cursor por encima */
+      --border-color: #2e2e38;   /* Color de las líneas de borde finas entre cuadros */
+      --text-main: #f4f4f6;      /* Color blanco principal del texto */
+      --text-muted: #9e9ea7;     /* Color gris secundario para subtítulos y notas */
+      --brand-orange: #FFAA00;   /* Amarillo/Naranja oficial de PANCHO (botones y títulos) */
+      --brand-red: #E8003A;      /* Rojo oficial de PANCHO (para alertas y degradados) */
+      --brand-grad: linear-gradient(135deg, #FFAA00 0%, #E8003A 100%); /* Degradado oficial de naranja a rojo */
+      --accent-green: #10b981;   /* Color verde brillante para ventas de contado y botones de éxito */
+      --accent-red: #ef4444;     /* Color rojo brillante para deudas y botón de borrar */
+      --accent-blue: #3b82f6;    /* Color azul para enlaces e información */
+      --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);    /* Sombra suave pequeña para cuadros */
+      --shadow-lg: 0 10px 25px rgba(0,0,0,0.5);  /* Sombra grande con profundidad 3D */
+      --radius: 14px;            /* Curvatura general de las esquinas de los cuadros (en píxeles) */
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+    /* REGLAS GLOBALES DE TIPOGRAFÍA (Se aplican a todo el sitio) */
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+      font-family: 'Plus Jakarta Sans', sans-serif; /* Fuente tipográfica moderna de toda la web */
+      -webkit-tap-highlight-color: transparent; 
+    }
 
+    /* EL CUERPO DE LA PÁGINA (Toda la pantalla visible) */
     body {
-      background-color: var(--bg-main);
-      color: var(--text-main);
-      min-height: 100vh;
+      background-color: var(--bg-main);  /* Aplica el color de fondo oscuro */
+      color: var(--text-main);           /* Aplica el color del texto blanco */
+      min-height: 100vh;                 /* Hace que ocupe todo el alto de la pantalla del celular o PC */
       display: flex;
       flex-direction: column;
     }
@@ -178,27 +190,30 @@
       gap: 10px;
       align-items: center;
     }
+    /* CUADRO DESPLEGABLE DE SELECCIÓN DE CLIENTE */
     .select-custom {
       flex: 1;
-      background: var(--bg-main);
-      border: 1px solid var(--border-color);
-      color: var(--text-main);
-      padding: 12px 14px;
-      border-radius: 10px;
-      font-size: 0.95rem;
-      font-weight: 600;
+      background: var(--bg-main);            /* Fondo oscuro del menú desplegable */
+      border: 1px solid var(--border-color); /* Borde fino alrededor */
+      color: var(--text-main);               /* Texto blanco */
+      padding: 12px 14px;                    /* Espacio interno para que el texto respire */
+      border-radius: 10px;                   /* Esquinas redondeadas (cámbialo a 0px para esquinas rectas o 25px para cápsula) */
+      font-size: 0.95rem;                    /* Tamaño de la letra */
+      font-weight: 600;                      /* Grosor de la letra (negrita suave) */
       outline: none;
     }
-    .select-custom:focus { border-color: #FFAA00; }
+    .select-custom:focus { border-color: #FFAA00; } /* El borde se ilumina de amarillo al hacer clic */
+
+    /* BOTÓN "+ NUEVO CLIENTE" */
     .btn-new-client {
-      background: rgba(255, 170, 0, 0.15);
-      color: #FFAA00;
-      border: 1px solid rgba(255, 170, 0, 0.4);
-      padding: 12px 16px;
-      border-radius: 10px;
-      font-weight: 700;
+      background: rgba(255, 170, 0, 0.15);    /* Fondo amarillo semitransparente elegante */
+      color: #FFAA00;                        /* Letra amarilla de Pancho */
+      border: 1px solid rgba(255, 170, 0, 0.4); /* Borde amarillo suave */
+      padding: 12px 16px;                    /* Tamaño del botón */
+      border-radius: 10px;                   /* Esquinas redondeadas del botón */
+      font-weight: 700;                      /* Letra en negrita fuerte */
       font-size: 0.9rem;
-      cursor: pointer;
+      cursor: pointer;                       /* Manito al pasar el mouse */
       white-space: nowrap;
     }
 

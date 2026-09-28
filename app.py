@@ -1,31 +1,44 @@
-from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
-import urllib.parse
-import threading
-import mimetypes
-import socket
-import json
-import os
-import re
-from datetime import datetime
+# ==============================================================================
+# 🧠 APP.PY - EL CEREBRO PRINCIPAL DEL SISTEMA PANCHO
+# Coordina las ventas, el inventario, los clientes y la generación de tickets.
+# ==============================================================================
 
+# 1. HERRAMIENTAS Y LIBRERÍAS DE PYTHON
+from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler # Servidor web multihilo para atender varios celulares
+import urllib.parse  # Analiza y limpia las direcciones web (URLs)
+import threading     # Permite atender múltiples pedidos al mismo tiempo sin congelarse
+import mimetypes     # Reconoce tipos de archivos (.html, .png, .css, etc.)
+import socket        # Conexión de red (detecta la dirección IP de tu Wi-Fi)
+import json          # Lee y escribe en la base de datos (archivos .json)
+import os            # Habla con el sistema operativo Windows (carpetas y rutas)
+import re            # Limpieza de textos y caracteres especiales
+from datetime import datetime # Reloj del sistema (fechas, horas y comprobantes)
+
+# Traemos el pintor de tickets y la agrupación inteligente desde generador_ticket.py
 from generador_ticket import generar_ticket_cobro, agrupar_consumos_por_categoria
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATOS_DIR = os.path.join(BASE_DIR, "datos")
-TICKETS_DIR = os.path.join(BASE_DIR, "tickets")
-STATIC_DIR = os.path.join(BASE_DIR, "static")
+# 2. RUTAS DE LAS CARPETAS DEL PROYECTO
+BASE_DIR = os.path.dirname(os.path.abspath(__file__)) # Carpeta principal C:\REDONDEADO
+DATOS_DIR = os.path.join(BASE_DIR, "datos")           # Carpeta donde vive la base de datos
+TICKETS_DIR = os.path.join(BASE_DIR, "tickets")       # Carpeta donde se guardan las imágenes PNG
+STATIC_DIR = os.path.join(BASE_DIR, "static")         # Carpeta donde está el archivo web index.html
 
+# Si las carpetas no existen en tu computador, las crea automáticamente:
 os.makedirs(DATOS_DIR, exist_ok=True)
 os.makedirs(TICKETS_DIR, exist_ok=True)
 os.makedirs(STATIC_DIR, exist_ok=True)
 
-RUTA_INVENTARIO = os.path.join(DATOS_DIR, "inventario.json")
-RUTA_CLIENTES = os.path.join(DATOS_DIR, "clientes.json")
-RUTA_HISTORIAL = os.path.join(DATOS_DIR, "historial_semanas.json")
+# Rutas exactas a los 3 archivos de la base de datos:
+RUTA_INVENTARIO = os.path.join(DATOS_DIR, "inventario.json")       # Catálogo de cervezas, precios y stock
+RUTA_CLIENTES = os.path.join(DATOS_DIR, "clientes.json")           # Lista de clientes y saldos pendientes
+RUTA_HISTORIAL = os.path.join(DATOS_DIR, "historial_semanas.json") # Archivo histórico de todos los cobros
 
+# Cerrojo de seguridad: evita que dos pedidos choquen si se tocan botones al mismo tiempo
 data_lock = threading.Lock()
 
+# 3. DETECTAR LA DIRECCIÓN IP DEL WI-FI DE TU CASA/LOCAL
 def get_local_ip():
+    """Obtiene la IP local de tu computador (ej: 192.168.1.15) para que entres desde el celular."""
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(("8.8.8.8", 80))
@@ -35,7 +48,9 @@ def get_local_ip():
     except:
         return "127.0.0.1"
 
+# 4. LEER DATOS CON COPIA DE SEGURIDAD AUTOMÁTICA
 def leer_json(ruta, default_val):
+    """Abre un archivo .json y lo convierte en datos de Python. Si falla, se recupera del backup."""
     if not os.path.exists(ruta):
         guardar_json(ruta, default_val)
         return default_val
@@ -55,7 +70,9 @@ def leer_json(ruta, default_val):
                 pass
         return default_val
 
+# 5. GUARDAR DATOS DE FORMA SEGURA (Crea backup .bak antes de escribir)
 def guardar_json(ruta, data):
+    """Guarda los datos actualizados en el archivo .json sin riesgo de pérdida."""
     if os.path.exists(ruta):
         try:
             with open(ruta, "r", encoding="utf-8") as f:

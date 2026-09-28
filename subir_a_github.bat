@@ -6,7 +6,7 @@ echo   Subiendo actualizaciones a GitHub...
 echo ======================================================
 git rm -r --cached .idea 2>nul
 git add .
-git commit -m "Remodelacion del ticket: pie minimalista, categorias agrupadas y logo en marca de agua"
+git commit -m "Actualizar tipografia del ticket a PANCHO6 en todos los textos"
 git branch -M main
 git remote remove origin 2>nul
 git remote add origin https://github.com/hugotechvilla-lgtm/INVENTARIO-PANCHO.git

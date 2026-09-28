@@ -209,17 +209,17 @@ def generar_ticket_cobro(cliente, concepto, monto_val, titular_nequi="HUGO BRION
                         print(f"[!] Error cargando fuente {archivo}: {e}")
         return ImageFont.load_default()
 
-    font_titulo = cargar_fuente("PANCHO15.otf", 44)
+    font_titulo = cargar_fuente("PANCHO6.otf", 44)
     font_sub = cargar_fuente("PANCHO6.otf", 13)
     font_lbl_cobro = cargar_fuente("PANCHO6.otf", 14)
-    font_monto = cargar_fuente("PANCHO15.otf", 46)
+    font_monto = cargar_fuente("PANCHO6.otf", 46)
     font_campo_lbl = cargar_fuente("PANCHO6.otf", 14)
-    font_campo_val = cargar_fuente("PANCHO15.otf", 19)
-    font_consumo = cargar_fuente("PANCHO15.otf", 17)
-    font_pago_tit = cargar_fuente("PANCHO15.otf", 17)
-    font_pago_num = cargar_fuente("PANCHO15.otf", 26)
+    font_campo_val = cargar_fuente("PANCHO6.otf", 19)
+    font_consumo = cargar_fuente("PANCHO6.otf", 17)
+    font_pago_tit = cargar_fuente("PANCHO6.otf", 17)
+    font_pago_num = cargar_fuente("PANCHO6.otf", 26)
     font_nota = cargar_fuente("PANCHO6.otf", 13)
-    font_pie = cargar_fuente("PANCHO15.otf", 18)
+    font_pie = cargar_fuente("PANCHO6.otf", 18)
 
     cx = ancho // 2
 
