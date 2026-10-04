@@ -916,6 +916,60 @@
           </a>
         </div>
       </div>
+  <!-- MODAL: REGISTRAR ABONO O PAGO -->
+  <div id="modalAbono" class="modal-backdrop">
+    <div class="modal-box" style="max-width: 440px;">
+      <button class="modal-close" onclick="cerrarModalAbono()">✕</button>
+      
+      <div style="text-align: center; margin-bottom: 18px;">
+        <div style="font-size: 2.2rem; margin-bottom: 4px;">💵</div>
+        <h2 style="font-size: 1.3rem; font-weight: 800; color: #10b981; margin: 0;" id="modalAbonoClienteNombre">
+          Registrar Abono
+        </h2>
+        <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 6px;">
+          Deuda actual pendiente: <b id="modalAbonoDeudaActual" style="color: #ef4444; font-size: 1.15rem; margin-left: 4px;">$ 0</b>
+        </div>
+      </div>
+
+      <!-- Valor del Abono -->
+      <div style="margin-bottom: 16px;">
+        <label style="display: block; font-size: 0.82rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px;">
+          Valor que abona ($):
+        </label>
+        <div style="display: flex; gap: 8px;">
+          <input type="number" id="inputMontoAbono" placeholder="Ej: 20000" min="100" step="500" class="select-custom" style="font-size: 1.3rem; font-weight: 800; color: #fff; flex: 1;">
+          <button type="button" onclick="ponerTotalAbono()" style="background: rgba(255, 170, 0, 0.15); color: #FFAA00; border: 1px solid rgba(255, 170, 0, 0.4); border-radius: 10px; padding: 0 14px; font-size: 0.85rem; font-weight: 800; cursor: pointer; white-space: nowrap;">
+            ⚡ Pagar Todo
+          </button>
+        </div>
+      </div>
+
+      <!-- Método de Pago -->
+      <div style="margin-bottom: 20px;">
+        <label style="display: block; font-size: 0.82rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">
+          Canal de Pago:
+        </label>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <label style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; font-weight: 700; font-size: 0.95rem;">
+            <input type="radio" name="metodoAbono" value="NEQUI" checked style="accent-color: #FFAA00; transform: scale(1.2);">
+            🟣 Nequi
+          </label>
+          <label style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; font-weight: 700; font-size: 0.95rem;">
+            <input type="radio" name="metodoAbono" value="EFECTIVO" style="accent-color: #FFAA00; transform: scale(1.2);">
+            💵 Efectivo
+          </label>
+        </div>
+      </div>
+
+      <!-- Botones de Acción -->
+      <div style="display: grid; grid-template-columns: 1fr 1.3fr; gap: 10px;">
+        <button type="button" onclick="cerrarModalAbono()" style="background: rgba(255,255,255,0.08); border: 1px solid var(--border-color); color: var(--text-muted); border-radius: 12px; padding: 14px; font-weight: 700; cursor: pointer;">
+          Cancelar
+        </button>
+        <button type="button" onclick="confirmarAbono()" id="btnConfirmarAbono" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; border: none; border-radius: 12px; padding: 14px; font-size: 1rem; font-weight: 800; cursor: pointer; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);">
+          ✅ Guardar Abono
+        </button>
+      </div>
     </div>
   </div>
 
@@ -1298,6 +1352,16 @@
           consumosHtml = `<div style="text-align: center; color: var(--text-muted); padding: 8px;">Sin consumos pendientes esta semana</div>`;
         }
 
+        let abonoBadgeHtml = '';
+        if (c.ultimo_abono) {
+          abonoBadgeHtml = `
+            <div style="font-size: 0.76rem; color: #10b981; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.28); border-radius: 7px; padding: 4px 8px; margin: 6px 0 8px 0; display: flex; align-items: center; justify-content: space-between;">
+              <span>💵 Último abono: <b>${formatMoney(c.ultimo_abono.monto)}</b> (${c.ultimo_abono.metodo})</span>
+              <span style="color: var(--text-muted); font-size: 0.72rem;">${c.ultimo_abono.fecha.split(' ')[0]}</span>
+            </div>
+          `;
+        }
+
         card.innerHTML = `
           <div>
             <div class="client-top">
@@ -1309,16 +1373,20 @@
                 <button onclick="eliminarCliente('${c.id}', '${c.nombre}')" title="Eliminar cliente" style="background: none; border: none; cursor: pointer; color: var(--accent-red); font-size: 1.15rem; padding: 2px;">🗑️</button>
               </div>
             </div>
+            ${abonoBadgeHtml}
             <div class="c-details-list">
               ${consumosHtml}
             </div>
           </div>
           <div style="display: flex; gap: 8px; margin-top: 10px;">
+            <button class="btn-charge-week" style="flex: 1.1; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; border: none; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);" ${c.saldo_actual <= 0 ? 'disabled' : ''} onclick="abrirModalAbono('${c.id}')">
+              💵 Abonar
+            </button>
             <button class="btn-charge-week" style="flex: 1;" ${c.saldo_actual <= 0 ? 'disabled' : ''} onclick="cerrarSemana('${c.id}')">
-              🎫 Cerrar y Ticket
+              🎫 Ticket
             </button>
             ${c.saldo_actual > 0 ? `
-              <button onclick="reiniciarCuentaCliente('${c.id}', '${c.nombre}')" title="Limpiar consumos y volver a $0 sin ticket" style="background: rgba(255,255,255,0.08); border: 1px solid var(--border-color); color: var(--text-muted); border-radius: 10px; padding: 0 12px; cursor: pointer; font-size: 0.85rem; font-weight: 700;">
+              <button onclick="reiniciarCuentaCliente('${c.id}', '${c.nombre}')" title="Limpiar consumos y volver a $0 sin ticket" style="background: rgba(255,255,255,0.08); border: 1px solid var(--border-color); color: var(--text-muted); border-radius: 10px; padding: 0 10px; cursor: pointer; font-size: 0.85rem; font-weight: 700;">
                 🔄 $0
               </button>
             ` : ''}
@@ -1422,6 +1490,94 @@
         }
       } catch (e) {
         alert("Error generando ticket: " + e);
+      }
+    }
+
+    // ==============================================
+    // CONTROL DE ABONOS Y PAGOS PARCIALES
+    // ==============================================
+    let abonoClienteId = null;
+    let abonoDeudaActual = 0;
+
+    function abrirModalAbono(clienteId) {
+      const c = clientes.find(item => item.id === clienteId);
+      if (!c || c.saldo_actual <= 0) {
+        alert("El cliente no tiene saldo pendiente para abonar.");
+        return;
+      }
+      abonoClienteId = clienteId;
+      abonoDeudaActual = c.saldo_actual;
+
+      document.getElementById('modalAbonoClienteNombre').innerText = `Abonar · ${c.nombre}`;
+      document.getElementById('modalAbonoDeudaActual').innerText = formatMoney(c.saldo_actual);
+      const input = document.getElementById('inputMontoAbono');
+      input.value = '';
+      input.max = c.saldo_actual;
+
+      document.getElementById('modalAbono').classList.add('show');
+      setTimeout(() => input.focus(), 150);
+    }
+
+    function cerrarModalAbono() {
+      document.getElementById('modalAbono').classList.remove('show');
+      abonoClienteId = null;
+      abonoDeudaActual = 0;
+    }
+
+    function ponerTotalAbono() {
+      if (abonoDeudaActual > 0) {
+        document.getElementById('inputMontoAbono').value = abonoDeudaActual;
+      }
+    }
+
+    async function confirmarAbono() {
+      if (!abonoClienteId) return;
+      const input = document.getElementById('inputMontoAbono');
+      const monto = parseInt(input.value, 10);
+
+      if (!monto || isNaN(monto) || monto <= 0) {
+        alert("Por favor ingresa un monto válido a abonar.");
+        input.focus();
+        return;
+      }
+
+      if (monto > abonoDeudaActual) {
+        alert(`El abono (${formatMoney(monto)}) no puede superar la deuda actual (${formatMoney(abonoDeudaActual)}).`);
+        return;
+      }
+
+      const metodoEl = document.querySelector('input[name="metodoAbono"]:checked');
+      const metodo = metodoEl ? metodoEl.value : 'NEQUI';
+
+      const btn = document.getElementById('btnConfirmarAbono');
+      btn.disabled = true;
+      btn.innerText = "Registrando...";
+
+      try {
+        const res = await fetch('/api/clientes/abonar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            cliente_id: abonoClienteId,
+            monto: monto,
+            metodo: metodo
+          })
+        });
+
+        const data = await res.json();
+        if (data.ok) {
+          const cliNombre = data.cliente ? data.cliente.nombre : '';
+          cerrarModalAbono();
+          showToast(`✅ Abono de ${formatMoney(monto)} registrado para ${cliNombre}. Saldo restante: ${formatMoney(data.nuevo_saldo)}`);
+          await loadData();
+        } else {
+          alert("Error: " + (data.error || "No se pudo registrar el abono"));
+        }
+      } catch (err) {
+        alert("Error de conexión al registrar abono: " + err);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "✅ Guardar Abono";
       }
     }
 

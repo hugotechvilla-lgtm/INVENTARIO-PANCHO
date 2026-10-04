@@ -482,9 +482,80 @@ class PanchoHandler(SimpleHTTPRequestHandler):
                 "comprobante": comprobante,
                 "concepto": concepto_texto
             })
+        # 3.1 API: REGISTRAR ABONO O PAGO A CUENTA DE CLIENTE
+        elif path == "/api/clientes/abonar":
+            cliente_id = body.get("cliente_id")
+            monto_abono = int(body.get("monto", 0))
+            metodo = body.get("metodo", "NEQUI").strip().upper()
+            nota = body.get("nota", "").strip()
+
+            if not cliente_id or monto_abono <= 0:
+                self.send_json({"ok": False, "error": "Datos de abono inválidos"}, status=400)
+                return
+
+            with data_lock:
+                clientes = leer_json(RUTA_CLIENTES, [])
+                historial = leer_json(RUTA_HISTORIAL, [])
+                cliente = next((c for c in clientes if c["id"] == cliente_id), None)
+                if not cliente:
+                    self.send_json({"ok": False, "error": "Cliente no encontrado"}, status=404)
+                    return
+
+                saldo_anterior = cliente.get("saldo_actual", 0)
+                if saldo_anterior <= 0:
+                    self.send_json({"ok": False, "error": "El cliente no tiene saldo pendiente"}, status=400)
+                    return
+
+                monto_real = min(monto_abono, saldo_anterior)
+                nuevo_saldo = saldo_anterior - monto_real
+                cliente["saldo_actual"] = nuevo_saldo
+
+                ahora_dt = datetime.now()
+                fecha_str = ahora_dt.strftime("%d/%m/%Y %H:%M")
+                detalle_abono = {
+                    "fecha": fecha_str,
+                    "monto": monto_real,
+                    "metodo": metodo,
+                    "saldo_restante": nuevo_saldo,
+                    "nota": nota
+                }
+                if "abonos" not in cliente:
+                    cliente["abonos"] = []
+                cliente["abonos"].append(detalle_abono)
+                cliente["ultimo_abono"] = detalle_abono
+
+                if nuevo_saldo == 0:
+                    cliente["consumos_semana"] = []
+                    cliente["fecha_inicio_semana"] = ahora_dt.strftime("%Y-%m-%d")
+
+                comp_abono = f"ABONO-{ahora_dt.strftime('%Y%m%d%H%M%S')}"
+                concepto_abono = f"ABONO · {metodo} (DEUDA: ${saldo_anterior:,} · RESTA: ${nuevo_saldo:,})".replace(",", ".")
+                registro_h = {
+                    "fecha": fecha_str,
+                    "cliente": cliente["nombre"],
+                    "total": monto_real,
+                    "comprobante": comp_abono,
+                    "concepto": concepto_abono,
+                    "consumos": [],
+                    "metodo": metodo,
+                    "tipo": "ABONO"
+                }
+                historial.append(registro_h)
+
+                guardar_json(RUTA_CLIENTES, clientes)
+                guardar_json(RUTA_HISTORIAL, historial)
+
+            self.send_json({
+                "ok": True,
+                "cliente": cliente,
+                "saldo_anterior": saldo_anterior,
+                "nuevo_saldo": nuevo_saldo,
+                "monto_abonado": monto_real,
+                "historial": historial
+            })
             return
 
-        # 3.1 API: BORRAR TODO EL HISTORIAL DE COBROS
+        # 3.2 API: BORRAR TODO EL HISTORIAL DE COBROS
         elif path == "/api/historial/borrar-todos":
             with data_lock:
                 guardar_json(RUTA_HISTORIAL, [])

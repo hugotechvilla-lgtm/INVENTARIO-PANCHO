@@ -6,7 +6,8 @@ echo   Subiendo actualizaciones a GitHub...
 echo ======================================================
 git rm -r --cached .idea 2>nul
 git add .
-git commit -m "Actualizar tipografia del ticket a PANCHO6 en todos los textos"
+git reset HEAD datos/ 2>nul
+git commit -m "Agregar sistema de abonos y pagos parciales a cuentas de clientes"
 git branch -M main
 git remote remove origin 2>nul
 git remote add origin https://github.com/hugotechvilla-lgtm/INVENTARIO-PANCHO.git

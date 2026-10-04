@@ -1,4 +1,6 @@
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
+import os
+import sys
 from datetime import datetime
 import numpy as np
 import os
@@ -7,6 +9,9 @@ import os
 # 0. CONTROL DE CONSECUTIVO AUTOMÁTICO
 # ==========================================
 archivo_contador = "contador.txt"
+# Asegurar que reconozca la carpeta base
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, BASE_DIR)
 
 if os.path.exists(archivo_contador):
     try:
@@ -16,8 +21,13 @@ if os.path.exists(archivo_contador):
         consecutivo_num = 1
 else:
     consecutivo_num = 1
+from generador_ticket import generar_ticket_cobro, obtener_siguiente_consecutivo
 
 numero_comprobante = f"#CC-{datetime.now().year}-{consecutivo_num:04d}"
+def main():
+    print("\n" + "=" * 55)
+    print("  🎫 GENERADOR DE CUENTAS DE COBRO · PANCHO (OFICIAL)")
+    print("=" * 55)
 
 # ==========================================
 # 1. ENTRADA INTERACTIVA DE DATOS
@@ -26,18 +36,29 @@ print("\n" + "=" * 50)
 print("  🎫 GENERADOR DE CUENTAS DE COBRO · PANCHO")
 print("=" * 50)
 print(f"-> Consecutivo asignado: {numero_comprobante}\n")
+    num = obtener_siguiente_consecutivo()
+    print(f"-> Próximo comprobante: #CC-{datetime.now().year}-{num:04d}\n")
 
 cliente = input("1. Nombre del cliente: ").strip().upper()
 if not cliente:
     cliente = "IVONNE"
+    cliente = input("1. Nombre del cliente [ej: CARLOS PÉREZ]: ").strip().upper()
+    if not cliente:
+        cliente = "CARLOS PÉREZ"
 
 concepto = input("2. Concepto o detalle [Ej: SALDO]: ").strip().upper()
 if not concepto:
     concepto = "SALDO"
+    concepto = input("2. Concepto [ej: 10 CERVEZAS o SALDO]: ").strip().upper()
+    if not concepto:
+        concepto = "CONSUMO SEMANAL"
 
 monto_in = input("3. Valor a pagar [Ej: 24000 o 24.000]: ").strip()
 if not monto_in:
     monto_in = "24.000"
+    monto_in = input("3. Valor a pagar [ej: 66000 o 66.000]: ").strip()
+    if not monto_in:
+        monto_in = "66.000"
 
 # Formatear el monto automáticamente si escriben sólo números
 monto_limpio = monto_in.replace("$", "").replace(" ", "").strip()
@@ -46,8 +67,16 @@ if monto_limpio.isdigit():
     txt_monto = f"$ {val_int:,.0f}".replace(",", ".")
 else:
     txt_monto = f"$ {monto_limpio}" if not monto_limpio.startswith("$") else monto_limpio
+    print(f"\n[+] Generando ticket oficial con tipografía PANCHO6 para '{cliente}'...")
 
 print(f"\n[+] Generando ticket para '{cliente}' por {txt_monto}...")
+    ruta, archivo, num_comp = generar_ticket_cobro(
+        cliente=cliente,
+        concepto=concepto,
+        monto_val=monto_in,
+        titular_nequi="HUGO BRION",
+        guardar_en_tickets=True
+    )
 
 # ==========================================
 # 2. CONFIGURACIÓN GENERAL Y DIMENSIONES
@@ -55,10 +84,17 @@ print(f"\n[+] Generando ticket para '{cliente}' por {txt_monto}...")
 ancho, alto = 560, 680
 radio_externo = 22
 radio_tarjeta = 14
+    print(f"\n[✓] ¡TICKET GENERADO EXITOSAMENTE!")
+    print(f"    • Número de comprobante: {num_comp}")
+    print(f"    • Guardado en tickets/:   {archivo}")
+    print(f"    • Copia directa:         ticket.png")
+    print(f"    • Tipografía aplicada:   PANCHO6 (100% unificada)")
+    print("=" * 55)
 
 def hex_to_rgb(hex_color):
     hex_color = hex_color.lstrip("#")
     return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+    input("\nPresiona ENTER para cerrar esta ventana...")
 
 color_top = hex_to_rgb("#FFAA00")
 color_bot = hex_to_rgb("#E8003A")
@@ -266,3 +302,5 @@ except:
 print(f"\n[OK] Ticket generado con exito como 'ticket.png'")
 print(f"[OK] Consecutivo #{numero_comprobante} registrado. Proximo ticket sera #{consecutivo_num + 1:04d}.")
 
+if __name__ == "__main__":
+    main()
