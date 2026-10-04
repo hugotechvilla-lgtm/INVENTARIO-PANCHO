@@ -468,10 +468,12 @@ class PanchoHandler(SimpleHTTPRequestHandler):
                 historial.append(registro_historial)
                 guardar_json(RUTA_HISTORIAL, historial)
 
-                # Reiniciar cuenta semanal del cliente a 0
-                cliente["saldo_actual"] = 0
-                cliente["consumos_semana"] = []
-                cliente["fecha_inicio_semana"] = datetime.now().strftime("%Y-%m-%d")
+                # Guardar referencia del ticket sin borrar la deuda ni los consumos
+                cliente["ultimo_ticket"] = {
+                    "fecha": datetime.now().strftime("%d/%m/%Y %H:%M"),
+                    "comprobante": comprobante,
+                    "ticket_url": f"/tickets/{filename}"
+                }
                 guardar_json(RUTA_CLIENTES, clientes)
 
             self.send_json({

@@ -1475,7 +1475,7 @@
       const c = clientes.find(item => item.id === clienteId);
       if (!c) return;
 
-      const confirmar = confirm(`¿Deseas cerrar la semana de ${c.nombre} por un valor total de ${formatMoney(c.saldo_actual)} y generar el Ticket Oficial de PANCHO?`);
+      const confirmar = confirm(`¿Deseas generar el Ticket Oficial de PANCHO para ${c.nombre} por un valor total de ${formatMoney(c.saldo_actual)} para enviarlo por WhatsApp?\n\n(Nota: La deuda se mantendrá activa en su tarjeta para gestionarla con el botón de Abono).`);
       if (!confirmar) return;
 
       try {

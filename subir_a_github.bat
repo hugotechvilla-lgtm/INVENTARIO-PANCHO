@@ -7,7 +7,7 @@ echo ======================================================
 git rm -r --cached .idea 2>nul
 git add .
 git reset HEAD datos/ 2>nul
-git commit -m "Corregir modal de abonos y separar de ticketModal"
+git commit -m "Mantener deuda y consumos al generar ticket para gestion con abonos"
 git branch -M main
 git remote remove origin 2>nul
 git remote add origin https://github.com/hugotechvilla-lgtm/INVENTARIO-PANCHO.git

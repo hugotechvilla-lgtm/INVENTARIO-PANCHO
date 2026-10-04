@@ -310,9 +310,12 @@ def application(environ, start_response):
                 }
                 historial.append(registro)
                 guardar_json(RUTA_HISTORIAL, historial)
-                cliente["saldo_actual"] = 0
-                cliente["consumos_semana"] = []
-                cliente["fecha_inicio_semana"] = datetime.now().strftime("%Y-%m-%d")
+                # Guardar referencia del ticket sin borrar la deuda ni los consumos
+                cliente["ultimo_ticket"] = {
+                    "fecha": datetime.now().strftime("%d/%m/%Y %H:%M"),
+                    "comprobante": comprobante,
+                    "ticket_url": f"/tickets/{filename}"
+                }
                 guardar_json(RUTA_CLIENTES, clientes)
             return respond_json({
                 "ok": True,
