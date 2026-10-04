@@ -454,21 +454,7 @@ class PanchoHandler(SimpleHTTPRequestHandler):
                     self.send_json({"ok": False, "error": f"Error generando imagen de ticket: {err}"}, status=500)
                     return
 
-                # Registrar en historial de cobros
-                historial = leer_json(RUTA_HISTORIAL, [])
-                registro_historial = {
-                    "fecha": datetime.now().strftime("%d/%m/%Y %H:%M"),
-                    "cliente": cliente["nombre"],
-                    "total": total_saldo,
-                    "comprobante": comprobante,
-                    "concepto": concepto_texto,
-                    "consumos": list(cliente["consumos_semana"]),
-                    "ticket_url": f"/tickets/{filename}"
-                }
-                historial.append(registro_historial)
-                guardar_json(RUTA_HISTORIAL, historial)
-
-                # Guardar referencia del ticket sin borrar la deuda ni los consumos
+                # Guardar referencia del ticket sin borrar la deuda ni los consumos (No suma a caja hasta que abone)
                 cliente["ultimo_ticket"] = {
                     "fecha": datetime.now().strftime("%d/%m/%Y %H:%M"),
                     "comprobante": comprobante,

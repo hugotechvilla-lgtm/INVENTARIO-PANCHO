@@ -7,7 +7,7 @@ echo ======================================================
 git rm -r --cached .idea 2>nul
 git add .
 git reset HEAD datos/ 2>nul
-git commit -m "Eliminar boton redundante de $0 y optimizar diseno de tarjeta"
+git commit -m "Renombrar a Historial de Pagos y optimizar tabla de abonos"
 git branch -M main
 git remote remove origin 2>nul
 git remote add origin https://github.com/hugotechvilla-lgtm/INVENTARIO-PANCHO.git

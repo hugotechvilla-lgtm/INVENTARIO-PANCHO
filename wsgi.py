@@ -299,18 +299,7 @@ def application(environ, start_response):
                 except Exception as err:
                     print(f"[!] Error generando ticket en WSGI: {err}")
                     return respond_json({"ok": False, "error": f"Error generando imagen de ticket: {err}"}, '500 Internal Server Error')
-                registro = {
-                    "fecha": datetime.now().strftime("%d/%m/%Y %H:%M"),
-                    "cliente": cliente["nombre"],
-                    "total": total_saldo,
-                    "comprobante": comprobante,
-                    "concepto": concepto_texto,
-                    "consumos": list(cliente["consumos_semana"]),
-                    "ticket_url": f"/tickets/{filename}"
-                }
-                historial.append(registro)
-                guardar_json(RUTA_HISTORIAL, historial)
-                # Guardar referencia del ticket sin borrar la deuda ni los consumos
+                # Guardar referencia del ticket sin borrar la deuda ni los consumos (No suma a caja hasta que abone)
                 cliente["ultimo_ticket"] = {
                     "fecha": datetime.now().strftime("%d/%m/%Y %H:%M"),
                     "comprobante": comprobante,
