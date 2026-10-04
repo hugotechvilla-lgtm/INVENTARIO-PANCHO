@@ -1382,17 +1382,12 @@
             </div>
           </div>
           <div style="display: flex; gap: 8px; margin-top: 10px;">
-            <button class="btn-charge-week" style="flex: 1.1; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; border: none; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);" ${c.saldo_actual <= 0 ? 'disabled' : ''} onclick="abrirModalAbono('${c.id}')">
+            <button class="btn-charge-week" style="flex: 1; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; border: none; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);" ${c.saldo_actual <= 0 ? 'disabled' : ''} onclick="abrirModalAbono('${c.id}')">
               💵 Abonar
             </button>
             <button class="btn-charge-week" style="flex: 1;" ${c.saldo_actual <= 0 ? 'disabled' : ''} onclick="cerrarSemana('${c.id}')">
               🎫 Ticket
             </button>
-            ${c.saldo_actual > 0 ? `
-              <button onclick="reiniciarCuentaCliente('${c.id}', '${c.nombre}')" title="Limpiar consumos y volver a $0 sin ticket" style="background: rgba(255,255,255,0.08); border: 1px solid var(--border-color); color: var(--text-muted); border-radius: 10px; padding: 0 10px; cursor: pointer; font-size: 0.85rem; font-weight: 700;">
-                🔄 $0
-              </button>
-            ` : ''}
           </div>
         `;
         grid.appendChild(card);
