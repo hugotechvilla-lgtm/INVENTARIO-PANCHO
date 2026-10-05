@@ -1,1 +1,462 @@
-[]
+[
+  {
+    "id": "cli-peluche-1",
+    "nombre": "PELUCHE",
+    "consumos_semana": [
+      {
+        "subtotal": 12000,
+        "nombre": "LIMONADA CEREZADA",
+        "cantidad": 1,
+        "precio": 12000
+      }
+    ],
+    "saldo_actual": 12000,
+    "abonos": [],
+    "fecha_inicio_semana": "2026-09-28",
+    "ultimo_ticket": {
+      "comprobante": "#CC-2026-0036",
+      "ticket_url": "/tickets/ALA.png",
+      "fecha": "27/09/2026 20:38"
+    }
+  },
+  {
+    "id": "cli-sebas-2",
+    "nombre": "SEBAS",
+    "consumos_semana": [
+      {
+        "subtotal": 54000,
+        "nombre": "CERVEZAS , MICHELADAS",
+        "cantidad": 1,
+        "precio": 54000
+      }
+    ],
+    "saldo_actual": 54000,
+    "abonos": [],
+    "fecha_inicio_semana": "2026-09-28",
+    "ultimo_ticket": {
+      "comprobante": "#CC-2026-0037",
+      "ticket_url": "/tickets/CALIWOOD.png",
+      "fecha": "27/09/2026 20:40"
+    }
+  },
+  {
+    "id": "cli-camilo-3",
+    "nombre": "CAMILO",
+    "consumos_semana": [
+      {
+        "subtotal": 36000,
+        "nombre": "SALDO PENDIENTE",
+        "cantidad": 1,
+        "precio": 36000
+      }
+    ],
+    "saldo_actual": 36000,
+    "abonos": [],
+    "fecha_inicio_semana": "2026-09-28",
+    "ultimo_ticket": {
+      "comprobante": "#CC-2026-0038",
+      "ticket_url": "/tickets/CAMILO.png",
+      "fecha": "28/09/2026 07:22"
+    }
+  },
+  {
+    "id": "cli-carlos-4",
+    "nombre": "CARLOS",
+    "consumos_semana": [
+      {
+        "subtotal": 12000,
+        "nombre": "SALDO PENDIENTE",
+        "cantidad": 1,
+        "precio": 12000
+      }
+    ],
+    "saldo_actual": 12000,
+    "abonos": [],
+    "fecha_inicio_semana": "2026-09-28",
+    "ultimo_ticket": {
+      "comprobante": "#CC-2026-0039",
+      "ticket_url": "/tickets/CARLOS.png",
+      "fecha": "28/09/2026 07:23"
+    }
+  },
+  {
+    "id": "cli-cris-5",
+    "nombre": "CRIS",
+    "consumos_semana": [
+      {
+        "subtotal": 22000,
+        "nombre": "SALDO PENDIENTE",
+        "cantidad": 1,
+        "precio": 22000
+      }
+    ],
+    "saldo_actual": 22000,
+    "abonos": [],
+    "fecha_inicio_semana": "2026-09-28",
+    "ultimo_ticket": {
+      "comprobante": "#CC-2026-0040",
+      "ticket_url": "/tickets/CRIS.png",
+      "fecha": "28/09/2026 07:24"
+    }
+  },
+  {
+    "id": "cli-damaris-6",
+    "nombre": "DAMARIS",
+    "consumos_semana": [
+      {
+        "subtotal": 12000,
+        "nombre": "MICHELADAS",
+        "cantidad": 2,
+        "precio": 6000
+      }
+    ],
+    "saldo_actual": 12000,
+    "abonos": [],
+    "fecha_inicio_semana": "2026-09-28",
+    "ultimo_ticket": {
+      "comprobante": "#CC-2026-0041",
+      "ticket_url": "/tickets/DAMARIS.png",
+      "fecha": "28/09/2026 07:25"
+    }
+  },
+  {
+    "id": "cli-dany-7",
+    "nombre": "DANY",
+    "consumos_semana": [
+      {
+        "subtotal": 12000,
+        "nombre": "CERVEZAS",
+        "cantidad": 3,
+        "precio": 4000
+      }
+    ],
+    "saldo_actual": 12000,
+    "abonos": [],
+    "fecha_inicio_semana": "2026-09-28",
+    "ultimo_ticket": {
+      "comprobante": "#CC-2026-0042",
+      "ticket_url": "/tickets/DANY.png",
+      "fecha": "28/09/2026 07:26"
+    }
+  },
+  {
+    "id": "cli-david-8",
+    "nombre": "DAVID",
+    "consumos_semana": [
+      {
+        "subtotal": 8000,
+        "nombre": "CERVEZAS",
+        "cantidad": 2,
+        "precio": 4000
+      }
+    ],
+    "saldo_actual": 8000,
+    "abonos": [],
+    "fecha_inicio_semana": "2026-09-28",
+    "ultimo_ticket": {
+      "comprobante": "#CC-2026-0043",
+      "ticket_url": "/tickets/DAVID.png",
+      "fecha": "28/09/2026 07:29"
+    }
+  },
+  {
+    "id": "cli-diana-9",
+    "nombre": "DIANA",
+    "consumos_semana": [
+      {
+        "subtotal": 12000,
+        "nombre": "SODA, TAMARINDO",
+        "cantidad": 2,
+        "precio": 6000
+      }
+    ],
+    "saldo_actual": 12000,
+    "abonos": [],
+    "fecha_inicio_semana": "2026-09-28",
+    "ultimo_ticket": {
+      "comprobante": "#CC-2026-0044",
+      "ticket_url": "/tickets/DIANA.png",
+      "fecha": "28/09/2026 07:31"
+    }
+  },
+  {
+    "id": "cli-fresa-10",
+    "nombre": "FRESA",
+    "consumos_semana": [
+      {
+        "subtotal": 16000,
+        "nombre": "SALDO PENDIENTE",
+        "cantidad": 1,
+        "precio": 16000
+      }
+    ],
+    "saldo_actual": 16000,
+    "abonos": [],
+    "fecha_inicio_semana": "2026-09-28",
+    "ultimo_ticket": {
+      "comprobante": "#CC-2026-0058",
+      "ticket_url": "/tickets/FRESA.png",
+      "fecha": "28/09/2026 07:48"
+    }
+  },
+  {
+    "id": "cli-jimmi-11",
+    "nombre": "JIMMI",
+    "consumos_semana": [
+      {
+        "subtotal": 32000,
+        "nombre": "CERVEZAS",
+        "cantidad": 8,
+        "precio": 4000
+      }
+    ],
+    "saldo_actual": 32000,
+    "abonos": [],
+    "fecha_inicio_semana": "2026-09-28",
+    "ultimo_ticket": {
+      "comprobante": "#CC-2026-0045",
+      "ticket_url": "/tickets/JIMMI.png",
+      "fecha": "28/09/2026 07:32"
+    }
+  },
+  {
+    "id": "cli-julian-12",
+    "nombre": "JULIAN",
+    "consumos_semana": [
+      {
+        "subtotal": 6000,
+        "nombre": "CERVEZA",
+        "cantidad": 1,
+        "precio": 6000
+      }
+    ],
+    "saldo_actual": 6000,
+    "abonos": [],
+    "fecha_inicio_semana": "2026-09-28",
+    "ultimo_ticket": {
+      "comprobante": "#CC-2026-0046",
+      "ticket_url": "/tickets/JULIAN.png",
+      "fecha": "28/09/2026 07:33"
+    }
+  },
+  {
+    "id": "cli-leandro-13",
+    "nombre": "LEANDRO",
+    "consumos_semana": [
+      {
+        "subtotal": 12000,
+        "nombre": "MICHELADAS",
+        "cantidad": 2,
+        "precio": 6000
+      }
+    ],
+    "saldo_actual": 12000,
+    "abonos": [],
+    "fecha_inicio_semana": "2026-09-28",
+    "ultimo_ticket": {
+      "comprobante": "#CC-2026-0048",
+      "ticket_url": "/tickets/LEANDRO.png",
+      "fecha": "28/09/2026 07:39"
+    }
+  },
+  {
+    "id": "cli-leo-14",
+    "nombre": "LEO",
+    "consumos_semana": [
+      {
+        "subtotal": 12000,
+        "nombre": "CERVEZAS",
+        "cantidad": 3,
+        "precio": 4000
+      }
+    ],
+    "saldo_actual": 12000,
+    "abonos": [],
+    "fecha_inicio_semana": "2026-09-28",
+    "ultimo_ticket": {
+      "comprobante": "#CC-2026-0047",
+      "ticket_url": "/tickets/LEO.png",
+      "fecha": "28/09/2026 07:38"
+    }
+  },
+  {
+    "id": "cli-marisol-15",
+    "nombre": "MARISOL",
+    "consumos_semana": [
+      {
+        "subtotal": 12000,
+        "nombre": "SALDO PENDIENTE",
+        "cantidad": 1,
+        "precio": 12000
+      }
+    ],
+    "saldo_actual": 12000,
+    "abonos": [],
+    "fecha_inicio_semana": "2026-09-28",
+    "ultimo_ticket": {
+      "comprobante": "#CC-2026-0049",
+      "ticket_url": "/tickets/MARISOL.png",
+      "fecha": "28/09/2026 07:39"
+    }
+  },
+  {
+    "id": "cli-neider-16",
+    "nombre": "NEIDER",
+    "consumos_semana": [
+      {
+        "subtotal": 8000,
+        "nombre": "CERVEZAS",
+        "cantidad": 2,
+        "precio": 4000
+      }
+    ],
+    "saldo_actual": 8000,
+    "abonos": [],
+    "fecha_inicio_semana": "2026-09-28",
+    "ultimo_ticket": {
+      "comprobante": "#CC-2026-0050",
+      "ticket_url": "/tickets/NEIDER.png",
+      "fecha": "28/09/2026 07:40"
+    }
+  },
+  {
+    "id": "cli-ocoro-17",
+    "nombre": "OCORO",
+    "consumos_semana": [
+      {
+        "subtotal": 24000,
+        "nombre": "CEREZADA, COCO",
+        "cantidad": 2,
+        "precio": 12000
+      }
+    ],
+    "saldo_actual": 24000,
+    "abonos": [],
+    "fecha_inicio_semana": "2026-09-28",
+    "ultimo_ticket": {
+      "comprobante": "#CC-2026-0052",
+      "ticket_url": "/tickets/OCORO.png",
+      "fecha": "28/09/2026 07:42"
+    }
+  },
+  {
+    "id": "cli-apa-18",
+    "nombre": "APA",
+    "consumos_semana": [
+      {
+        "subtotal": 4000,
+        "nombre": "CERVEZA",
+        "cantidad": 1,
+        "precio": 4000
+      }
+    ],
+    "saldo_actual": 4000,
+    "abonos": [],
+    "fecha_inicio_semana": "2026-09-28",
+    "ultimo_ticket": {
+      "comprobante": "#CC-2026-0053",
+      "ticket_url": "/tickets/PANTALLA.png",
+      "fecha": "28/09/2026 07:43"
+    }
+  },
+  {
+    "id": "cli-pedro-19",
+    "nombre": "PEDRO",
+    "consumos_semana": [
+      {
+        "subtotal": 20000,
+        "nombre": "CERVEZAS",
+        "cantidad": 5,
+        "precio": 4000
+      }
+    ],
+    "saldo_actual": 20000,
+    "abonos": [],
+    "fecha_inicio_semana": "2026-09-28",
+    "ultimo_ticket": {
+      "comprobante": "#CC-2026-0054",
+      "ticket_url": "/tickets/PEDRO.png",
+      "fecha": "28/09/2026 07:43"
+    }
+  },
+  {
+    "id": "cli-pepe-20",
+    "nombre": "PEPE",
+    "consumos_semana": [
+      {
+        "subtotal": 6000,
+        "nombre": "MICHELADA",
+        "cantidad": 1,
+        "precio": 6000
+      }
+    ],
+    "saldo_actual": 6000,
+    "abonos": [],
+    "fecha_inicio_semana": "2026-09-28",
+    "ultimo_ticket": {
+      "comprobante": "#CC-2026-0055",
+      "ticket_url": "/tickets/PEPE.png",
+      "fecha": "28/09/2026 07:45"
+    }
+  },
+  {
+    "id": "cli-will-21",
+    "nombre": "WILL",
+    "consumos_semana": [
+      {
+        "subtotal": 54000,
+        "nombre": "SALDO PENDIENTE",
+        "cantidad": 1,
+        "precio": 54000
+      }
+    ],
+    "saldo_actual": 54000,
+    "abonos": [],
+    "fecha_inicio_semana": "2026-09-28",
+    "ultimo_ticket": {
+      "comprobante": "#CC-2026-0056",
+      "ticket_url": "/tickets/PRI.png",
+      "fecha": "28/09/2026 07:46"
+    }
+  },
+  {
+    "id": "cli-ruso-22",
+    "nombre": "RUSO",
+    "consumos_semana": [
+      {
+        "subtotal": 12000,
+        "nombre": "LIMONADA CEREZADA",
+        "cantidad": 1,
+        "precio": 12000
+      }
+    ],
+    "saldo_actual": 12000,
+    "abonos": [],
+    "fecha_inicio_semana": "2026-09-28",
+    "ultimo_ticket": {
+      "comprobante": "#CC-2026-0057",
+      "ticket_url": "/tickets/RUSO.png",
+      "fecha": "28/09/2026 07:47"
+    }
+  },
+  {
+    "id": "cli-yogi-23",
+    "nombre": "YOGI",
+    "consumos_semana": [
+      {
+        "subtotal": 26000,
+        "nombre": "CERVEZAS",
+        "cantidad": 1,
+        "precio": 26000
+      }
+    ],
+    "saldo_actual": 26000,
+    "abonos": [],
+    "fecha_inicio_semana": "2026-09-28",
+    "ultimo_ticket": {
+      "comprobante": "#CC-2026-0059",
+      "ticket_url": "/tickets/YOGI.png",
+      "fecha": "28/09/2026 07:48"
+    }
+  }
+]

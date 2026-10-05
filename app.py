@@ -55,7 +55,7 @@ def leer_json(ruta, default_val):
         guardar_json(ruta, default_val)
         return default_val
     try:
-        with open(ruta, "r", encoding="utf-8") as f:
+        with open(ruta, "r", encoding="utf-8-sig") as f:
             return json.load(f)
     except Exception as e:
         print(f"[!] Error leyendo {ruta}: {e}")
@@ -110,7 +110,7 @@ class PanchoHandler(SimpleHTTPRequestHandler):
             self.send_json({
                 "ok": True,
                 "ip_local": get_local_ip(),
-                "port": 5000,
+                "port": int(os.environ.get("PORT", 5000)),
                 "hora": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             })
             return
