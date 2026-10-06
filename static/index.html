@@ -1745,30 +1745,34 @@
       const { url, clienteNombre, total, comprobante } = currentTicketData;
       const textoWA = `Hola ${clienteNombre}, te adjunto tu cuenta de cobro digital de PANCHO por valor de ${formatMoney(total)} (Comprobante ${comprobante}). Quedamos atentos al comprobante de transferencia a Nequi. ¡Muchas gracias!`;
 
-      // 1. Intentar compartir archivo directo (Celular Android / iOS)
-      try {
-        const res = await fetch(url);
-        const blob = await res.blob();
-        const file = new File([blob], `${clienteNombre}_TICKET.png`, { type: 'image/png' });
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            files: [file],
-            title: `Ticket de cobro PANCHO - ${clienteNombre}`,
-            text: textoWA
-          });
-          return;
+      // 1. En Celular o Tablet (Android / iOS): Usar menú nativo para compartir directo a WhatsApp con la foto
+      if (isMobile) {
+        try {
+          const res = await fetch(url);
+          const blob = await res.blob();
+          const file = new File([blob], `${clienteNombre}_TICKET.png`, { type: 'image/png' });
+
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              files: [file],
+              title: `Ticket de cobro PANCHO - ${clienteNombre}`,
+              text: textoWA
+            });
+            return;
+          }
+        } catch (e) {
+          console.log("Web Share API no soportada con archivos:", e);
         }
-      } catch (e) {
-        console.log("Web Share API no soportada con archivos:", e);
       }
 
-      // 2. En PC / Navegador estándar: Copiar imagen automáticamente y abrir WhatsApp
+      // 2. En PC: Copiar imagen automáticamente y abrir WhatsApp Web directamente (sin abrir Outlook de Windows)
       await copiarImagenActual();
-      const urlWA = `https://api.whatsapp.com/send?text=${encodeURIComponent(textoWA)}`;
+      const urlWA = `https://web.whatsapp.com/send?text=${encodeURIComponent(textoWA)}`;
       window.open(urlWA, '_blank');
 
-      alert(`✅ ¡IMAGEN COPIADA AL PORTAPAPELES!\n\nEn tu WhatsApp:\n1. Entra al chat de ${clienteNombre}.\n2. Presiona: Ctrl + V (Pegar).\n3. ¡Y listo! La imagen del ticket se enviará completa.`);
+      alert(`✅ ¡TICKET COPIADO AL PORTAPAPELES!\n\nSe abrió WhatsApp Web.\n1. Entra al chat de ${clienteNombre}.\n2. Presiona: Ctrl + V (Pegar).\n3. ¡Y listo! La imagen del ticket se enviará completa.`);
     }
 
     function closeModal() {
