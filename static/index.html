@@ -1742,8 +1742,8 @@
 
     async function enviarWhatsAppConImagen() {
       if (!currentTicketData) return;
-      const { url, clienteNombre, total, comprobante } = currentTicketData;
-      const textoWA = `Hola ${clienteNombre}, te adjunto tu cuenta de cobro digital de PANCHO por valor de ${formatMoney(total)} (Comprobante ${comprobante}). Quedamos atentos al comprobante de transferencia a Nequi. ¡Muchas gracias!`;
+      const fullTicketUrl = window.location.origin + url;
+      const textoWA = `Hola ${clienteNombre}, te adjunto tu cuenta de cobro digital de PANCHO por valor de ${formatMoney(total)} (Comprobante ${comprobante}). Quedamos atentos al comprobante de transferencia a Nequi. ¡Muchas gracias!\n\n🎫 Ver ticket digital:\n${fullTicketUrl}`;
 
       const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
