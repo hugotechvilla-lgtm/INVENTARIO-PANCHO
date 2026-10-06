@@ -157,6 +157,70 @@ def application(environ, start_response):
                 guardar_json(RUTA_CLIENTES, [])
             return respond_json({"ok": True, "clientes": []})
 
+        elif path == "/api/clientes/eliminar-consumo":
+            cliente_id = body.get("cliente_id")
+            item_index = body.get("item_index")
+            cant_quitar = body.get("cantidad")
+
+            if not cliente_id or item_index is None:
+                return respond_json({"ok": False, "error": "Faltan datos requeridos"}, '400 Bad Request')
+
+            with data_lock:
+                clientes = leer_json(RUTA_CLIENTES, [])
+                inventario = leer_json(RUTA_INVENTARIO, [])
+
+                cliente = next((c for c in clientes if c["id"] == cliente_id), None)
+                if not cliente:
+                    return respond_json({"ok": False, "error": "Cliente no encontrado"}, '404 Not Found')
+
+                consumos = cliente.get("consumos_semana", [])
+                try:
+                    idx = int(item_index)
+                    if idx < 0 or idx >= len(consumos):
+                        return respond_json({"ok": False, "error": "Consumo no encontrado"}, '404 Not Found')
+                except:
+                    return respond_json({"ok": False, "error": "Índice de consumo inválido"}, '400 Bad Request')
+
+                item = consumos[idx]
+                cant_total_item = item.get("cantidad", 1)
+                precio_u = item.get("precio_unitario") or item.get("precio") or (item.get("subtotal", 0) // max(1, cant_total_item))
+
+                if cant_quitar is not None and int(cant_quitar) > 0 and int(cant_quitar) < cant_total_item:
+                    cant_a_devolver = int(cant_quitar)
+                    item["cantidad"] -= cant_a_devolver
+                    monto_a_restar = cant_a_devolver * precio_u
+                    item["subtotal"] = max(0, item.get("subtotal", 0) - monto_a_restar)
+                else:
+                    cant_a_devolver = cant_total_item
+                    monto_a_restar = item.get("subtotal", precio_u * cant_total_item)
+                    consumos.pop(idx)
+
+                cliente["saldo_actual"] = max(0, cliente.get("saldo_actual", 0) - monto_a_restar)
+
+                prod_id = item.get("producto_id") or item.get("id")
+                prod = next((p for p in inventario if prod_id and p["id"] == prod_id), None)
+                if not prod:
+                    nom_item = item.get("nombre", "").strip().upper()
+                    prod = next((p for p in inventario if p["nombre"].strip().upper() == nom_item), None)
+                    if not prod:
+                        prod = next((p for p in inventario if nom_item in p["nombre"].strip().upper() or p["nombre"].strip().upper() in nom_item), None)
+
+                if prod:
+                    id_base = prod.get("descuenta_de_id") or prod["id"]
+                    prod_base = next((p for p in inventario if p["id"] == id_base), prod)
+                    if "stock" in prod_base and prod_base.get("stock") is not None:
+                        prod_base["stock"] += cant_a_devolver
+
+                guardar_json(RUTA_INVENTARIO, inventario)
+                guardar_json(RUTA_CLIENTES, clientes)
+
+            return respond_json({
+                "ok": True,
+                "cliente": cliente,
+                "clientes": clientes,
+                "inventario": inventario
+            })
+
         elif path == "/api/clientes/consumo":
             cliente_id = body.get("cliente_id")
             items = body.get("items", [])
