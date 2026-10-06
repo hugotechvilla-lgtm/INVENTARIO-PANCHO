@@ -974,6 +974,35 @@
         </button>
       </div>
     </div>
+  <!-- MODAL: EDITAR O CORREGIR CONSUMOS DE LA TARJETA -->
+  <div id="modalEditarCuenta" class="modal-backdrop">
+    <div class="modal-box" style="max-width: 480px;">
+      <button class="modal-close" onclick="cerrarModalEditarCuenta()">✕</button>
+      
+      <div style="text-align: center; margin-bottom: 16px;">
+        <div style="font-size: 2.2rem; margin-bottom: 4px;">✏️</div>
+        <h2 style="font-size: 1.25rem; font-weight: 800; color: #FFAA00; margin: 0;" id="modalEditClienteNombre">
+          Editar Cuenta del Cliente
+        </h2>
+        <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 6px;">
+          Deuda pendiente: <b id="modalEditClienteSaldo" style="color: #ef4444; font-size: 1.15rem; margin-left: 4px;">$ 0</b>
+        </div>
+        <div style="font-size: 0.78rem; color: #10b981; background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.25); border-radius: 8px; padding: 6px 10px; margin-top: 10px; text-align: left; line-height: 1.4;">
+          💡 <b>Devolución automática:</b> Al eliminar o restar un producto, las unidades vuelven inmediatamente al inventario y se descuenta el valor de la deuda.
+        </div>
+      </div>
+
+      <!-- Lista de consumos para editar -->
+      <div id="modalEditConsumosLista" style="max-height: 290px; overflow-y: auto; margin-bottom: 16px; border: 1px solid var(--border-color); border-radius: 10px; padding: 6px; background: rgba(0,0,0,0.25);">
+        <!-- Generado dinámicamente -->
+      </div>
+
+      <div style="display: flex; justify-content: flex-end;">
+        <button type="button" onclick="cerrarModalEditarCuenta()" style="background: rgba(255,255,255,0.08); border: 1px solid var(--border-color); color: #fff; border-radius: 10px; padding: 12px 24px; font-weight: 700; cursor: pointer;">
+          Listo / Cerrar
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- TOAST NOTIFICATION -->
@@ -1022,7 +1051,8 @@
         historial = resHist;
 
         if (resEst && resEst.ip_local) {
-          document.getElementById('ipDisplay').innerText = resEst.ip_local + ':5000';
+          const pLocal = resEst.port || window.location.port || '5050';
+          document.getElementById('ipDisplay').innerText = resEst.ip_local + ':' + pLocal;
         }
 
         try { renderClientSelect(); } catch (err) { console.error("Error renderClientSelect:", err); }
@@ -1345,10 +1375,15 @@
 
         let consumosHtml = '';
         if (c.consumos_semana && c.consumos_semana.length > 0) {
-          consumosHtml = c.consumos_semana.map(item => `
-            <div class="c-item-row">
-              <span>${item.cantidad}x ${item.nombre}</span>
-              <b>${formatMoney(item.subtotal)}</b>
+          consumosHtml = c.consumos_semana.map((item, idx) => `
+            <div class="c-item-row" style="display: flex; align-items: center; justify-content: space-between; padding: 5px 0; border-bottom: 1px dashed rgba(255,255,255,0.06);">
+              <span style="font-weight: 600; font-size: 0.88rem;">${item.cantidad}x ${item.nombre}</span>
+              <div style="display: flex; align-items: center; gap: 7px;">
+                <b style="font-size: 0.88rem;">${formatMoney(item.subtotal)}</b>
+                <button type="button" onclick="confirmarEliminarConsumo('${c.id}', ${idx}, '${item.nombre.replace(/'/g, "\\'")}', ${item.cantidad}, ${item.subtotal})" title="Eliminar y devolver al inventario" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #f87171; border-radius: 6px; padding: 2px 7px; font-size: 0.8rem; cursor: pointer; transition: all 0.2s;">
+                  🗑️
+                </button>
+              </div>
             </div>
           `).join('');
         } else {
@@ -1381,11 +1416,14 @@
               ${consumosHtml}
             </div>
           </div>
-          <div style="display: flex; gap: 8px; margin-top: 10px;">
-            <button class="btn-charge-week" style="flex: 1; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; border: none; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);" ${c.saldo_actual <= 0 ? 'disabled' : ''} onclick="abrirModalAbono('${c.id}')">
+          <div style="display: flex; gap: 6px; margin-top: 10px;">
+            <button class="btn-charge-week" style="flex: 1; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; border: none; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35); padding: 10px 4px; font-size: 0.86rem;" ${c.saldo_actual <= 0 ? 'disabled' : ''} onclick="abrirModalAbono('${c.id}')">
               💵 Abonar
             </button>
-            <button class="btn-charge-week" style="flex: 1;" ${c.saldo_actual <= 0 ? 'disabled' : ''} onclick="cerrarSemana('${c.id}')">
+            <button class="btn-charge-week" style="flex: 1; background: rgba(255, 170, 0, 0.15); border: 1px solid rgba(255, 170, 0, 0.45); color: #FFAA00; padding: 10px 4px; font-size: 0.86rem;" onclick="abrirModalEditarCuenta('${c.id}')">
+              ✏️ Editar
+            </button>
+            <button class="btn-charge-week" style="flex: 1; padding: 10px 4px; font-size: 0.86rem;" ${c.saldo_actual <= 0 ? 'disabled' : ''} onclick="cerrarSemana('${c.id}')">
               🎫 Ticket
             </button>
           </div>
@@ -1576,6 +1614,93 @@
       } finally {
         btn.disabled = false;
         btn.innerText = "✅ Guardar Abono";
+      }
+    }
+
+    // ==========================================
+    // EDITAR CONSUMOS Y DEVOLVER STOCK A BODEGA
+    // ==========================================
+    let clienteEditandoId = null;
+
+    function abrirModalEditarCuenta(clienteId) {
+      clienteEditandoId = clienteId;
+      const c = clientes.find(item => item.id === clienteId);
+      if (!c) return;
+
+      document.getElementById('modalEditClienteNombre').innerText = `✏️ Editar Cuenta · ${c.nombre}`;
+      document.getElementById('modalEditClienteSaldo').innerText = formatMoney(c.saldo_actual);
+
+      const container = document.getElementById('modalEditConsumosLista');
+      if (!c.consumos_semana || c.consumos_semana.length === 0) {
+        container.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 30px; font-size: 0.95rem;">No hay consumos pendientes para este cliente.</div>';
+      } else {
+        container.innerHTML = c.consumos_semana.map((item, idx) => `
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.06); gap: 10px;">
+            <div style="flex: 1;">
+              <div style="font-weight: 700; color: #fff; font-size: 0.95rem;">${item.nombre}</div>
+              <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">
+                ${item.cantidad} un. · Subtotal: <b style="color: #FFAA00;">${formatMoney(item.subtotal)}</b>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              ${item.cantidad > 1 ? `
+                <button type="button" onclick="ejecutarEliminarConsumo('${c.id}', ${idx}, 1)" title="Quitar 1 unidad y devolver al stock" style="background: rgba(255,170,0,0.15); border: 1px solid rgba(255,170,0,0.4); color: #FFAA00; border-radius: 8px; padding: 6px 10px; font-size: 0.82rem; font-weight: 700; cursor: pointer;">
+                  -1 Unid.
+                </button>
+              ` : ''}
+              <button type="button" onclick="ejecutarEliminarConsumo('${c.id}', ${idx}, null)" title="Quitar todo y devolver al stock" style="background: rgba(239, 68, 68, 0.18); border: 1px solid rgba(239, 68, 68, 0.45); color: #f87171; border-radius: 8px; padding: 6px 12px; font-size: 0.82rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                🗑️ Quitar
+              </button>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      document.getElementById('modalEditarCuenta').classList.add('active');
+    }
+
+    function cerrarModalEditarCuenta() {
+      document.getElementById('modalEditarCuenta').classList.remove('active');
+      clienteEditandoId = null;
+    }
+
+    async function confirmarEliminarConsumo(clienteId, itemIndex, nombreItem, cantidad, subtotal) {
+      const c = clientes.find(item => item.id === clienteId);
+      const nombreCli = c ? c.nombre : 'el cliente';
+      const msg = `¿Deseas eliminar "${cantidad}x ${nombreItem}" (${formatMoney(subtotal)}) de la cuenta de ${nombreCli}?\n\n• Se restará el valor de su deuda.\n• Se devolverán las unidades automáticamente al inventario.`;
+      if (!confirm(msg)) return;
+      await ejecutarEliminarConsumo(clienteId, itemIndex, null);
+    }
+
+    async function ejecutarEliminarConsumo(clienteId, itemIndex, cantidad) {
+      try {
+        const res = await fetch('/api/clientes/eliminar-consumo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            cliente_id: clienteId,
+            item_index: itemIndex,
+            cantidad: cantidad
+          })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          clientes = data.clientes;
+          inventario = data.inventario;
+          renderClientSelect();
+          renderProducts();
+          renderCuentas();
+          renderInventario();
+          renderBalance();
+          showToast("✅ Consumo corregido y stock devuelto a bodega.");
+          if (document.getElementById('modalEditarCuenta').classList.contains('active')) {
+            abrirModalEditarCuenta(clienteId);
+          }
+        } else {
+          alert("Error: " + (data.error || "No se pudo eliminar el consumo"));
+        }
+      } catch (e) {
+        alert("Error de conexión: " + e);
       }
     }
 
