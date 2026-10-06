@@ -543,7 +543,7 @@
       z-index: 100;
       padding: 20px;
     }
-    .modal-backdrop.show { display: flex; animation: fadeIn 0.2s ease-out; }
+    .modal-backdrop.show, .modal-backdrop.active { display: flex !important; animation: fadeIn 0.2s ease-out; }
     .modal-box {
       background: var(--bg-card);
       border: 1px solid var(--border-color);
@@ -1654,10 +1654,12 @@
         `).join('');
       }
 
+      document.getElementById('modalEditarCuenta').classList.add('show');
       document.getElementById('modalEditarCuenta').classList.add('active');
     }
 
     function cerrarModalEditarCuenta() {
+      document.getElementById('modalEditarCuenta').classList.remove('show');
       document.getElementById('modalEditarCuenta').classList.remove('active');
       clienteEditandoId = null;
     }
