@@ -1376,11 +1376,14 @@
         let consumosHtml = '';
         if (c.consumos_semana && c.consumos_semana.length > 0) {
           consumosHtml = c.consumos_semana.map((item, idx) => `
-            <div class="c-item-row" style="display: flex; align-items: center; justify-content: space-between; padding: 5px 0; border-bottom: 1px dashed rgba(255,255,255,0.06);">
+            <div class="c-item-row" style="display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed rgba(255,255,255,0.06);">
               <span style="font-weight: 600; font-size: 0.88rem;">${item.cantidad}x ${item.nombre}</span>
-              <div style="display: flex; align-items: center; gap: 7px;">
-                <b style="font-size: 0.88rem;">${formatMoney(item.subtotal)}</b>
-                <button type="button" onclick="confirmarEliminarConsumo('${c.id}', ${idx}, '${item.nombre.replace(/'/g, "\\'")}', ${item.cantidad}, ${item.subtotal})" title="Eliminar y devolver al inventario" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #f87171; border-radius: 6px; padding: 2px 7px; font-size: 0.8rem; cursor: pointer; transition: all 0.2s;">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <b style="font-size: 0.88rem; margin-right: 4px;">${formatMoney(item.subtotal)}</b>
+                <button type="button" onclick="abrirModalEditarCuenta('${c.id}')" title="Editar o restar unidades" style="background: rgba(255, 170, 0, 0.18); border: 1px solid rgba(255, 170, 0, 0.5); color: #FFAA00; border-radius: 6px; padding: 2px 7px; font-size: 0.85rem; cursor: pointer;">
+                  ✏️
+                </button>
+                <button type="button" onclick="confirmarEliminarConsumo('${c.id}', ${idx}, '${item.nombre.replace(/'/g, "\\'")}', ${item.cantidad}, ${item.subtotal})" title="Eliminar y devolver al inventario" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #f87171; border-radius: 6px; padding: 2px 7px; font-size: 0.85rem; cursor: pointer; transition: all 0.2s;">
                   🗑️
                 </button>
               </div>
@@ -1404,10 +1407,11 @@
           <div>
             <div class="client-top">
               <div class="c-name">${c.nombre}</div>
-              <div style="display: flex; align-items: center; gap: 8px;">
+              <div style="display: flex; align-items: center; gap: 6px;">
                 <div class="c-debt ${c.saldo_actual === 0 ? 'zero' : ''}">
                   ${c.saldo_actual > 0 ? formatMoney(c.saldo_actual) : 'Al día'}
                 </div>
+                <button onclick="abrirModalEditarCuenta('${c.id}')" title="Editar consumos de la tarjeta" style="background: rgba(255, 170, 0, 0.18); border: 1px solid rgba(255, 170, 0, 0.5); border-radius: 6px; color: #FFAA00; font-size: 0.95rem; font-weight: 700; padding: 2px 7px; cursor: pointer;" title="Editar">✏️</button>
                 <button onclick="eliminarCliente('${c.id}', '${c.nombre}')" title="Eliminar cliente" style="background: none; border: none; cursor: pointer; color: var(--accent-red); font-size: 1.15rem; padding: 2px;">🗑️</button>
               </div>
             </div>
@@ -1420,7 +1424,7 @@
             <button class="btn-charge-week" style="flex: 1; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; border: none; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35); padding: 10px 4px; font-size: 0.86rem;" ${c.saldo_actual <= 0 ? 'disabled' : ''} onclick="abrirModalAbono('${c.id}')">
               💵 Abonar
             </button>
-            <button class="btn-charge-week" style="flex: 1; background: rgba(255, 170, 0, 0.15); border: 1px solid rgba(255, 170, 0, 0.45); color: #FFAA00; padding: 10px 4px; font-size: 0.86rem;" onclick="abrirModalEditarCuenta('${c.id}')">
+            <button class="btn-charge-week" style="flex: 1; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #fff; border: none; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35); padding: 10px 4px; font-size: 0.86rem; font-weight: 800;" onclick="abrirModalEditarCuenta('${c.id}')">
               ✏️ Editar
             </button>
             <button class="btn-charge-week" style="flex: 1; padding: 10px 4px; font-size: 0.86rem;" ${c.saldo_actual <= 0 ? 'disabled' : ''} onclick="cerrarSemana('${c.id}')">
