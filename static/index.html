@@ -2110,15 +2110,21 @@
 
       const lista = verTodoElCatalogo
         ? inventario
-        : inventario.filter(p => !p.descuenta_de_id && !p.nombre.toUpperCase().includes('MICHELADA') && !p.nombre.toUpperCase().includes('ENDIABLADA'));
+        : inventario.filter(p => {
+            const esPrep = p.es_preparado || obtenerGrupoBebida(p.nombre, p.categoria) === 'Limonadas y Granizados';
+            const esReceta = !!p.descuenta_de_id || p.nombre.toUpperCase().includes('MICHELADA') || p.nombre.toUpperCase().includes('ENDIABLADA');
+            return !esPrep && !esReceta;
+          });
 
       lista.forEach(p => {
         const esReceta = !!p.descuenta_de_id;
+        const esPrep = p.es_preparado || obtenerGrupoBebida(p.nombre, p.categoria) === 'Limonadas y Granizados';
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>
             <b>${p.nombre}</b>
             ${esReceta ? '<br><small style="color: #FFAA00;">(Receta: descuenta cerveza base)</small>' : ''}
+            ${esPrep ? '<br><small style="color: #60a5fa;">(Bebida preparada al momento)</small>' : ''}
           </td>
           <td><span class="p-cat">${p.categoria}</span></td>
           <td>
@@ -2132,14 +2138,14 @@
             </button>
           </td>
           <td>
-            ${esReceta ? '<span style="color: var(--text-muted); font-size: 0.85rem;">Vinculada a stock base</span>' : `
+            ${esReceta ? '<span style="color: var(--text-muted); font-size: 0.85rem;">Vinculada a stock base</span>' : (esPrep ? '<span style="color: #60a5fa; font-size: 0.85rem;">🍹 Preparado al momento</span>' : `
               <button class="btn-restock" style="background: rgba(255,255,255,0.08); color: #fff; border-color: var(--border-color);" onclick="ajustarStockExacto('${p.id}')" title="Clic para escribir el conteo exacto de stock">
                 ✏️ ${p.stock !== undefined ? p.stock : 0} unidades
               </button>
-            `}
+            `)}
           </td>
           <td>
-            ${esReceta ? '-' : `
+            ${(esReceta || esPrep) ? '-' : `
               <button class="btn-restock" style="padding: 8px 18px; font-weight: 700; font-size: 0.9rem;" onclick="reponerStockCustom('${p.id}')">
                 📦 + Sumar Llegada
               </button>
