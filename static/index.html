@@ -1338,9 +1338,10 @@
       if (!prod) return;
       const current = cart[prodId] || 0;
       const nuevo = Math.max(0, current + delta);
+      const esPrep = prod.es_preparado || obtenerGrupoBebida(prod.nombre, prod.categoria) === 'Limonadas y Granizados';
       const stockDisponible = obtenerStock(prod);
 
-      if (delta > 0 && nuevo > stockDisponible) {
+      if (!esPrep && delta > 0 && nuevo > stockDisponible) {
         if (stockDisponible <= 0) {
           const proceder = confirm(`⚠️ Atención: En bodega figuran 0 unidades de '${prod.nombre}'.\n\n¿Deseas agregar el consumo a la cuenta del cliente de todas formas?`);
           if (!proceder) return;
