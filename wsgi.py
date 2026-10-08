@@ -447,6 +447,64 @@ def application(environ, start_response):
                 "historial": historial
             })
 
+        elif path == "/api/clientes/pago-total":
+            cliente_id = body.get("cliente_id")
+            metodo = body.get("metodo", "EFECTIVO").strip().upper()
+            if metodo not in ["EFECTIVO", "NEQUI"]:
+                metodo = "EFECTIVO"
+            nota = body.get("nota", "").strip()
+
+            if not cliente_id:
+                return respond_json({"ok": False, "error": "ID de cliente requerido"}, '400 Bad Request')
+
+            with data_lock:
+                clientes = leer_json(RUTA_CLIENTES, [])
+                historial = leer_json(RUTA_HISTORIAL, [])
+
+                cliente = next((c for c in clientes if c["id"] == cliente_id), None)
+                if not cliente:
+                    return respond_json({"ok": False, "error": "Cliente no encontrado"}, '404 Not Found')
+
+                total_pagado = cliente.get("saldo_actual", 0)
+                nombre_cliente = cliente.get("nombre", "")
+                consumos_cliente = cliente.get("consumos_semana", [])
+                ahora_dt = datetime.now()
+                fecha_str = ahora_dt.strftime("%d/%m/%Y %H:%M")
+
+                if total_pagado > 0 or consumos_cliente:
+                    comp_pago = f"TOTAL-{ahora_dt.strftime('%Y%m%d%H%M%S')}"
+                    partes_c = agrupar_consumos_por_categoria(consumos_cliente) if consumos_cliente else []
+                    desc_consumos = " · ".join(partes_c) if partes_c else "CUENTA SALDADA"
+                    concepto_pago = f"PAGO TOTAL · {metodo} · {desc_consumos}"
+                    if nota:
+                        concepto_pago += f" ({nota})"
+
+                    registro_h = {
+                        "fecha": fecha_str,
+                        "cliente": nombre_cliente,
+                        "total": total_pagado,
+                        "comprobante": comp_pago,
+                        "concepto": concepto_pago,
+                        "consumos": consumos_cliente,
+                        "metodo": metodo,
+                        "tipo": "PAGO_TOTAL"
+                    }
+                    historial.append(registro_h)
+                    guardar_json(RUTA_HISTORIAL, historial)
+
+                # Eliminar definitivamente al cliente del sistema
+                clientes = [c for c in clientes if c["id"] != cliente_id]
+                guardar_json(RUTA_CLIENTES, clientes)
+
+            return respond_json({
+                "ok": True,
+                "cliente_nombre": nombre_cliente,
+                "total_pagado": total_pagado,
+                "metodo": metodo,
+                "clientes": clientes,
+                "historial": historial
+            })
+
         elif path == "/api/historial/borrar-todos":
             with data_lock:
                 guardar_json(RUTA_HISTORIAL, [])

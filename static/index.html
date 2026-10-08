@@ -979,32 +979,136 @@
     </div>
   </div>
 
-  <!-- MODAL: EDITAR O CORREGIR CONSUMOS DE LA TARJETA -->
-  <div id="modalEditarCuenta" class="modal-backdrop">
-    <div class="modal-box" style="max-width: 480px;">
-      <button class="modal-close" onclick="cerrarModalEditarCuenta()">✕</button>
+  <!-- ============================================== -->
+  <!-- MODAL: HOJA DE CUENTA DEL CLIENTE -->
+  <!-- ============================================== -->
+  <div id="modalHojaCliente" class="modal-backdrop">
+    <div class="modal-box" style="max-width: 540px; padding: 22px;">
+      <button class="modal-close" onclick="cerrarHojaCliente()">✕</button>
       
+      <!-- Encabezado de la Hoja -->
+      <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 14px; margin-bottom: 16px;">
+        <div style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+          <div>
+            <div style="font-size: 0.78rem; font-weight: 800; color: #FFAA00; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px;">
+              <span>📋</span> HOJA DE CUENTA SEMANAL
+            </div>
+            <h2 style="font-size: 1.55rem; font-weight: 900; color: #fff; margin: 4px 0 0 0;" id="hojaClienteNombre">
+              CLIENTE
+            </h2>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 0.74rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">
+              Saldo Pendiente
+            </div>
+            <div id="hojaClienteSaldo" style="font-size: 1.55rem; font-weight: 900; color: #ef4444;">
+              $ 0
+            </div>
+          </div>
+        </div>
+        
+        <div id="hojaClienteUltimoAbono" style="margin-top: 10px; display: none;"></div>
+      </div>
+
+      <!-- Sección: Consumos Registrados -->
+      <div style="margin-bottom: 14px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+          <span style="font-size: 0.9rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
+            🛒 Consumos de la Semana <span id="hojaCantidadItemsBadge" style="background: rgba(255,170,0,0.18); color: #FFAA00; padding: 2px 8px; border-radius: 10px; font-size: 0.76rem; font-weight: 800;">0</span>
+          </span>
+          <span style="font-size: 0.74rem; color: var(--text-muted);">Edición con retorno a bodega</span>
+        </div>
+
+        <div style="font-size: 0.76rem; color: #10b981; background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.22); border-radius: 8px; padding: 7px 10px; margin-bottom: 10px; line-height: 1.4;">
+          💡 <b>Corregir o editar:</b> Toca <b>[-1 Unid.]</b> o <b>[🗑️ Quitar]</b> si te equivocaste. Las unidades regresan inmediatamente al inventario y se descuenta el valor de la deuda.
+        </div>
+
+        <!-- Lista scrolleable de consumos -->
+        <div id="hojaConsumosLista" style="max-height: 250px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 12px; padding: 6px; background: rgba(0,0,0,0.25);">
+          <!-- Generado dinámicamente -->
+        </div>
+      </div>
+
+      <!-- Resumen Total Barra -->
+      <div style="background: rgba(255, 170, 0, 0.08); border: 1px solid rgba(255, 170, 0, 0.25); border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+        <span style="font-weight: 800; font-size: 0.95rem; color: #fff;">TOTAL A LIQUIDAR:</span>
+        <b id="hojaTotalLiquidar" style="font-size: 1.4rem; font-weight: 900; color: #FFAA00;">$ 0</b>
+      </div>
+
+      <!-- Barra de Acciones Principales -->
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <button type="button" onclick="hojaAccionAbonar()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; border: none; border-radius: 12px; padding: 13px 8px; font-size: 0.95rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);">
+            💵 Hacer Abono
+          </button>
+          <button type="button" onclick="hojaAccionTicket()" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: #fff; border: none; border-radius: 12px; padding: 13px 8px; font-size: 0.95rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);">
+            🎫 Enviar Ticket
+          </button>
+        </div>
+
+        <!-- BOTÓN PAGO TOTAL: LIQUIDA Y ELIMINA TARJETA -->
+        <button type="button" onclick="abrirModalConfirmarPagoTotal()" id="btnHojaPagoTotal" style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); color: #fff; border: none; border-radius: 12px; padding: 15px; font-size: 1.05rem; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 16px rgba(239, 68, 68, 0.45); letter-spacing: 0.5px;">
+          💰 PAGO TOTAL (LIQUIDAR Y BORRAR TARJETA)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: CONFIRMAR PAGO TOTAL Y BORRAR TARJETA -->
+  <!-- ============================================== -->
+  <div id="modalConfirmarPagoTotal" class="modal-backdrop">
+    <div class="modal-box" style="max-width: 450px; padding: 22px;">
+      <button class="modal-close" onclick="cerrarModalConfirmarPagoTotal()">✕</button>
+
       <div style="text-align: center; margin-bottom: 16px;">
-        <div style="font-size: 2.2rem; margin-bottom: 4px;">✏️</div>
-        <h2 style="font-size: 1.25rem; font-weight: 800; color: #FFAA00; margin: 0;" id="modalEditClienteNombre">
-          Editar Cuenta del Cliente
+        <div style="font-size: 2.5rem; margin-bottom: 6px;">💰</div>
+        <h2 style="font-size: 1.3rem; font-weight: 900; color: #ef4444; margin: 0;">
+          Liquidar y Borrar Tarjeta
         </h2>
-        <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 6px;">
-          Deuda pendiente: <b id="modalEditClienteSaldo" style="color: #ef4444; font-size: 1.15rem; margin-left: 4px;">$ 0</b>
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 6px;">
+          Vas a saldar la cuenta completa de <b id="pagoTotalClienteNombre" style="color: #fff;">CLIENTE</b>
+        </p>
+      </div>
+
+      <!-- Monto a Pagar -->
+      <div style="background: rgba(255,170,0,0.1); border: 1px solid rgba(255,170,0,0.3); border-radius: 12px; padding: 14px; text-align: center; margin-bottom: 16px;">
+        <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">
+          Monto total que paga el cliente:
         </div>
-        <div style="font-size: 0.78rem; color: #10b981; background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.25); border-radius: 8px; padding: 6px 10px; margin-top: 10px; text-align: left; line-height: 1.4;">
-          💡 <b>Devolución automática:</b> Al eliminar o restar un producto, las unidades vuelven inmediatamente al inventario y se descuenta el valor de la deuda.
+        <div id="pagoTotalMontoTexto" style="font-size: 1.8rem; font-weight: 900; color: #FFAA00; margin-top: 2px;">
+          $ 0
         </div>
       </div>
 
-      <!-- Lista de consumos para editar -->
-      <div id="modalEditConsumosLista" style="max-height: 290px; overflow-y: auto; margin-bottom: 16px; border: 1px solid var(--border-color); border-radius: 10px; padding: 6px; background: rgba(0,0,0,0.25);">
-        <!-- Generado dinámicamente -->
+      <!-- Método de Pago -->
+      <div style="margin-bottom: 16px;">
+        <label style="display: block; font-size: 0.82rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">
+          Método de recepción del dinero:
+        </label>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <label style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; font-weight: 700; font-size: 0.95rem;">
+            <input type="radio" name="metodoPagoTotal" value="EFECTIVO" checked style="accent-color: #10b981; transform: scale(1.2);">
+            💵 Efectivo
+          </label>
+          <label style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; font-weight: 700; font-size: 0.95rem;">
+            <input type="radio" name="metodoPagoTotal" value="NEQUI" style="accent-color: #FFAA00; transform: scale(1.2);">
+            🟣 Nequi
+          </label>
+        </div>
       </div>
 
-      <div style="display: flex; justify-content: flex-end;">
-        <button type="button" onclick="cerrarModalEditarCuenta()" style="background: rgba(255,255,255,0.08); border: 1px solid var(--border-color); color: #fff; border-radius: 10px; padding: 12px 24px; font-weight: 700; cursor: pointer;">
-          Listo / Cerrar
+      <!-- Alerta Importante -->
+      <div style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 10px; padding: 10px 12px; margin-bottom: 18px; font-size: 0.82rem; color: #fca5a5; line-height: 1.4;">
+        ⚠️ <b>Se eliminará la tarjeta:</b> Al confirmar, el pago quedará guardado en el <i>Historial de Pagos</i> y la tarjeta del cliente se borrará permanentemente del sistema.
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1.3fr; gap: 10px;">
+        <button type="button" onclick="cerrarModalConfirmarPagoTotal()" style="background: rgba(255,255,255,0.08); border: 1px solid var(--border-color); color: var(--text-muted); border-radius: 12px; padding: 13px; font-weight: 700; cursor: pointer;">
+          Cancelar
+        </button>
+        <button type="button" id="btnConfirmarPagoTotal" onclick="ejecutarPagoTotal()" style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); color: #fff; border: none; border-radius: 12px; padding: 13px; font-weight: 900; font-size: 0.92rem; cursor: pointer; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);">
+          🔥 Liquidar y Borrar
         </button>
       </div>
     </div>
@@ -1377,24 +1481,18 @@
 
         const card = document.createElement('div');
         card.className = 'client-card';
+        card.style.cursor = 'pointer';
+        card.onclick = (e) => {
+          if (e.target.closest('button')) return;
+          abrirHojaCliente(c.id);
+        };
 
-        let consumosHtml = '';
-        if (c.consumos_semana && c.consumos_semana.length > 0) {
-          consumosHtml = c.consumos_semana.map(item => `
-            <div class="c-item-row" style="display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed rgba(255,255,255,0.06);">
-              <span style="font-weight: 600; font-size: 0.88rem;">${item.cantidad}x ${item.nombre}</span>
-              <b style="font-size: 0.88rem;">${formatMoney(item.subtotal)}</b>
-            </div>
-          `).join('');
-        } else {
-          consumosHtml = `<div style="text-align: center; color: var(--text-muted); padding: 8px;">Sin consumos pendientes esta semana</div>`;
-        }
-
+        const cantConsumos = (c.consumos_semana && c.consumos_semana.length) || 0;
         let abonoBadgeHtml = '';
         if (c.ultimo_abono) {
           abonoBadgeHtml = `
-            <div style="font-size: 0.76rem; color: #10b981; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.28); border-radius: 7px; padding: 4px 8px; margin: 6px 0 8px 0; display: flex; align-items: center; justify-content: space-between;">
-              <span>💵 Último abono: <b>${formatMoney(c.ultimo_abono.monto)}</b> (${c.ultimo_abono.metodo})</span>
+            <div style="font-size: 0.76rem; color: #10b981; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.28); border-radius: 7px; padding: 4px 8px; margin: 6px 0 10px 0; display: flex; align-items: center; justify-content: space-between;">
+              <span>💵 Abono: <b>${formatMoney(c.ultimo_abono.monto)}</b> (${c.ultimo_abono.metodo})</span>
               <span style="color: var(--text-muted); font-size: 0.72rem;">${c.ultimo_abono.fecha.split(' ')[0]}</span>
             </div>
           `;
@@ -1402,31 +1500,24 @@
 
         card.innerHTML = `
           <div>
-            <div class="client-top">
-              <div class="c-name">${c.nombre}</div>
+            <div class="client-top" style="margin-bottom: 8px;">
+              <div class="c-name" style="font-size: 1.25rem;">${c.nombre}</div>
               <div style="display: flex; align-items: center; gap: 8px;">
                 <div class="c-debt ${c.saldo_actual === 0 ? 'zero' : ''}">
-                  ${c.saldo_actual > 0 ? formatMoney(c.saldo_actual) : 'Al día'}
+                  ${c.saldo_actual > 0 ? formatMoney(c.saldo_actual) : 'Al día ($ 0)'}
                 </div>
-                <button type="button" onclick="eliminarCliente('${c.id}', '${c.nombre}')" title="Eliminar cliente" style="background: none; border: none; cursor: pointer; color: var(--accent-red); font-size: 1.15rem; padding: 2px;">🗑️</button>
+                <button type="button" onclick="event.stopPropagation(); eliminarCliente('${c.id}', '${c.nombre}')" title="Eliminar cliente" style="background: none; border: none; cursor: pointer; color: var(--accent-red); font-size: 1.15rem; padding: 2px;">🗑️</button>
               </div>
             </div>
             ${abonoBadgeHtml}
-            <div class="c-details-list">
-              ${consumosHtml}
+            <div style="font-size: 0.85rem; color: var(--text-muted); margin: 6px 0 12px 0; display: flex; align-items: center; justify-content: space-between;">
+              <span>📦 <b>${cantConsumos}</b> ${cantConsumos === 1 ? 'producto consumido' : 'productos consumidos'}</span>
+              <span style="color: #FFAA00; font-size: 0.78rem; font-weight: 700;">Toca para abrir ➔</span>
             </div>
           </div>
-          <div style="display: flex; gap: 6px; margin-top: 10px;">
-            <button class="btn-charge-week" style="flex: 1; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; border: none; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35); padding: 10px 4px; font-size: 0.86rem;" ${c.saldo_actual <= 0 ? 'disabled' : ''} onclick="abrirModalAbono('${c.id}')">
-              💵 Abonar
-            </button>
-            <button class="btn-charge-week" style="flex: 1; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #111; border: none; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35); padding: 10px 4px; font-size: 0.86rem; font-weight: 800;" onclick="abrirModalEditarCuenta('${c.id}')">
-              ✏️ EDITAR
-            </button>
-            <button class="btn-charge-week" style="flex: 1; padding: 10px 4px; font-size: 0.86rem;" ${c.saldo_actual <= 0 ? 'disabled' : ''} onclick="cerrarSemana('${c.id}')">
-              🎫 Ticket
-            </button>
-          </div>
+          <button class="btn-charge-week" style="width: 100%; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #111; border: none; font-weight: 900; font-size: 0.92rem; padding: 12px; border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35); cursor: pointer;" onclick="event.stopPropagation(); abrirHojaCliente('${c.id}')">
+            📋 Abrir Hoja de Cuenta
+          </button>
         `;
         grid.appendChild(card);
       });
@@ -1603,9 +1694,13 @@
         const data = await res.json();
         if (data.ok) {
           const cliNombre = data.cliente ? data.cliente.nombre : '';
+          const targetHojaId = clienteHojaActualId;
           cerrarModalAbono();
           showToast(`✅ Abono de ${formatMoney(monto)} registrado para ${cliNombre}. Saldo restante: ${formatMoney(data.nuevo_saldo)}`);
           await loadData();
+          if (targetHojaId) {
+            abrirHojaCliente(targetHojaId);
+          }
         } else {
           alert("Error: " + (data.error || "No se pudo registrar el abono"));
         }
@@ -1617,29 +1712,61 @@
       }
     }
 
-    // ==========================================
-    // EDITAR CONSUMOS Y DEVOLVER STOCK A BODEGA
-    // ==========================================
-    let clienteEditandoId = null;
+    // ==============================================
+    // HOJA DE CUENTA SEMANAL DEL CLIENTE
+    // (Consumo, Edición, Abono, Ticket y Pago Total)
+    // ==============================================
+    let clienteHojaActualId = null;
 
-    function abrirModalEditarCuenta(clienteId) {
-      clienteEditandoId = clienteId;
+    function abrirHojaCliente(clienteId) {
+      clienteHojaActualId = clienteId;
       const c = clientes.find(item => item.id === clienteId);
       if (!c) return;
 
-      document.getElementById('modalEditClienteNombre').innerText = `✏️ Editar Cuenta · ${c.nombre}`;
-      document.getElementById('modalEditClienteSaldo').innerText = formatMoney(c.saldo_actual);
+      document.getElementById('hojaClienteNombre').innerText = c.nombre;
 
-      const container = document.getElementById('modalEditConsumosLista');
-      if (!c.consumos_semana || c.consumos_semana.length === 0) {
-        container.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 30px; font-size: 0.95rem;">No hay consumos pendientes para este cliente.</div>';
+      const saldoEl = document.getElementById('hojaClienteSaldo');
+      if (c.saldo_actual > 0) {
+        saldoEl.innerText = formatMoney(c.saldo_actual);
+        saldoEl.style.color = '#ef4444';
       } else {
-        container.innerHTML = c.consumos_semana.map((item, idx) => `
+        saldoEl.innerText = 'Al día ($ 0)';
+        saldoEl.style.color = '#10b981';
+      }
+
+      document.getElementById('hojaTotalLiquidar').innerText = formatMoney(c.saldo_actual);
+
+      // Último abono si existe
+      const abonoBox = document.getElementById('hojaClienteUltimoAbono');
+      if (c.ultimo_abono) {
+        abonoBox.style.display = 'block';
+        abonoBox.innerHTML = `
+          <div style="font-size: 0.8rem; color: #10b981; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.28); border-radius: 8px; padding: 6px 10px; display: flex; align-items: center; justify-content: space-between;">
+            <span>💵 Último abono: <b>${formatMoney(c.ultimo_abono.monto)}</b> (${c.ultimo_abono.metodo})</span>
+            <span style="color: var(--text-muted); font-size: 0.74rem;">${c.ultimo_abono.fecha}</span>
+          </div>
+        `;
+      } else {
+        abonoBox.style.display = 'none';
+        abonoBox.innerHTML = '';
+      }
+
+      // Lista detallada de consumos
+      const container = document.getElementById('hojaConsumosLista');
+      const badgeCant = document.getElementById('hojaCantidadItemsBadge');
+      const consumos = c.consumos_semana || [];
+      badgeCant.innerText = consumos.length;
+
+      if (consumos.length === 0) {
+        container.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 30px; font-size: 0.95rem;">✨ No hay consumos pendientes para este cliente.</div>';
+      } else {
+        container.innerHTML = consumos.map((item, idx) => `
           <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.06); gap: 10px;">
             <div style="flex: 1;">
               <div style="font-weight: 700; color: #fff; font-size: 0.95rem;">${item.nombre}</div>
               <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">
                 ${item.cantidad} un. · Subtotal: <b style="color: #FFAA00;">${formatMoney(item.subtotal)}</b>
+                ${item.fecha ? `<span style="font-size: 0.72rem; margin-left: 6px; color: rgba(255,255,255,0.4);">(${item.fecha.split(' ')[0]})</span>` : ''}
               </div>
             </div>
             <div style="display: flex; align-items: center; gap: 6px;">
@@ -1656,14 +1783,142 @@
         `).join('');
       }
 
-      document.getElementById('modalEditarCuenta').classList.add('show');
-      document.getElementById('modalEditarCuenta').classList.add('active');
+      // Botón PAGO TOTAL
+      const btnPago = document.getElementById('btnHojaPagoTotal');
+      if (btnPago) {
+        if (c.saldo_actual <= 0) {
+          btnPago.innerText = "🗑️ BORRAR TARJETA DEL SISTEMA (AL DÍA)";
+          btnPago.style.background = "linear-gradient(135deg, #4b5563 0%, #374151 100%)";
+        } else {
+          btnPago.innerText = "💰 PAGO TOTAL (LIQUIDAR Y BORRAR TARJETA)";
+          btnPago.style.background = "linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)";
+        }
+      }
+
+      const modal = document.getElementById('modalHojaCliente');
+      if (modal) {
+        modal.classList.add('show');
+        modal.classList.add('active');
+      }
     }
 
+    function cerrarHojaCliente() {
+      const modal = document.getElementById('modalHojaCliente');
+      if (modal) {
+        modal.classList.remove('show');
+        modal.classList.remove('active');
+      }
+      clienteHojaActualId = null;
+    }
+
+    function hojaAccionAbonar() {
+      if (!clienteHojaActualId) return;
+      const cid = clienteHojaActualId;
+      cerrarHojaCliente();
+      clienteHojaActualId = cid;
+      abrirModalAbono(cid);
+    }
+
+    function hojaAccionTicket() {
+      if (!clienteHojaActualId) return;
+      const cid = clienteHojaActualId;
+      cerrarHojaCliente();
+      cerrarSemana(cid);
+    }
+
+    function abrirModalConfirmarPagoTotal() {
+      if (!clienteHojaActualId) return;
+      const c = clientes.find(item => item.id === clienteHojaActualId);
+      if (!c) return;
+
+      if (c.saldo_actual <= 0) {
+        const confirmar = confirm(`El cliente '${c.nombre}' está al día ($0).\n\n¿Estás seguro de que deseas eliminar su tarjeta definitivamente del sistema?`);
+        if (confirmar) {
+          ejecutarPagoTotalDirecto(c.id, 'EFECTIVO', 'ELIMINADO AL DÍA');
+        }
+        return;
+      }
+
+      document.getElementById('pagoTotalClienteNombre').innerText = c.nombre;
+      document.getElementById('pagoTotalMontoTexto').innerText = formatMoney(c.saldo_actual);
+
+      const modal = document.getElementById('modalConfirmarPagoTotal');
+      if (modal) {
+        modal.classList.add('show');
+        modal.classList.add('active');
+      }
+    }
+
+    function cerrarModalConfirmarPagoTotal() {
+      const modal = document.getElementById('modalConfirmarPagoTotal');
+      if (modal) {
+        modal.classList.remove('show');
+        modal.classList.remove('active');
+      }
+    }
+
+    async function ejecutarPagoTotal() {
+      if (!clienteHojaActualId) return;
+      const c = clientes.find(item => item.id === clienteHojaActualId);
+      if (!c) return;
+
+      const metodoEl = document.querySelector('input[name="metodoPagoTotal"]:checked');
+      const metodo = metodoEl ? metodoEl.value : 'EFECTIVO';
+
+      await ejecutarPagoTotalDirecto(c.id, metodo, 'PAGO TOTAL LIQUIDADO');
+    }
+
+    async function ejecutarPagoTotalDirecto(clienteId, metodo, nota) {
+      const btn = document.getElementById('btnConfirmarPagoTotal');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerText = "Liquidando...";
+      }
+
+      try {
+        const res = await fetch('/api/clientes/pago-total', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            cliente_id: clienteId,
+            metodo: metodo,
+            nota: nota
+          })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          cerrarModalConfirmarPagoTotal();
+          cerrarHojaCliente();
+          clientes = data.clientes;
+          historial = data.historial;
+          if (selectedClientId === clienteId) {
+            selectedClientId = '';
+            onSelectClient();
+          }
+          renderClientSelect();
+          renderCuentas();
+          renderHistorial();
+          renderBalance();
+          showToast(`✅ Pago total de ${formatMoney(data.total_pagado)} recibido. Tarjeta de '${data.cliente_nombre}' eliminada con éxito.`);
+        } else {
+          alert("Error: " + (data.error || "No se pudo procesar el pago total"));
+        }
+      } catch (err) {
+        alert("Error de conexión al registrar pago total: " + err);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerText = "🔥 Liquidar y Borrar";
+        }
+      }
+    }
+
+    // Alias para compatibilidad
+    function abrirModalEditarCuenta(clienteId) {
+      abrirHojaCliente(clienteId);
+    }
     function cerrarModalEditarCuenta() {
-      document.getElementById('modalEditarCuenta').classList.remove('show');
-      document.getElementById('modalEditarCuenta').classList.remove('active');
-      clienteEditandoId = null;
+      cerrarHojaCliente();
     }
 
     async function confirmarEliminarConsumo(clienteId, itemIndex, nombreItem, cantidad, subtotal) {
@@ -1695,8 +1950,9 @@
           renderInventario();
           renderBalance();
           showToast("✅ Consumo corregido y stock devuelto a bodega.");
-          if (document.getElementById('modalEditarCuenta').classList.contains('active')) {
-            abrirModalEditarCuenta(clienteId);
+          const modalHoja = document.getElementById('modalHojaCliente');
+          if (modalHoja && modalHoja.classList.contains('active')) {
+            abrirHojaCliente(clienteId);
           }
         } else {
           alert("Error: " + (data.error || "No se pudo eliminar el consumo"));
@@ -1742,6 +1998,7 @@
 
     async function enviarWhatsAppConImagen() {
       if (!currentTicketData) return;
+      const { url, clienteNombre, total, comprobante } = currentTicketData;
       const fullTicketUrl = window.location.origin + url;
       const textoWA = `Hola ${clienteNombre}, te adjunto tu cuenta de cobro digital de PANCHO por valor de ${formatMoney(total)} (Comprobante ${comprobante}). Quedamos atentos al comprobante de transferencia a Nequi. ¡Muchas gracias!\n\n🎫 Ver ticket digital:\n${fullTicketUrl}`;
 
