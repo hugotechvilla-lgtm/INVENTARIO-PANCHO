@@ -673,10 +673,10 @@
 
           <!-- FILTRO POR CATEGORÍAS -->
           <div class="cat-pills" id="catPills">
-            <button class="cat-pill active" onclick="filterCategory('Todas')">✨ Todas (17)</button>
-            <button class="cat-pill" onclick="filterCategory('Cervezas')">🍺 Cervezas</button>
-            <button class="cat-pill" onclick="filterCategory('Micheladas y Especiales')">🌶️ Micheladas y Especiales</button>
+            <button class="cat-pill active" onclick="filterCategory('Todas')">✨ Todas</button>
+            <button class="cat-pill" onclick="filterCategory('Cervezas y Micheladas')">🍻 Cervezas y Micheladas</button>
             <button class="cat-pill" onclick="filterCategory('Limonadas y Granizados')">🍋 Limonadas y Granizados</button>
+            <button class="cat-pill" onclick="filterCategory('Tamarindo, Soda y Ginger')">🥤 Tamarindo, Soda, Ginger</button>
             <button class="cat-pill" onclick="filterCategory('Energizantes')">⚡ Energizantes</button>
           </div>
 
@@ -802,6 +802,29 @@
           <div class="m-lbl">Rentabilidad Promedio</div>
           <div class="m-val" id="balanceMargenPorcentaje">0%</div>
         </div>
+      </div>
+
+      <!-- NUEVO: CONTROL DE SURTIDO Y GANANCIAS POR CADA GRUPO -->
+      <div class="section-card" style="margin-bottom: 24px;">
+        <div class="section-title" style="flex-wrap: wrap; gap: 8px;">
+          <span>📦 Dinero para Surtir vs Ganancia Limpia por Grupo</span>
+          <span style="font-size: 0.8rem; color: #FFAA00;">💡 Separa el dinero de reposición para volver a surtir</span>
+        </div>
+        <p style="color: var(--text-muted); font-size: 0.84rem; margin: 4px 0 16px 0;">
+          Usa la plata de <b>"Para Surtir (Costo)"</b> para reponer la mercancía vendida en cada grupo. La <b>"Ganancia Limpia"</b> es tu utilidad real libre.
+        </p>
+        <div class="summary-metrics" id="gruposCardsContainer" style="margin-bottom: 0;">
+          <!-- Generado dinámicamente con JS -->
+        </div>
+      </div>
+
+      <!-- BOTONES DE FILTRO PARA LAS TABLAS -->
+      <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;" id="balanceGroupFilterPills">
+        <button class="cat-pill active" onclick="filtrarGrupoBalance('Todas')">👁️ Ver Todo el Negocio</button>
+        <button class="cat-pill" onclick="filtrarGrupoBalance('Tamarindo, Soda y Ginger')">🥤 Tamarindo, Soda, Ginger</button>
+        <button class="cat-pill" onclick="filtrarGrupoBalance('Limonadas y Granizados')">🍋 Limonadas y Granizados</button>
+        <button class="cat-pill" onclick="filtrarGrupoBalance('Cervezas y Micheladas')">🍻 Cervezas y Micheladas</button>
+        <button class="cat-pill" onclick="filtrarGrupoBalance('Energizantes')">⚡ Energizantes</button>
       </div>
 
       <!-- TABLA 1: VALOR COSTO VS VENTA POR UNIDAD -->
@@ -1226,10 +1249,34 @@
       }
     }
 
+    // CLASIFICACIÓN INTELIGENTE DE BEBIDAS POR GRUPOS
+    function obtenerGrupoBebida(nombre, categoria) {
+      const n = (nombre || '').toUpperCase();
+      const c = (categoria || '').toUpperCase();
+
+      // 1. TAMARINDO, SODA, GINGER
+      if (n.includes('TAMARINDO') || n.includes('SODA') || n.includes('GINGER')) {
+        return 'Tamarindo, Soda y Ginger';
+      }
+      // 2. LIMONADAS Y GRANIZADOS
+      if (n.includes('LIMONADA') || n.includes('GRANIZADO') || c.includes('LIMONADA') || c.includes('GRANIZADO')) {
+        return 'Limonadas y Granizados';
+      }
+      // 3. ENERGIZANTES
+      if (n.includes('RED BULL') || n.includes('GATORADE') || c.includes('ENERGIZANTE') || n.includes('MONSTER') || n.includes('SPEED')) {
+        return 'Energizantes';
+      }
+      // 4. CERVEZAS Y MICHELADAS
+      if (n.includes('CERVEZA') || n.includes('MICHELADA') || n.includes('ENDIABLADA') || c.includes('CERVEZA') || c.includes('MICHELADA')) {
+        return 'Cervezas y Micheladas';
+      }
+      return 'Otras Bebidas';
+    }
+
     // FILTRO Y RENDER CATÁLOGO
     function filterCategory(cat) {
       currentCategory = cat;
-      document.querySelectorAll('.cat-pill').forEach(p => {
+      document.querySelectorAll('#catPills .cat-pill').forEach(p => {
         p.classList.toggle('active', p.innerText.includes(cat) || (cat === 'Todas' && p.innerText.includes('Todas')));
       });
       renderProducts();
@@ -1246,7 +1293,9 @@
     function renderProducts() {
       const grid = document.getElementById('productsGrid');
       grid.innerHTML = '';
-      const filtrados = currentCategory === 'Todas' ? inventario : inventario.filter(p => p.categoria === currentCategory);
+      const filtrados = currentCategory === 'Todas'
+        ? inventario
+        : inventario.filter(p => obtenerGrupoBebida(p.nombre, p.categoria) === currentCategory);
 
       if (filtrados.length === 0) {
         grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 40px; font-size: 1.1rem;">No hay productos en esta categoría o catálogo vacío.</div>';
@@ -1260,7 +1309,7 @@
         card.className = 'product-card';
         card.innerHTML = `
           <div>
-            <div class="p-cat">${p.categoria}</div>
+            <div class="p-cat">${obtenerGrupoBebida(p.nombre, p.categoria)}</div>
             <div class="p-name">${p.nombre}</div>
             <div class="p-price" style="display: flex; align-items: center; justify-content: space-between;">
               <span>${formatMoney(p.precio)}</span>
@@ -2233,13 +2282,33 @@
       }
     }
 
+    let currentBalanceGroup = 'Todas';
+
+    function filtrarGrupoBalance(grupo) {
+      currentBalanceGroup = grupo;
+      document.querySelectorAll('#balanceGroupFilterPills .cat-pill').forEach(btn => {
+        btn.classList.toggle('active', btn.innerText.includes(grupo) || (grupo === 'Todas' && btn.innerText.includes('Todo')));
+      });
+      renderBalance();
+    }
+
     // RENDER BALANCE Y GANANCIAS
     function renderBalance() {
-      // 1. Tabla de Costo vs Venta por Unidad
+      const grupos = {
+        'Tamarindo, Soda y Ginger': { icon: '🥤', nombre: 'Tamarindo, Soda y Ginger', cant: 0, venta: 0, costo: 0 },
+        'Limonadas y Granizados': { icon: '🍋', nombre: 'Limonadas y Granizados', cant: 0, venta: 0, costo: 0 },
+        'Cervezas y Micheladas': { icon: '🍻', nombre: 'Cervezas y Micheladas', cant: 0, venta: 0, costo: 0 },
+        'Energizantes': { icon: '⚡', nombre: 'Energizantes', cant: 0, venta: 0, costo: 0 }
+      };
+
+      // 1. Tabla de Costo vs Venta por Unidad (filtrada por currentBalanceGroup si aplica)
       const unitTbody = document.getElementById('unitProfitTableBody');
       unitTbody.innerHTML = '';
 
       inventario.forEach(p => {
+        const grp = obtenerGrupoBebida(p.nombre, p.categoria);
+        if (currentBalanceGroup !== 'Todas' && grp !== currentBalanceGroup) return;
+
         const costo = p.precio_costo || 0;
         const venta = p.precio || 0;
         const ganancia = venta - costo;
@@ -2248,7 +2317,7 @@
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td><b>${p.nombre}</b></td>
-          <td><span class="p-cat">${p.categoria}</span></td>
+          <td><span class="p-cat">${grp}</span></td>
           <td><b style="color: #ef4444;">${formatMoney(costo)}</b></td>
           <td><b style="color: #FFAA00;">${formatMoney(venta)}</b></td>
           <td><b style="color: #10b981;">+ ${formatMoney(ganancia)}</b></td>
@@ -2262,52 +2331,41 @@
       let totalVentasSemana = 0;
       let totalCostosSemana = 0;
 
+      function procesarItemSemanal(item) {
+        const p = inventario.find(inv => inv.id === item.producto_id || inv.nombre === item.nombre);
+        const costoUnit = (p && p.precio_costo !== undefined) ? p.precio_costo : (item.precio_costo || 0);
+        const cant = item.cantidad || 0;
+        const subVenta = item.subtotal || (item.precio_unitario * cant);
+        const subCosto = costoUnit * cant;
+        const nom = item.nombre;
+        const grp = obtenerGrupoBebida(nom, p ? p.categoria : '');
+
+        const key = item.producto_id || nom;
+        if (!weeklyItemsMap[key]) {
+          weeklyItemsMap[key] = { nombre: nom, grupo: grp, cantidad: 0, totalVenta: 0, totalCosto: 0 };
+        }
+        weeklyItemsMap[key].cantidad += cant;
+        weeklyItemsMap[key].totalVenta += subVenta;
+        weeklyItemsMap[key].totalCosto += subCosto;
+
+        totalVentasSemana += subVenta;
+        totalCostosSemana += subCosto;
+
+        if (grupos[grp]) {
+          grupos[grp].cant += cant;
+          grupos[grp].venta += subVenta;
+          grupos[grp].costo += subCosto;
+        }
+      }
+
       // Consumos activos en las cuentas de clientes
       clientes.forEach(c => {
-        if (c.consumos_semana) {
-          c.consumos_semana.forEach(item => {
-            const p = inventario.find(inv => inv.id === item.producto_id || inv.nombre === item.nombre);
-            const costoUnit = (p && p.precio_costo !== undefined) ? p.precio_costo : (item.precio_costo || 0);
-            const cant = item.cantidad || 0;
-            const subVenta = item.subtotal || (item.precio_unitario * cant);
-            const subCosto = costoUnit * cant;
-
-            const key = item.producto_id || item.nombre;
-            if (!weeklyItemsMap[key]) {
-              weeklyItemsMap[key] = { nombre: item.nombre, cantidad: 0, totalVenta: 0, totalCosto: 0 };
-            }
-            weeklyItemsMap[key].cantidad += cant;
-            weeklyItemsMap[key].totalVenta += subVenta;
-            weeklyItemsMap[key].totalCosto += subCosto;
-
-            totalVentasSemana += subVenta;
-            totalCostosSemana += subCosto;
-          });
-        }
+        if (c.consumos_semana) c.consumos_semana.forEach(procesarItemSemanal);
       });
 
       // Cobros semanales cerrados en el historial
       historial.forEach(h => {
-        if (h.consumos) {
-          h.consumos.forEach(item => {
-            const p = inventario.find(inv => inv.id === item.producto_id || inv.nombre === item.nombre);
-            const costoUnit = (p && p.precio_costo !== undefined) ? p.precio_costo : (item.precio_costo || 0);
-            const cant = item.cantidad || 0;
-            const subVenta = item.subtotal || (item.precio_unitario * cant);
-            const subCosto = costoUnit * cant;
-
-            const key = item.producto_id || item.nombre;
-            if (!weeklyItemsMap[key]) {
-              weeklyItemsMap[key] = { nombre: item.nombre, cantidad: 0, totalVenta: 0, totalCosto: 0 };
-            }
-            weeklyItemsMap[key].cantidad += cant;
-            weeklyItemsMap[key].totalVenta += subVenta;
-            weeklyItemsMap[key].totalCosto += subCosto;
-
-            totalVentasSemana += subVenta;
-            totalCostosSemana += subCosto;
-          });
-        }
+        if (h.consumos) h.consumos.forEach(procesarItemSemanal);
       });
 
       const gananciaNeta = totalVentasSemana - totalCostosSemana;
@@ -2318,19 +2376,52 @@
       document.getElementById('balanceGananciaNeta').innerText = formatMoney(gananciaNeta);
       document.getElementById('balanceMargenPorcentaje').innerText = margenSemana + '%';
 
-      // Tabla de rendimiento por producto
+      // 3. Tarjetas de Grupos (Dinero para Surtir vs Ganancia Limpia)
+      const containerGrupos = document.getElementById('gruposCardsContainer');
+      if (containerGrupos) {
+        containerGrupos.innerHTML = Object.values(grupos).map(g => {
+          const utilG = g.venta - g.costo;
+          const margenG = g.venta > 0 ? Math.round((utilG / g.venta) * 100) : 0;
+          const esActivo = currentBalanceGroup === g.nombre;
+          return `
+            <div class="metric-card" style="border: 2px solid ${esActivo ? '#FFAA00' : 'var(--border-color)'}; background: ${esActivo ? 'rgba(255,170,0,0.06)' : 'rgba(255,255,255,0.02)'}; cursor: pointer; transition: transform 0.15s, border-color 0.2s; border-radius: 14px; padding: 16px;" onclick="filtrarGrupoBalance('${g.nombre}')" title="Toca para filtrar este grupo">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                <span style="font-size: 1rem; font-weight: 800; color: #fff;">${g.icon} ${g.nombre}</span>
+                <span style="font-size: 0.76rem; background: rgba(255,170,0,0.18); color: #FFAA00; padding: 3px 8px; border-radius: 8px; font-weight: 800;">${g.cant} uds</span>
+              </div>
+              <div style="font-size: 0.82rem; color: var(--text-muted); display: flex; justify-content: space-between; margin-bottom: 6px;">
+                <span>Venta Generada:</span>
+                <b style="color: #fff; font-size: 0.95rem;">${formatMoney(g.venta)}</b>
+              </div>
+              <div style="font-size: 0.82rem; color: #ef4444; display: flex; justify-content: space-between; margin-bottom: 8px; background: rgba(239, 68, 68, 0.08); padding: 6px 8px; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.2);">
+                <span style="font-weight: 700;">🔄 Para Surtir (Costo):</span>
+                <b style="font-size: 0.95rem;">${formatMoney(g.costo)}</b>
+              </div>
+              <div style="font-size: 0.9rem; color: #10b981; display: flex; justify-content: space-between; padding: 8px; background: rgba(16, 185, 129, 0.12); border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.28);">
+                <span style="font-weight: 800;">💰 Ganancia Limpia:</span>
+                <b style="font-weight: 900; font-size: 1.05rem;">+ ${formatMoney(utilG)}</b>
+              </div>
+              <div style="font-size: 0.74rem; color: var(--text-muted); text-align: right; margin-top: 8px;">
+                Rentabilidad: <b>${margenG}%</b> · <span style="color: #FFAA00;">Filtrar ➔</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // 4. Tabla de rendimiento por producto semanal
       const salesTbody = document.getElementById('weeklySalesBalanceBody');
       salesTbody.innerHTML = '';
-      const itemsVendidos = Object.values(weeklyItemsMap);
+      const itemsVendidos = Object.values(weeklyItemsMap).filter(v => currentBalanceGroup === 'Todas' || v.grupo === currentBalanceGroup);
 
       if (itemsVendidos.length === 0) {
-        salesTbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 18px;">Aún no hay consumos registrados en esta semana.</td></tr>`;
+        salesTbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 18px;">No hay consumos registrados para este grupo en esta semana.</td></tr>`;
       } else {
         itemsVendidos.forEach(v => {
           const util = v.totalVenta - v.totalCosto;
           const tr = document.createElement('tr');
           tr.innerHTML = `
-            <td><b>${v.nombre}</b></td>
+            <td><b>${v.nombre}</b> <br><small style="color: var(--text-muted);">${v.grupo}</small></td>
             <td><b>${v.cantidad} uds</b></td>
             <td><b>${formatMoney(v.totalVenta)}</b></td>
             <td><span style="color: #ef4444;">${formatMoney(v.totalCosto)}</span></td>

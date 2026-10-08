@@ -46,9 +46,11 @@ def agrupar_consumos_por_categoria(consumos):
     categorias_cuenta = {
         "CERVEZAS": 0,
         "MICHELADAS": 0,
+        "LIMONADAS_GRANIZADOS": 0,
+        "SODAS_MEZCLADORES": 0,
+        "ENERGIZANTES": 0,
         "SHOTS": 0,
         "BOTELLAS": 0,
-        "BEBIDAS": 0,
         "SNACKS": 0
     }
     otros_cuenta = {}
@@ -58,18 +60,24 @@ def agrupar_consumos_por_categoria(consumos):
         nom = item.get("nombre", "").upper()
         cat = item.get("categoria", "").upper()
 
-        if "MICHELADA" in nom or "MICHELADA" in cat:
+        if "MICHELADA" in nom or "ENDIABLADA" in nom or "MICHELADA" in cat:
             categorias_cuenta["MICHELADAS"] += cant
         elif any(k in nom for k in ["CERVEZA", "POKER", "AGUILA", "CORONA", "CLUB", "PILSEN", "HEINEKEN", "STELLA", "COSTENA", "ANDINA"]) or "CERVEZA" in cat:
             categorias_cuenta["CERVEZAS"] += cant
+        elif any(k in nom for k in ["LIMONADA", "GRANIZADO"]) or "LIMONADA" in cat or "GRANIZADO" in cat:
+            categorias_cuenta["LIMONADAS_GRANIZADOS"] += cant
+        elif any(k in nom for k in ["TAMARINDO", "SODA", "GINGER"]):
+            categorias_cuenta["SODAS_MEZCLADORES"] += cant
+        elif any(k in nom for k in ["RED BULL", "GATORADE", "MONSTER", "SPEED"]) or "ENERGIZANTE" in cat:
+            categorias_cuenta["ENERGIZANTES"] += cant
         elif any(k in nom for k in ["SHOT", "TRAGO"]) or "TRAGO" in cat or "SHOT" in cat:
             categorias_cuenta["SHOTS"] += cant
         elif any(k in nom for k in ["BOTELLA", "MEDIA"]) or "LICOR" in cat or any(k in nom for k in ["AGUARDIENTE", "RON ", "WHISKY", "VODKA", "TEQUILA"]):
             categorias_cuenta["BOTELLAS"] += cant
-        elif any(k in nom for k in ["SODA", "AGUA", "LIMONADA", "GATORADE", "RED BULL", "JUGO"]) or "BEBIDA" in cat:
-            categorias_cuenta["BEBIDAS"] += cant
         elif "SNACK" in cat or any(k in nom for k in ["PAPAS", "MANI", "PLÁTANO", "PLATANO"]):
             categorias_cuenta["SNACKS"] += cant
+        elif any(k in nom for k in ["AGUA", "JUGO"]) or "BEBIDA" in cat:
+            categorias_cuenta["SODAS_MEZCLADORES"] += cant
         else:
             nom_limpio = nom.replace("CERVEZA ", "").replace("TRAGO / SHOT DE ", "SHOT ").strip()
             otros_cuenta[nom_limpio] = otros_cuenta.get(nom_limpio, 0) + cant
@@ -79,12 +87,16 @@ def agrupar_consumos_por_categoria(consumos):
         resultado.append(f"{categorias_cuenta['CERVEZAS']} CERVEZAS" if categorias_cuenta['CERVEZAS'] > 1 else "1 CERVEZA")
     if categorias_cuenta["MICHELADAS"] > 0:
         resultado.append(f"{categorias_cuenta['MICHELADAS']} MICHELADAS" if categorias_cuenta['MICHELADAS'] > 1 else "1 MICHELADA")
+    if categorias_cuenta["LIMONADAS_GRANIZADOS"] > 0:
+        resultado.append(f"{categorias_cuenta['LIMONADAS_GRANIZADOS']} LIMONADAS Y GRANIZADOS" if categorias_cuenta['LIMONADAS_GRANIZADOS'] > 1 else "1 LIMONADA / GRANIZADO")
+    if categorias_cuenta["SODAS_MEZCLADORES"] > 0:
+        resultado.append(f"{categorias_cuenta['SODAS_MEZCLADORES']} TAMARINDO / SODA / GINGER" if categorias_cuenta['SODAS_MEZCLADORES'] > 1 else "1 SODA / BEBIDA")
+    if categorias_cuenta["ENERGIZANTES"] > 0:
+        resultado.append(f"{categorias_cuenta['ENERGIZANTES']} ENERGIZANTES" if categorias_cuenta['ENERGIZANTES'] > 1 else "1 ENERGIZANTE")
     if categorias_cuenta["SHOTS"] > 0:
         resultado.append(f"{categorias_cuenta['SHOTS']} SHOTS" if categorias_cuenta['SHOTS'] > 1 else "1 SHOT")
     if categorias_cuenta["BOTELLAS"] > 0:
         resultado.append(f"{categorias_cuenta['BOTELLAS']} BOTELLAS" if categorias_cuenta['BOTELLAS'] > 1 else "1 BOTELLA")
-    if categorias_cuenta["BEBIDAS"] > 0:
-        resultado.append(f"{categorias_cuenta['BEBIDAS']} BEBIDAS" if categorias_cuenta['BEBIDAS'] > 1 else "1 BEBIDA")
     if categorias_cuenta["SNACKS"] > 0:
         resultado.append(f"{categorias_cuenta['SNACKS']} SNACKS" if categorias_cuenta['SNACKS'] > 1 else "1 SNACK")
 
