@@ -203,40 +203,43 @@ def generar_ticket_cobro(cliente, concepto, monto_val, titular_nequi="HUGO BRION
     draw = ImageDraw.Draw(ticket)
     draw.rounded_rectangle([(4, 4), (ancho - 5, alto - 5)], radius=radio_externo, outline=color_marco, width=2)
 
-    # Carga de tipografías
-    def cargar_fuente(nombre, tam):
-        ruta_directa = os.path.join(BASE_DIR, nombre)
-        if os.path.exists(ruta_directa):
-            try:
-                return ImageFont.truetype(ruta_directa, tam)
-            except Exception as e:
-                print(f"[!] Error cargando fuente directa {nombre}: {e}")
+    # Carga de tipografías con soporte para listas de alternativas
+    def cargar_fuente(nombres, tam):
+        lista = [nombres] if isinstance(nombres, str) else list(nombres)
+        for nom in lista:
+            ruta_directa = os.path.join(BASE_DIR, nom)
+            if os.path.exists(ruta_directa):
+                try:
+                    return ImageFont.truetype(ruta_directa, tam)
+                except Exception as e:
+                    print(f"[!] Error cargando fuente directa {nom}: {e}")
 
-        nombre_clean = os.path.splitext(os.path.basename(nombre))[0].lower()
-        nombre_lower = os.path.basename(nombre).lower()
-        if os.path.exists(BASE_DIR):
-            for archivo in os.listdir(BASE_DIR):
-                arch_lower = archivo.lower()
-                arch_clean = os.path.splitext(arch_lower)[0]
-                if arch_lower == nombre_lower or arch_clean == nombre_clean:
-                    ruta_real = os.path.join(BASE_DIR, archivo)
-                    try:
-                        return ImageFont.truetype(ruta_real, tam)
-                    except Exception as e:
-                        print(f"[!] Error cargando fuente {archivo}: {e}")
+            nom_clean = os.path.splitext(os.path.basename(nom))[0].lower()
+            nom_lower = os.path.basename(nom).lower()
+            if os.path.exists(BASE_DIR):
+                for archivo in os.listdir(BASE_DIR):
+                    arch_lower = archivo.lower()
+                    arch_clean = os.path.splitext(arch_lower)[0]
+                    if arch_lower == nom_lower or arch_clean == nom_clean:
+                        ruta_real = os.path.join(BASE_DIR, archivo)
+                        try:
+                            return ImageFont.truetype(ruta_real, tam)
+                        except Exception as e:
+                            print(f"[!] Error cargando fuente {archivo}: {e}")
         return ImageFont.load_default()
 
+    FONT_SUPLEX = ["Suplexmentary Comic NC.ttf", "SUPLEX.ttf"]
     font_titulo = cargar_fuente("HAPPY.ttf", 40)
-    font_sub = cargar_fuente("Suplexmentary Comic NC.ttf", 13)
-    font_lbl_cobro = cargar_fuente("Suplexmentary Comic NC.ttf", 13)
-    font_monto = cargar_fuente("Suplexmentary Comic NC.ttf", 42)
-    font_campo_lbl = cargar_fuente("Suplexmentary Comic NC.ttf", 13)
-    font_campo_val = cargar_fuente("Suplexmentary Comic NC.ttf", 16)
-    font_consumo = cargar_fuente("Suplexmentary Comic NC.ttf", 15)
-    font_pago_tit = cargar_fuente("Suplexmentary Comic NC.ttf", 15)
-    font_pago_num = cargar_fuente("Suplexmentary Comic NC.ttf", 23)
-    font_nota = cargar_fuente("Suplexmentary Comic NC.ttf", 13)
-    font_pie = cargar_fuente("Suplexmentary Comic NC.ttf", 17)
+    font_sub = cargar_fuente(FONT_SUPLEX, 13)
+    font_lbl_cobro = cargar_fuente(FONT_SUPLEX, 13)
+    font_monto = cargar_fuente(FONT_SUPLEX, 42)
+    font_campo_lbl = cargar_fuente(FONT_SUPLEX, 13)
+    font_campo_val = cargar_fuente(FONT_SUPLEX, 16)
+    font_consumo = cargar_fuente(FONT_SUPLEX, 15)
+    font_pago_tit = cargar_fuente(FONT_SUPLEX, 15)
+    font_pago_num = cargar_fuente(FONT_SUPLEX, 23)
+    font_nota = cargar_fuente(FONT_SUPLEX, 13)
+    font_pie = cargar_fuente(FONT_SUPLEX, 17)
 
     cx = ancho // 2
 

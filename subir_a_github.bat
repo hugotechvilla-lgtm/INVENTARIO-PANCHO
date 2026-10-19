@@ -7,7 +7,7 @@ echo ======================================================
 git rm -r --cached .idea 2>nul
 git add .
 git reset HEAD datos/ 2>nul
-git commit -m "Metricas superiores dinamicas conectadas al filtro de grupo en Costos y Ganancias"
+git commit -m "Sincronizar fuentes de tickets HAPPY y SUPLEX para PythonAnywhere"
 git branch -M main
 git remote remove origin 2>nul
 git remote add origin https://github.com/hugotechvilla-lgtm/INVENTARIO-PANCHO.git
