@@ -1,7 +1,12 @@
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 import os
 import re
+
+TZ_COLOMBIA = timezone(timedelta(hours=-5))
+
+def ahora_colombia():
+    return datetime.now(TZ_COLOMBIA)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ARCHIVO_CONTADOR = os.path.join(BASE_DIR, "contador.txt")
@@ -114,7 +119,7 @@ def generar_ticket_cobro(cliente, concepto, monto_val, titular_nequi="HUGO BRION
     Retorna una tupla: (ruta_archivo_absoluta, nombre_archivo_relativo, numero_comprobante)
     """
     consecutivo_num = obtener_siguiente_consecutivo()
-    numero_comprobante = f"#CC-{datetime.now().year}-{consecutivo_num:04d}"
+    numero_comprobante = f"#CC-{ahora_colombia().year}-{consecutivo_num:04d}"
     
     # Formateo de monto
     if isinstance(monto_val, (int, float)):
@@ -294,7 +299,7 @@ def generar_ticket_cobro(cliente, concepto, monto_val, titular_nequi="HUGO BRION
     # Fila 2: FECHA DE EMISIÓN
     y_r2 = y_r1 + 34
     draw.text((box2_x1 + 18, y_r2), "FECHA DE EMISIÓN", font=font_campo_lbl, fill=color_secundario)
-    txt_fecha = datetime.now().strftime("%d / %m / %Y")
+    txt_fecha = ahora_colombia().strftime("%d / %m / %Y")
     bbox_fec = draw.textbbox((0, 0), txt_fecha, font=font_campo_val)
     draw.text((box2_x2 - 18 - (bbox_fec[2] - bbox_fec[0]), y_r2 - 2), txt_fecha, font=font_campo_val, fill=color_texto)
     draw.line([(box2_x1 + 16, y_r2 + 26), (box2_x2 - 16, y_r2 + 26)], fill=(225, 225, 225, 255), width=1)

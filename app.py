@@ -12,7 +12,14 @@ import socket        # Conexión de red (detecta la dirección IP de tu Wi-Fi)
 import json          # Lee y escribe en la base de datos (archivos .json)
 import os            # Habla con el sistema operativo Windows (carpetas y rutas)
 import re            # Limpieza de textos y caracteres especiales
-from datetime import datetime # Reloj del sistema (fechas, horas y comprobantes)
+from datetime import datetime, timezone, timedelta # Reloj del sistema (fechas, horas y comprobantes)
+
+# Zona horaria oficial de Colombia (UTC-5) para evitar desfases en servidores en la nube
+TZ_COLOMBIA = timezone(timedelta(hours=-5))
+
+def ahora_colombia():
+    """Retorna siempre la fecha y hora exacta de Colombia (UTC-5)."""
+    return datetime.now(TZ_COLOMBIA)
 
 # Traemos el pintor de tickets y la agrupación inteligente desde generador_ticket.py
 from generador_ticket import generar_ticket_cobro, agrupar_consumos_por_categoria
@@ -111,7 +118,7 @@ class PanchoHandler(SimpleHTTPRequestHandler):
                 "ok": True,
                 "ip_local": get_local_ip(),
                 "port": int(os.environ.get("PORT", 5000)),
-                "hora": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                "hora": ahora_colombia().strftime("%Y-%m-%d %H:%M:%S")
             })
             return
 
@@ -237,7 +244,7 @@ class PanchoHandler(SimpleHTTPRequestHandler):
                     "nombre": nombre,
                     "saldo_actual": 0,
                     "consumos_semana": [],
-                    "fecha_inicio_semana": datetime.now().strftime("%Y-%m-%d")
+                    "fecha_inicio_semana": ahora_colombia().strftime("%Y-%m-%d")
                 }
                 clientes.append(nuevo_cli)
                 guardar_json(RUTA_CLIENTES, clientes)
@@ -377,7 +384,7 @@ class PanchoHandler(SimpleHTTPRequestHandler):
                             prod_base["stock"] = max(0, prod_base["stock"] - item["cantidad"])
 
                 # Sumar a consumos del cliente
-                ahora_str = datetime.now().strftime("%Y-%m-%d %H:%M")
+                ahora_str = ahora_colombia().strftime("%Y-%m-%d %H:%M")
                 subtotal_pedido = 0
                 for item in items:
                     sub = item.get("subtotal", item["precio_unitario"] * item["cantidad"])
@@ -435,7 +442,7 @@ class PanchoHandler(SimpleHTTPRequestHandler):
                             prod_base["stock"] = max(0, prod_base["stock"] - item["cantidad"])
 
                 # 2. Calcular total y preparar consumos para balance y ganancia
-                ahora_str = datetime.now().strftime("%Y-%m-%d %H:%M")
+                ahora_str = ahora_colombia().strftime("%Y-%m-%d %H:%M")
                 subtotal_pedido = 0
                 consumos_detallados = []
                 for item in items:
@@ -471,7 +478,7 @@ class PanchoHandler(SimpleHTTPRequestHandler):
 
                 # 5. Registrar en historial de cobros (PAGADO - no suma deuda)
                 registro_historial = {
-                    "fecha": datetime.now().strftime("%d/%m/%Y %H:%M"),
+                    "fecha": ahora_colombia().strftime("%d/%m/%Y %H:%M"),
                     "cliente": nombre_cliente,
                     "total": subtotal_pedido,
                     "comprobante": comprobante,
@@ -530,7 +537,7 @@ class PanchoHandler(SimpleHTTPRequestHandler):
 
                 # Guardar referencia del ticket sin borrar la deuda ni los consumos (No suma a caja hasta que abone)
                 cliente["ultimo_ticket"] = {
-                    "fecha": datetime.now().strftime("%d/%m/%Y %H:%M"),
+                    "fecha": ahora_colombia().strftime("%d/%m/%Y %H:%M"),
                     "comprobante": comprobante,
                     "ticket_url": f"/tickets/{filename}"
                 }
@@ -572,7 +579,7 @@ class PanchoHandler(SimpleHTTPRequestHandler):
                 nuevo_saldo = saldo_anterior - monto_real
                 cliente["saldo_actual"] = nuevo_saldo
 
-                ahora_dt = datetime.now()
+                ahora_dt = ahora_colombia()
                 fecha_str = ahora_dt.strftime("%d/%m/%Y %H:%M")
                 detalle_abono = {
                     "fecha": fecha_str,
@@ -586,7 +593,9 @@ class PanchoHandler(SimpleHTTPRequestHandler):
                 cliente["abonos"].append(detalle_abono)
                 cliente["ultimo_abono"] = detalle_abono
 
+                consumos_saldados = []
                 if nuevo_saldo == 0:
+                    consumos_saldados = list(cliente.get("consumos_semana", []))
                     cliente["consumos_semana"] = []
                     cliente["fecha_inicio_semana"] = ahora_dt.strftime("%Y-%m-%d")
 
@@ -598,7 +607,7 @@ class PanchoHandler(SimpleHTTPRequestHandler):
                     "total": monto_real,
                     "comprobante": comp_abono,
                     "concepto": concepto_abono,
-                    "consumos": [],
+                    "consumos": consumos_saldados,
                     "metodo": metodo,
                     "tipo": "ABONO"
                 }
@@ -641,7 +650,7 @@ class PanchoHandler(SimpleHTTPRequestHandler):
                 total_pagado = cliente.get("saldo_actual", 0)
                 nombre_cliente = cliente.get("nombre", "")
                 consumos_cliente = cliente.get("consumos_semana", [])
-                ahora_dt = datetime.now()
+                ahora_dt = ahora_colombia()
                 fecha_str = ahora_dt.strftime("%d/%m/%Y %H:%M")
 
                 if total_pagado > 0 or consumos_cliente:
