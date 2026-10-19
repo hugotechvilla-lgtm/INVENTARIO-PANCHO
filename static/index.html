@@ -785,9 +785,25 @@
     <!-- 4. PESTAÑA: COSTOS, GANANCIAS Y BALANCE -->
     <!-- ============================================== -->
     <section id="tab-balance" class="tab-content">
+      <!-- SELECTOR DE SEMANA / PERIODO -->
+      <div class="section-card" style="margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; padding: 16px 20px; background: linear-gradient(135deg, rgba(255,170,0,0.08) 0%, rgba(28,28,33,0.95) 100%); border: 1.5px solid rgba(255,170,0,0.35);">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span style="font-size: 1.6rem; background: rgba(255,170,0,0.15); width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 12px; border: 1px solid rgba(255,170,0,0.3);">📅</span>
+          <div>
+            <div style="font-size: 1rem; font-weight: 800; color: #fff;">Periodo de Consulta:</div>
+            <div style="font-size: 0.8rem; color: #FFAA00;" id="balancePeriodSubtitle">Semana Actual (En curso)</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <select id="balanceWeekSelect" onchange="cambiarSemanaBalance(this.value)" style="background: #121214; color: #FFAA00; border: 2px solid #FFAA00; padding: 10px 18px; border-radius: 12px; font-weight: 800; font-size: 0.95rem; cursor: pointer; outline: none; box-shadow: 0 4px 12px rgba(255,170,0,0.15);">
+            <!-- Generado dinámicamente con JS -->
+          </select>
+        </div>
+      </div>
+
       <div class="summary-metrics">
         <div class="metric-card">
-          <div class="m-lbl">Ventas Semanales Acumuladas</div>
+          <div class="m-lbl">Ventas del Periodo</div>
           <div class="m-val highlight" id="balanceTotalVentas">$ 0</div>
         </div>
         <div class="metric-card">
@@ -804,11 +820,11 @@
         </div>
       </div>
 
-      <!-- NUEVO: CONTROL DE SURTIDO Y GANANCIAS POR CADA GRUPO -->
+      <!-- CONTROL DE SURTIDO Y GANANCIAS POR CADA GRUPO -->
       <div class="section-card" style="margin-bottom: 24px;">
         <div class="section-title" style="flex-wrap: wrap; gap: 8px;">
           <span>📦 Dinero para Surtir vs Ganancia Limpia por Grupo</span>
-          <span style="font-size: 0.8rem; color: #FFAA00;">💡 Separa el dinero de reposición para volver a surtir</span>
+          <span style="font-size: 0.8rem; color: #FFAA00;">💡 Toca cualquier tarjeta para filtrar el detallado de abajo (toca de nuevo para ver todo)</span>
         </div>
         <p style="color: var(--text-muted); font-size: 0.84rem; margin: 4px 0 16px 0;">
           Usa la plata de <b>"Para Surtir (Costo)"</b> para reponer la mercancía vendida en cada grupo. La <b>"Ganancia Limpia"</b> es tu utilidad real libre.
@@ -818,20 +834,15 @@
         </div>
       </div>
 
-      <!-- BOTONES DE FILTRO PARA LAS TABLAS -->
-      <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;" id="balanceGroupFilterPills">
-        <button class="cat-pill active" onclick="filtrarGrupoBalance('Todas')">👁️ Ver Todo el Negocio</button>
-        <button class="cat-pill" onclick="filtrarGrupoBalance('Tamarindo, Soda y Ginger')">🥤 Tamarindo, Soda, Ginger</button>
-        <button class="cat-pill" onclick="filtrarGrupoBalance('Limonadas y Granizados')">🍋 Limonadas y Granizados</button>
-        <button class="cat-pill" onclick="filtrarGrupoBalance('Cervezas y Micheladas')">🍻 Cervezas y Micheladas</button>
-        <button class="cat-pill" onclick="filtrarGrupoBalance('Energizantes')">⚡ Energizantes</button>
-      </div>
-
       <!-- TABLA 1: VALOR COSTO VS VENTA POR UNIDAD -->
       <div class="section-card">
-        <div class="section-title">
+        <div class="section-title" style="flex-wrap: wrap; gap: 8px;">
           <span>💰 Precios de Compra (Costo) vs Precio de Venta por Unidad</span>
           <span style="font-size: 0.82rem; color: var(--text-muted);">Configurados desde 📦 Inventario de Bebidas</span>
+        </div>
+        <div id="unitTableGroupAlert" style="display: none; margin-bottom: 12px; padding: 10px 14px; background: rgba(255,170,0,0.1); border: 1px solid rgba(255,170,0,0.3); border-radius: 10px; font-size: 0.84rem; color: #FFAA00;">
+          👁️ Mostrando solo productos del grupo: <b id="unitTableGroupAlertTxt"></b> 
+          <button onclick="toggleGrupoBalance('Todas')" style="background: rgba(255,170,0,0.2); border: 1px solid #FFAA00; color: #fff; border-radius: 6px; padding: 3px 8px; margin-left: 8px; cursor: pointer; font-weight: 700; font-size: 0.78rem;">Mostrar todos ✖</button>
         </div>
         <div class="inv-table-wrapper">
           <table>
@@ -853,10 +864,14 @@
         </div>
       </div>
 
-      <!-- TABLA 2: BALANCE DE VENTAS DE LA SEMANA -->
+      <!-- TABLA 2: BALANCE DE VENTAS DEL PERIODO -->
       <div class="section-card">
-        <div class="section-title">
-          <span>📈 Balance de Ventas de la Semana por Bebida</span>
+        <div class="section-title" style="flex-wrap: wrap; gap: 8px;">
+          <span>📈 Balance de Ventas por Bebida <span id="salesTablePeriodBadge" style="font-size: 0.82rem; color: #FFAA00; font-weight: 700;">(Semana Actual)</span></span>
+        </div>
+        <div id="salesTableGroupAlert" style="display: none; margin-bottom: 12px; padding: 10px 14px; background: rgba(255,170,0,0.1); border: 1px solid rgba(255,170,0,0.3); border-radius: 10px; font-size: 0.84rem; color: #FFAA00;">
+          👁️ Mostrando ventas solo del grupo: <b id="salesTableGroupAlertTxt"></b> 
+          <button onclick="toggleGrupoBalance('Todas')" style="background: rgba(255,170,0,0.2); border: 1px solid #FFAA00; color: #fff; border-radius: 6px; padding: 3px 8px; margin-left: 8px; cursor: pointer; font-weight: 700; font-size: 0.78rem;">Mostrar todos ✖</button>
         </div>
         <div class="inv-table-wrapper">
           <table>
@@ -864,7 +879,7 @@
               <tr>
                 <th>Bebida</th>
                 <th>Stock en Bodega</th>
-                <th>Vendidas en Semana</th>
+                <th>Vendidas en Periodo</th>
                 <th>Total Ingresos Venta</th>
                 <th>Costo Total (Para Surtir)</th>
                 <th>Ganancia Neta Ganada</th>
@@ -2294,17 +2309,159 @@
     }
 
     let currentBalanceGroup = 'Todas';
+    let currentBalanceWeek = 'actual'; // 'actual', 'todas', o 'YYYY-MM-DD_YYYY-MM-DD'
 
-    function filtrarGrupoBalance(grupo) {
-      currentBalanceGroup = grupo;
-      document.querySelectorAll('#balanceGroupFilterPills .cat-pill').forEach(btn => {
-        btn.classList.toggle('active', btn.innerText.includes(grupo) || (grupo === 'Todas' && btn.innerText.includes('Todo')));
-      });
+    function toggleGrupoBalance(grupo) {
+      if (currentBalanceGroup === grupo) {
+        currentBalanceGroup = 'Todas';
+      } else {
+        currentBalanceGroup = grupo;
+      }
       renderBalance();
+    }
+
+    function cambiarSemanaBalance(semanaKey) {
+      currentBalanceWeek = semanaKey;
+      renderBalance();
+    }
+
+    function parsearFechaItem(str) {
+      if (!str) return null;
+      try {
+        if (str.includes('-')) {
+          const parts = str.split(' ')[0].split('-');
+          if (parts.length === 3) {
+            return new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+          }
+        }
+        if (str.includes('/')) {
+          const parts = str.split(' ')[0].split('/');
+          if (parts.length === 3) {
+            return new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
+          }
+        }
+        const d = new Date(str);
+        return isNaN(d.getTime()) ? null : d;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function obtenerInfoSemana(d) {
+      if (!d) return null;
+      const copia = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      const dia = copia.getDay(); // 0 Dom, 1 Lun, ... 6 Sab
+      const diffLunes = dia === 0 ? -6 : 1 - dia;
+      const lunes = new Date(copia);
+      lunes.setDate(copia.getDate() + diffLunes);
+      lunes.setHours(0, 0, 0, 0);
+
+      const domingo = new Date(lunes);
+      domingo.setDate(lunes.getDate() + 6);
+      domingo.setHours(23, 59, 59, 999);
+
+      const pad = n => String(n).padStart(2, '0');
+      const lunesStr = `${lunes.getFullYear()}-${pad(lunes.getMonth() + 1)}-${pad(lunes.getDate())}`;
+      const domingoStr = `${domingo.getFullYear()}-${pad(domingo.getMonth() + 1)}-${pad(domingo.getDate())}`;
+      const key = `${lunesStr}_${domingoStr}`;
+
+      const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+      const label = `Semana ${pad(lunes.getDate())} ${meses[lunes.getMonth()]} - ${pad(domingo.getDate())} ${meses[domingo.getMonth()]} ${domingo.getFullYear()}`;
+
+      return { key, lunes, domingo, lunesStr, domingoStr, label };
+    }
+
+    function actualizarSelectorSemanas() {
+      const select = document.getElementById('balanceWeekSelect');
+      if (!select) return;
+
+      const semanasMap = {};
+      const actualInfo = obtenerInfoSemana(new Date());
+      if (actualInfo) {
+        semanasMap[actualInfo.key] = actualInfo;
+      }
+
+      function registrarFecha(fStr) {
+        const d = parsearFechaItem(fStr);
+        if (d) {
+          const info = obtenerInfoSemana(d);
+          if (info && !semanasMap[info.key]) {
+            semanasMap[info.key] = info;
+          }
+        }
+      }
+
+      clientes.forEach(c => {
+        if (c.consumos_semana) c.consumos_semana.forEach(it => registrarFecha(it.fecha));
+      });
+      historial.forEach(h => {
+        if (h.consumos) h.consumos.forEach(it => registrarFecha(it.fecha));
+      });
+
+      const semanasOrdenadas = Object.values(semanasMap).sort((a, b) => b.lunes.getTime() - a.lunes.getTime());
+
+      let html = '';
+      html += `<option value="actual" ${currentBalanceWeek === 'actual' ? 'selected' : ''}>🟢 Esta Semana (En curso)</option>`;
+
+      semanasOrdenadas.forEach(s => {
+        const esLaActual = actualInfo && s.key === actualInfo.key;
+        if (!esLaActual) {
+          html += `<option value="${s.key}" ${currentBalanceWeek === s.key ? 'selected' : ''}>📅 ${s.label}</option>`;
+        }
+      });
+
+      html += `<option value="todas" ${currentBalanceWeek === 'todas' ? 'selected' : ''}>🌐 Todo el Historial (Acumulado Total)</option>`;
+
+      select.innerHTML = html;
     }
 
     // RENDER BALANCE Y GANANCIAS
     function renderBalance() {
+      actualizarSelectorSemanas();
+
+      const actualInfo = obtenerInfoSemana(new Date());
+      let semanaSeleccionadaInfo = null;
+
+      if (currentBalanceWeek === 'actual') {
+        semanaSeleccionadaInfo = actualInfo;
+      } else if (currentBalanceWeek !== 'todas') {
+        const parts = currentBalanceWeek.split('_');
+        if (parts.length === 2) {
+          const dLunes = parsearFechaItem(parts[0]);
+          if (dLunes) semanaSeleccionadaInfo = obtenerInfoSemana(dLunes);
+        }
+      }
+
+      // Actualizar subtítulos e indicadores de periodo
+      const subPeriodo = document.getElementById('balancePeriodSubtitle');
+      const badgeVentas = document.getElementById('salesTablePeriodBadge');
+      if (currentBalanceWeek === 'actual') {
+        if (subPeriodo) subPeriodo.innerText = `Semana Actual (En curso: ${actualInfo.label})`;
+        if (badgeVentas) badgeVentas.innerText = `(Semana Actual)`;
+      } else if (currentBalanceWeek === 'todas') {
+        if (subPeriodo) subPeriodo.innerText = `Todo el Historial (Acumulado Total)`;
+        if (badgeVentas) badgeVentas.innerText = `(Historial Completo)`;
+      } else if (semanaSeleccionadaInfo) {
+        if (subPeriodo) subPeriodo.innerText = semanaSeleccionadaInfo.label;
+        if (badgeVentas) badgeVentas.innerText = `(${semanaSeleccionadaInfo.label})`;
+      }
+
+      // Alertas de grupo activo en tablas
+      const alertUnit = document.getElementById('unitTableGroupAlert');
+      const alertUnitTxt = document.getElementById('unitTableGroupAlertTxt');
+      const alertSales = document.getElementById('salesTableGroupAlert');
+      const alertSalesTxt = document.getElementById('salesTableGroupAlertTxt');
+      const estaFiltradoGrupo = currentBalanceGroup !== 'Todas';
+
+      if (alertUnit) {
+        alertUnit.style.display = estaFiltradoGrupo ? 'block' : 'none';
+        if (alertUnitTxt) alertUnitTxt.innerText = currentBalanceGroup;
+      }
+      if (alertSales) {
+        alertSales.style.display = estaFiltradoGrupo ? 'block' : 'none';
+        if (alertSalesTxt) alertSalesTxt.innerText = currentBalanceGroup;
+      }
+
       const grupos = {
         'Tamarindo, Soda y Ginger': { icon: '🥤', nombre: 'Tamarindo, Soda y Ginger', cant: 0, stockBodega: 0, venta: 0, costo: 0, esPreparado: false },
         'Limonadas y Granizados': { icon: '🍋', nombre: 'Limonadas y Granizados', cant: 0, stockBodega: 0, venta: 0, costo: 0, esPreparado: true },
@@ -2312,11 +2469,10 @@
         'Energizantes': { icon: '⚡', nombre: 'Energizantes', cant: 0, stockBodega: 0, venta: 0, costo: 0, esPreparado: false }
       };
 
-      // Calcular Stock Físico en Bodega por cada Grupo
+      // Calcular Stock Físico en Bodega por cada Grupo (este siempre refleja la bodega actual)
       inventario.forEach(p => {
         const grp = obtenerGrupoBebida(p.nombre, p.categoria);
         if (grupos[grp]) {
-          // Si no es receta derivada (como michelada que descuenta de cerveza) y no es preparado, sumamos su stock físico en bodega
           if (!p.descuenta_de_id && !p.es_preparado && grp !== 'Limonadas y Granizados') {
             grupos[grp].stockBodega += (p.stock || 0);
           }
@@ -2354,12 +2510,23 @@
         unitTbody.appendChild(tr);
       });
 
-      // 2. Calcular Ventas y Costos de la Semana
+      // 2. Calcular Ventas y Costos según la semana seleccionada
       const weeklyItemsMap = {};
       let totalVentasSemana = 0;
       let totalCostosSemana = 0;
 
+      function itemPerteneceASemana(item) {
+        if (currentBalanceWeek === 'todas') return true;
+        const d = parsearFechaItem(item.fecha);
+        if (!d) return currentBalanceWeek === 'actual';
+        if (!semanaSeleccionadaInfo) return true;
+        const t = d.getTime();
+        return t >= semanaSeleccionadaInfo.lunes.getTime() && t <= semanaSeleccionadaInfo.domingo.getTime();
+      }
+
       function procesarItemSemanal(item) {
+        if (!itemPerteneceASemana(item)) return;
+
         const p = inventario.find(inv => inv.id === item.producto_id || inv.nombre === item.nombre);
         const costoUnit = (p && p.precio_costo !== undefined) ? p.precio_costo : (item.precio_costo || 0);
         const cant = item.cantidad || 0;
@@ -2415,14 +2582,20 @@
             ? `<span style="font-size: 0.78rem; background: rgba(59, 130, 246, 0.2); color: #60a5fa; padding: 4px 8px; border-radius: 8px; font-weight: 700; border: 1px solid rgba(59, 130, 246, 0.35);">🍹 Preparados</span>`
             : `<span style="font-size: 0.8rem; background: rgba(16, 185, 129, 0.18); color: #34d399; padding: 4px 9px; border-radius: 8px; font-weight: 800; border: 1px solid rgba(16, 185, 129, 0.4);">📦 Bodega: ${g.stockBodega} uds</span>`;
 
+          const estiloBorde = esActivo ? 'border: 2.5px solid #FFAA00; background: rgba(255,170,0,0.12); box-shadow: 0 0 16px rgba(255,170,0,0.25);' : 'border: 1.5px solid var(--border-color); background: rgba(255,255,255,0.02);';
+
+          const footerTarjeta = esActivo
+            ? `<div style="font-size: 0.8rem; color: #FFAA00; font-weight: 800; text-align: right; margin-top: 10px; display: flex; align-items: center; justify-content: flex-end; gap: 4px;"><span>✓ Grupo Filtrado · Toca para ver todo</span> ✖</div>`
+            : `<div style="font-size: 0.76rem; color: var(--text-muted); text-align: right; margin-top: 10px;">Rentabilidad: <b>${margenG}%</b> · <span style="color: #FFAA00; font-weight: 700;">Toca para filtrar ➔</span></div>`;
+
           return `
-            <div class="metric-card" style="border: 2px solid ${esActivo ? '#FFAA00' : 'var(--border-color)'}; background: ${esActivo ? 'rgba(255,170,0,0.06)' : 'rgba(255,255,205,0.02)'}; cursor: pointer; transition: transform 0.15s, border-color 0.2s; border-radius: 14px; padding: 16px;" onclick="filtrarGrupoBalance('${g.nombre}')" title="Toca para filtrar este grupo">
+            <div class="metric-card" style="${estiloBorde} cursor: pointer; transition: all 0.2s; border-radius: 14px; padding: 16px;" onclick="toggleGrupoBalance('${g.nombre}')" title="Toca para filtrar o deseleccionar este grupo">
               <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 6px;">
-                <span style="font-size: 0.98rem; font-weight: 800; color: #fff;">${g.icon} ${g.nombre}</span>
+                <span style="font-size: 1rem; font-weight: 800; color: #fff;">${g.icon} ${g.nombre}</span>
                 ${badgeBodega}
               </div>
               <div style="font-size: 0.82rem; color: var(--text-muted); display: flex; justify-content: space-between; margin-bottom: 6px;">
-                <span>🛒 Vendidas en Semana:</span>
+                <span>🛒 Vendidas en Periodo:</span>
                 <b style="color: #FFAA00; font-size: 0.95rem;">${g.cant} uds</b>
               </div>
               <div style="font-size: 0.82rem; color: var(--text-muted); display: flex; justify-content: space-between; margin-bottom: 6px;">
@@ -2437,21 +2610,19 @@
                 <span style="font-weight: 800;">💰 Ganancia Limpia:</span>
                 <b style="font-weight: 900; font-size: 1.05rem;">+ ${formatMoney(utilG)}</b>
               </div>
-              <div style="font-size: 0.74rem; color: var(--text-muted); text-align: right; margin-top: 8px;">
-                Rentabilidad: <b>${margenG}%</b> · <span style="color: #FFAA00;">Filtrar ➔</span>
-              </div>
+              ${footerTarjeta}
             </div>
           `;
         }).join('');
       }
 
-      // 4. Tabla de rendimiento por producto semanal
+      // 4. Tabla de rendimiento por producto del periodo
       const salesTbody = document.getElementById('weeklySalesBalanceBody');
       salesTbody.innerHTML = '';
       const itemsVendidos = Object.values(weeklyItemsMap).filter(v => currentBalanceGroup === 'Todas' || v.grupo === currentBalanceGroup);
 
       if (itemsVendidos.length === 0) {
-        salesTbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 18px;">No hay consumos registrados para este grupo en esta semana.</td></tr>`;
+        salesTbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 22px; font-size: 0.9rem;">No hay ventas registradas para este grupo en el periodo seleccionado.</td></tr>`;
       } else {
         itemsVendidos.forEach(v => {
           const p = inventario.find(inv => inv.id === v.id || inv.nombre === v.nombre);

@@ -221,40 +221,42 @@ def generar_ticket_cobro(cliente, concepto, monto_val, titular_nequi="HUGO BRION
                         print(f"[!] Error cargando fuente {archivo}: {e}")
         return ImageFont.load_default()
 
-    font_titulo = cargar_fuente("PANCHO6.otf", 44)
-    font_sub = cargar_fuente("PANCHO6.otf", 13)
-    font_lbl_cobro = cargar_fuente("PANCHO6.otf", 14)
-    font_monto = cargar_fuente("PANCHO6.otf", 46)
-    font_campo_lbl = cargar_fuente("PANCHO6.otf", 14)
-    font_campo_val = cargar_fuente("PANCHO6.otf", 19)
-    font_consumo = cargar_fuente("PANCHO6.otf", 17)
-    font_pago_tit = cargar_fuente("PANCHO6.otf", 17)
-    font_pago_num = cargar_fuente("PANCHO6.otf", 26)
-    font_nota = cargar_fuente("PANCHO6.otf", 13)
-    font_pie = cargar_fuente("PANCHO6.otf", 18)
+    font_titulo = cargar_fuente("HAPPY.ttf", 40)
+    font_sub = cargar_fuente("Suplexmentary Comic NC.ttf", 13)
+    font_lbl_cobro = cargar_fuente("Suplexmentary Comic NC.ttf", 13)
+    font_monto = cargar_fuente("Suplexmentary Comic NC.ttf", 42)
+    font_campo_lbl = cargar_fuente("Suplexmentary Comic NC.ttf", 13)
+    font_campo_val = cargar_fuente("Suplexmentary Comic NC.ttf", 16)
+    font_consumo = cargar_fuente("Suplexmentary Comic NC.ttf", 15)
+    font_pago_tit = cargar_fuente("Suplexmentary Comic NC.ttf", 15)
+    font_pago_num = cargar_fuente("Suplexmentary Comic NC.ttf", 23)
+    font_nota = cargar_fuente("Suplexmentary Comic NC.ttf", 13)
+    font_pie = cargar_fuente("Suplexmentary Comic NC.ttf", 17)
 
     cx = ancho // 2
 
     # Encabezado PANCHO
     titulo = "PANCHO"
     bbox_t = draw.textbbox((0, 0), titulo, font=font_titulo)
-    draw.text((cx - (bbox_t[2] - bbox_t[0]) // 2, 22), titulo, font=font_titulo, fill=color_texto)
+    w_t = bbox_t[2] - bbox_t[0]
+    draw.text((cx - w_t // 2 - bbox_t[0], 2), titulo, font=font_titulo, fill=color_texto)
 
     badge_tipo = "CUENTA DE COBRO DIGITAL"
     bbox_bt = draw.textbbox((0, 0), badge_tipo, font=font_sub)
     ancho_bt = bbox_bt[2] - bbox_bt[0]
+    badge_y = 66
     draw.rounded_rectangle(
-        [(cx - ancho_bt // 2 - 12, 70), (cx + ancho_bt // 2 + 12, 92)],
+        [(cx - ancho_bt // 2 - 12, badge_y), (cx + ancho_bt // 2 + 12, badge_y + 24)],
         radius=11,
         fill="#FFFFFF",
         outline=color_marco,
         width=1
     )
-    draw.text((cx - ancho_bt // 2, 73), badge_tipo, font=font_sub, fill=color_texto)
+    draw.text((cx - ancho_bt // 2, badge_y + 4), badge_tipo, font=font_sub, fill=color_texto)
 
     # 1. Caja Hero: TOTAL A PAGAR
-    box1_x1, box1_y1 = 30, 106
-    box1_x2, box1_y2 = ancho - 30, 196
+    box1_x1, box1_y1 = 30, 104
+    box1_x2, box1_y2 = ancho - 30, 194
 
     overlay1 = Image.new("RGBA", (ancho, alto), (0, 0, 0, 0))
     d_ov1 = ImageDraw.Draw(overlay1)
