@@ -91,6 +91,75 @@ def guardar_json(ruta, data):
     with open(ruta, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
+# 5.1 CORRECCIÓN AUTOMÁTICA DE REGISTROS GUARDADOS EN UTC (19/10/2026 -> 18/10/2026)
+RUTA_FIX_OCT18 = os.path.join(DATOS_DIR, ".fix_utc_oct18_done")
+
+def corregir_fechas_utc_oct18():
+    """Corrige automáticamente las ventas registradas el 18 de octubre que quedaron con fecha 19 de octubre por el reloj UTC del servidor."""
+    if os.path.exists(RUTA_FIX_OCT18):
+        return
+    try:
+        clientes = leer_json(RUTA_CLIENTES, [])
+        historial = leer_json(RUTA_HISTORIAL, [])
+        mod_cli = False
+        mod_hist = False
+
+        for c in clientes:
+            if str(c.get("fecha_inicio_semana", "")).startswith("2026-10-19"):
+                c["fecha_inicio_semana"] = "2026-10-18"
+                mod_cli = True
+            for item in c.get("consumos_semana", []):
+                f_it = str(item.get("fecha", ""))
+                if f_it.startswith("2026-10-19"):
+                    item["fecha"] = "2026-10-18" + f_it[10:]
+                    mod_cli = True
+                elif f_it.startswith("19/10/2026"):
+                    item["fecha"] = "18/10/2026" + f_it[10:]
+                    mod_cli = True
+            ut = c.get("ultimo_ticket")
+            if isinstance(ut, dict) and str(ut.get("fecha", "")).startswith("19/10/2026"):
+                ut["fecha"] = "18/10/2026" + str(ut["fecha"])[10:]
+                mod_cli = True
+            ua = c.get("ultimo_abono")
+            if isinstance(ua, dict) and str(ua.get("fecha", "")).startswith("19/10/2026"):
+                ua["fecha"] = "18/10/2026" + str(ua["fecha"])[10:]
+                mod_cli = True
+            for ab in c.get("abonos", []):
+                f_ab = str(ab.get("fecha", ""))
+                if f_ab.startswith("19/10/2026"):
+                    ab["fecha"] = "18/10/2026" + f_ab[10:]
+                    mod_cli = True
+
+        for h in historial:
+            f_h = str(h.get("fecha", ""))
+            if f_h.startswith("19/10/2026"):
+                h["fecha"] = "18/10/2026" + f_h[10:]
+                mod_hist = True
+            elif f_h.startswith("2026-10-19"):
+                h["fecha"] = "2026-10-18" + f_h[10:]
+                mod_hist = True
+            for item in h.get("consumos", []):
+                f_it = str(item.get("fecha", ""))
+                if f_it.startswith("2026-10-19"):
+                    item["fecha"] = "2026-10-18" + f_it[10:]
+                    mod_hist = True
+                elif f_it.startswith("19/10/2026"):
+                    item["fecha"] = "18/10/2026" + f_it[10:]
+                    mod_hist = True
+
+        if mod_cli:
+            guardar_json(RUTA_CLIENTES, clientes)
+        if mod_hist:
+            guardar_json(RUTA_HISTORIAL, historial)
+
+        with open(RUTA_FIX_OCT18, "w", encoding="utf-8") as f:
+            f.write("ok")
+    except Exception as e:
+        print(f"[!] Aviso en corrección automática de fechas: {e}")
+
+with data_lock:
+    corregir_fechas_utc_oct18()
+
 class PanchoHandler(SimpleHTTPRequestHandler):
     def send_json(self, data, status=200):
         body = json.dumps(data, ensure_ascii=False).encode("utf-8")
@@ -132,6 +201,7 @@ class PanchoHandler(SimpleHTTPRequestHandler):
         # 3. API: CLIENTES
         elif path == "/api/clientes":
             with data_lock:
+                corregir_fechas_utc_oct18()
                 cli = leer_json(RUTA_CLIENTES, [])
             self.send_json(cli)
             return
@@ -139,6 +209,7 @@ class PanchoHandler(SimpleHTTPRequestHandler):
         # 4. API: HISTORIAL
         elif path == "/api/historial":
             with data_lock:
+                corregir_fechas_utc_oct18()
                 hist = leer_json(RUTA_HISTORIAL, [])
             self.send_json(hist)
             return

@@ -14,7 +14,8 @@ from app import (
     RUTA_INVENTARIO, RUTA_CLIENTES, RUTA_HISTORIAL,
     TICKETS_DIR, STATIC_DIR, BASE_DIR,
     leer_json, guardar_json, data_lock, get_local_ip,
-    generar_ticket_cobro, agrupar_consumos_por_categoria
+    generar_ticket_cobro, agrupar_consumos_por_categoria,
+    ahora_colombia, corregir_fechas_utc_oct18
 )
 
 def application(environ, start_response):
@@ -59,7 +60,7 @@ def application(environ, start_response):
                 "ok": True,
                 "ip_local": get_local_ip(),
                 "port": 5000,
-                "hora": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                "hora": ahora_colombia().strftime("%Y-%m-%d %H:%M:%S")
             })
         elif path == '/api/inventario':
             with data_lock:
@@ -67,10 +68,12 @@ def application(environ, start_response):
             return respond_json(inv)
         elif path == '/api/clientes':
             with data_lock:
+                corregir_fechas_utc_oct18()
                 cli = leer_json(RUTA_CLIENTES, [])
             return respond_json(cli)
         elif path == '/api/historial':
             with data_lock:
+                corregir_fechas_utc_oct18()
                 hist = leer_json(RUTA_HISTORIAL, [])
             return respond_json(hist)
         elif path.startswith('/tickets/'):
@@ -125,7 +128,7 @@ def application(environ, start_response):
                     "nombre": nombre,
                     "saldo_actual": 0,
                     "consumos_semana": [],
-                    "fecha_inicio_semana": datetime.now().strftime("%Y-%m-%d")
+                    "fecha_inicio_semana": ahora_colombia().strftime("%Y-%m-%d")
                 }
                 clientes.append(nuevo_cli)
                 guardar_json(RUTA_CLIENTES, clientes)
@@ -239,7 +242,7 @@ def application(environ, start_response):
                         prod_base = next((p for p in inventario if p["id"] == id_base), prod)
                         if "stock" in prod_base and prod_base.get("stock") is not None:
                             prod_base["stock"] = max(0, prod_base["stock"] - item["cantidad"])
-                ahora_str = datetime.now().strftime("%Y-%m-%d %H:%M")
+                ahora_str = ahora_colombia().strftime("%Y-%m-%d %H:%M")
                 subtotal_pedido = 0
                 for item in items:
                     sub = item.get("subtotal", item["precio_unitario"] * item["cantidad"])
@@ -284,7 +287,7 @@ def application(environ, start_response):
                         if "stock" in prod_base and prod_base.get("stock") is not None:
                             prod_base["stock"] = max(0, prod_base["stock"] - item["cantidad"])
 
-                ahora_str = datetime.now().strftime("%Y-%m-%d %H:%M")
+                ahora_str = ahora_colombia().strftime("%Y-%m-%d %H:%M")
                 subtotal_pedido = 0
                 consumos_detallados = []
                 for item in items:
@@ -317,7 +320,7 @@ def application(environ, start_response):
                     return respond_json({"ok": False, "error": f"Error generando ticket: {err}"}, '500 Internal Server Error')
 
                 registro_historial = {
-                    "fecha": datetime.now().strftime("%d/%m/%Y %H:%M"),
+                    "fecha": ahora_colombia().strftime("%d/%m/%Y %H:%M"),
                     "cliente": nombre_cliente,
                     "total": subtotal_pedido,
                     "comprobante": comprobante,
@@ -365,7 +368,7 @@ def application(environ, start_response):
                     return respond_json({"ok": False, "error": f"Error generando imagen de ticket: {err}"}, '500 Internal Server Error')
                 # Guardar referencia del ticket sin borrar la deuda ni los consumos (No suma a caja hasta que abone)
                 cliente["ultimo_ticket"] = {
-                    "fecha": datetime.now().strftime("%d/%m/%Y %H:%M"),
+                    "fecha": ahora_colombia().strftime("%d/%m/%Y %H:%M"),
                     "comprobante": comprobante,
                     "ticket_url": f"/tickets/{filename}"
                 }
@@ -403,7 +406,7 @@ def application(environ, start_response):
                 nuevo_saldo = saldo_anterior - monto_real
                 cliente["saldo_actual"] = nuevo_saldo
 
-                ahora_dt = datetime.now()
+                ahora_dt = ahora_colombia()
                 fecha_str = ahora_dt.strftime("%d/%m/%Y %H:%M")
                 detalle_abono = {
                     "fecha": fecha_str,
@@ -417,7 +420,9 @@ def application(environ, start_response):
                 cliente["abonos"].append(detalle_abono)
                 cliente["ultimo_abono"] = detalle_abono
 
+                consumos_saldados = []
                 if nuevo_saldo == 0:
+                    consumos_saldados = list(cliente.get("consumos_semana", []))
                     cliente["consumos_semana"] = []
                     cliente["fecha_inicio_semana"] = ahora_dt.strftime("%Y-%m-%d")
 
@@ -429,7 +434,7 @@ def application(environ, start_response):
                     "total": monto_real,
                     "comprobante": comp_abono,
                     "concepto": concepto_abono,
-                    "consumos": [],
+                    "consumos": consumos_saldados,
                     "metodo": metodo,
                     "tipo": "ABONO"
                 }
@@ -468,7 +473,7 @@ def application(environ, start_response):
                 total_pagado = cliente.get("saldo_actual", 0)
                 nombre_cliente = cliente.get("nombre", "")
                 consumos_cliente = cliente.get("consumos_semana", [])
-                ahora_dt = datetime.now()
+                ahora_dt = ahora_colombia()
                 fecha_str = ahora_dt.strftime("%d/%m/%Y %H:%M")
 
                 if total_pagado > 0 or consumos_cliente:
