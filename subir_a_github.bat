@@ -7,7 +7,7 @@ echo ======================================================
 git rm -r --cached .idea 2>nul
 git add .
 git reset HEAD datos/ 2>nul
-git commit -m "Hora oficial de Colombia (UTC-5) en ventas/tickets y conservacion de consumos al saldar con abono"
+git commit -m "Metricas superiores dinamicas conectadas al filtro de grupo en Costos y Ganancias"
 git branch -M main
 git remote remove origin 2>nul
 git remote add origin https://github.com/hugotechvilla-lgtm/INVENTARIO-PANCHO.git

@@ -805,19 +805,19 @@
 
       <div class="summary-metrics">
         <div class="metric-card">
-          <div class="m-lbl">Ventas del Periodo</div>
+          <div class="m-lbl" id="lblCardVentas">Ventas del Periodo</div>
           <div class="m-val highlight" id="balanceTotalVentas">$ 0</div>
         </div>
         <div class="metric-card">
-          <div class="m-lbl">Costo de Mercancía Vendida</div>
+          <div class="m-lbl" id="lblCardCostos">Costo de Mercancía Vendida</div>
           <div class="m-val" style="color: #ef4444;" id="balanceTotalCostos">$ 0</div>
         </div>
         <div class="metric-card">
-          <div class="m-lbl">Ganancia Neta (Plata Limpia)</div>
+          <div class="m-lbl" id="lblCardGanancia">Ganancia Neta (Plata Limpia)</div>
           <div class="m-val" style="color: #10b981;" id="balanceGananciaNeta">$ 0</div>
         </div>
         <div class="metric-card">
-          <div class="m-lbl">Rentabilidad Promedio</div>
+          <div class="m-lbl" id="lblCardMargen">Rentabilidad Promedio</div>
           <div class="m-val" id="balanceMargenPorcentaje">0%</div>
         </div>
       </div>
@@ -2649,13 +2649,34 @@
         if (h.consumos) h.consumos.forEach(procesarItemSemanal);
       });
 
-      const gananciaNeta = totalVentasSemana - totalCostosSemana;
-      const margenSemana = totalVentasSemana > 0 ? Math.round((gananciaNeta / totalVentasSemana) * 100) : 0;
+      // Totales a mostrar en las 4 tarjetas superiores (si hay un grupo filtrado, muestra solo ese grupo)
+      let ventasMostrar = totalVentasSemana;
+      let costosMostrar = totalCostosSemana;
 
-      document.getElementById('balanceTotalVentas').innerText = formatMoney(totalVentasSemana);
-      document.getElementById('balanceTotalCostos').innerText = formatMoney(totalCostosSemana);
-      document.getElementById('balanceGananciaNeta').innerText = formatMoney(gananciaNeta);
-      document.getElementById('balanceMargenPorcentaje').innerText = margenSemana + '%';
+      if (currentBalanceGroup !== 'Todas' && grupos[currentBalanceGroup]) {
+        ventasMostrar = grupos[currentBalanceGroup].venta;
+        costosMostrar = grupos[currentBalanceGroup].costo;
+      }
+
+      const gananciaMostrar = ventasMostrar - costosMostrar;
+      const margenMostrar = ventasMostrar > 0 ? Math.round((gananciaMostrar / ventasMostrar) * 100) : 0;
+
+      // Actualizar títulos de las tarjetas para que el usuario sepa si está viendo Todo o un Grupo
+      const sufijoGrupo = currentBalanceGroup !== 'Todas' ? ` (${currentBalanceGroup})` : '';
+      const lblV = document.getElementById('lblCardVentas');
+      const lblC = document.getElementById('lblCardCostos');
+      const lblG = document.getElementById('lblCardGanancia');
+      const lblM = document.getElementById('lblCardMargen');
+
+      if (lblV) lblV.innerText = `Ventas${sufijoGrupo}`;
+      if (lblC) lblC.innerText = `Costo Mercancía${sufijoGrupo}`;
+      if (lblG) lblG.innerText = `Ganancia Neta${sufijoGrupo}`;
+      if (lblM) lblM.innerText = `Rentabilidad${sufijoGrupo}`;
+
+      document.getElementById('balanceTotalVentas').innerText = formatMoney(ventasMostrar);
+      document.getElementById('balanceTotalCostos').innerText = formatMoney(costosMostrar);
+      document.getElementById('balanceGananciaNeta').innerText = formatMoney(gananciaMostrar);
+      document.getElementById('balanceMargenPorcentaje').innerText = margenMostrar + '%';
 
       // 3. Tarjetas de Grupos (Dinero para Surtir vs Ganancia Limpia)
       const containerGrupos = document.getElementById('gruposCardsContainer');
