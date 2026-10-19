@@ -785,19 +785,21 @@
     <!-- 4. PESTAÑA: COSTOS, GANANCIAS Y BALANCE -->
     <!-- ============================================== -->
     <section id="tab-balance" class="tab-content">
-      <!-- SELECTOR DE SEMANA / PERIODO -->
+      <!-- SELECTOR DE PERIODO / CALENDARIO -->
       <div class="section-card" style="margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; padding: 16px 20px; background: linear-gradient(135deg, rgba(255,170,0,0.08) 0%, rgba(28,28,33,0.95) 100%); border: 1.5px solid rgba(255,170,0,0.35);">
         <div style="display: flex; align-items: center; gap: 12px;">
           <span style="font-size: 1.6rem; background: rgba(255,170,0,0.15); width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 12px; border: 1px solid rgba(255,170,0,0.3);">📅</span>
           <div>
             <div style="font-size: 1rem; font-weight: 800; color: #fff;">Periodo de Consulta:</div>
-            <div style="font-size: 0.8rem; color: #FFAA00;" id="balancePeriodSubtitle">Semana Actual (En curso)</div>
+            <div style="font-size: 0.85rem; color: #FFAA00; font-weight: 700;" id="balancePeriodSubtitle">Esta Semana (En curso)</div>
           </div>
         </div>
         <div style="display: flex; align-items: center; gap: 10px;">
-          <select id="balanceWeekSelect" onchange="cambiarSemanaBalance(this.value)" style="background: #121214; color: #FFAA00; border: 2px solid #FFAA00; padding: 10px 18px; border-radius: 12px; font-weight: 800; font-size: 0.95rem; cursor: pointer; outline: none; box-shadow: 0 4px 12px rgba(255,170,0,0.15);">
-            <!-- Generado dinámicamente con JS -->
-          </select>
+          <button type="button" onclick="abrirModalCalendarioBalance()" style="background: #121214; color: #FFAA00; border: 2px solid #FFAA00; padding: 10px 18px; border-radius: 12px; font-weight: 800; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(255,170,0,0.15); transition: transform 0.15s;">
+            <span>🗓️</span>
+            <span id="btnCalendarioLabel">Elegir Días en Calendario</span>
+            <span style="font-size: 0.75rem;">▼</span>
+          </button>
         </div>
       </div>
 
@@ -958,6 +960,75 @@
             ⬇️ Descargar Imagen
           </a>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: SELECTOR DE CALENDARIO / PERIODO DE CONSULTA -->
+  <div id="modalCalendarioBalance" class="modal-backdrop">
+    <div class="modal-box" style="max-width: 480px;">
+      <button class="modal-close" onclick="cerrarModalCalendarioBalance()">✕</button>
+
+      <div style="text-align: center; margin-bottom: 18px;">
+        <div style="font-size: 2.2rem; margin-bottom: 4px;">📅</div>
+        <h2 style="font-size: 1.3rem; font-weight: 800; color: #FFAA00; margin: 0;">
+          Seleccionar Periodo en Calendario
+        </h2>
+        <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 6px;">
+          Elige los días exactos que deseas consultar en el reporte
+        </div>
+      </div>
+
+      <!-- ACCESOS RÁPIDOS DE 1 TOQUE -->
+      <div style="margin-bottom: 18px;">
+        <label style="font-size: 0.82rem; font-weight: 800; color: var(--text-muted); display: block; margin-bottom: 8px;">
+          ⚡ Accesos Rápidos:
+        </label>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <button type="button" onclick="seleccionarPresetCalendario('actual')" class="btn-restock" style="background: rgba(255,170,0,0.12); color: #FFAA00; border-color: rgba(255,170,0,0.35); padding: 10px; font-weight: 800; font-size: 0.85rem;">
+            🟢 Esta Semana
+          </button>
+          <button type="button" onclick="seleccionarPresetCalendario('finde')" class="btn-restock" style="background: rgba(16,185,129,0.12); color: #34d399; border-color: rgba(16,185,129,0.35); padding: 10px; font-weight: 800; font-size: 0.85rem;">
+            🍻 Fin de Semana (Vie-Dom)
+          </button>
+          <button type="button" onclick="seleccionarPresetCalendario('anterior')" class="btn-restock" style="background: rgba(59,130,246,0.12); color: #60a5fa; border-color: rgba(59,130,246,0.35); padding: 10px; font-weight: 800; font-size: 0.85rem;">
+            ⏪ Semana Pasada
+          </button>
+          <button type="button" onclick="seleccionarPresetCalendario('todas')" class="btn-restock" style="background: rgba(255,255,255,0.06); color: #fff; border-color: var(--border-color); padding: 10px; font-weight: 800; font-size: 0.85rem;">
+            🌐 Todo el Historial
+          </button>
+        </div>
+      </div>
+
+      <!-- SELECTOR DE FECHAS DESDE Y HASTA -->
+      <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-radius: 14px; padding: 16px; margin-bottom: 20px;">
+        <label style="font-size: 0.85rem; font-weight: 800; color: #fff; display: block; margin-bottom: 12px;">
+          🗓️ O selecciona tus días en el calendario:
+        </label>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 8px;">
+          <div>
+            <label style="font-size: 0.78rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Desde:</label>
+            <input type="date" id="calFechaDesde" style="width: 100%; background: #121214; color: #fff; border: 1.5px solid var(--border-color); border-radius: 10px; padding: 10px; font-size: 0.92rem; outline: none; font-weight: 700; color-scheme: dark;">
+          </div>
+          <div>
+            <label style="font-size: 0.78rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Hasta:</label>
+            <input type="date" id="calFechaHasta" style="width: 100%; background: #121214; color: #fff; border: 1.5px solid var(--border-color); border-radius: 10px; padding: 10px; font-size: 0.92rem; outline: none; font-weight: 700; color-scheme: dark;">
+          </div>
+        </div>
+        <div style="font-size: 0.74rem; color: var(--text-muted); text-align: center; margin-top: 4px;">
+          Toca cualquiera de las casillas para abrir el calendario y marcar el día
+        </div>
+      </div>
+
+      <!-- BOTONES DE ACCION -->
+      <div style="display: grid; grid-template-columns: 1fr 1.4fr; gap: 10px;">
+        <button type="button" onclick="cerrarModalCalendarioBalance()" style="background: rgba(255,255,255,0.08); border: 1px solid var(--border-color); color: var(--text-muted); border-radius: 12px; padding: 13px; font-weight: 700; cursor: pointer;">
+          Cancelar
+        </button>
+        <button type="button" onclick="aplicarRangoCalendario()" style="background: var(--brand-grad); border: none; color: #fff; border-radius: 12px; padding: 13px; font-weight: 800; font-size: 0.95rem; cursor: pointer; box-shadow: 0 4px 15px rgba(255,170,0,0.3);">
+          ✅ Aplicar Periodo
+        </button>
       </div>
     </div>
   </div>
@@ -2309,7 +2380,9 @@
     }
 
     let currentBalanceGroup = 'Todas';
-    let currentBalanceWeek = 'actual'; // 'actual', 'todas', o 'YYYY-MM-DD_YYYY-MM-DD'
+    let balanceFechaDesde = null; // 'YYYY-MM-DD' o null para todo
+    let balanceFechaHasta = null; // 'YYYY-MM-DD' o null para todo
+    let balancePeriodoLabel = 'Esta Semana (En curso)';
 
     function toggleGrupoBalance(grupo) {
       if (currentBalanceGroup === grupo) {
@@ -2317,11 +2390,6 @@
       } else {
         currentBalanceGroup = grupo;
       }
-      renderBalance();
-    }
-
-    function cambiarSemanaBalance(semanaKey) {
-      currentBalanceWeek = semanaKey;
       renderBalance();
     }
 
@@ -2371,80 +2439,120 @@
       return { key, lunes, domingo, lunesStr, domingoStr, label };
     }
 
-    function actualizarSelectorSemanas() {
-      const select = document.getElementById('balanceWeekSelect');
-      if (!select) return;
+    // Inicializar fechas por defecto (Semana Actual)
+    (function initFechasBalance() {
+      const info = obtenerInfoSemana(new Date());
+      if (info) {
+        balanceFechaDesde = info.lunesStr;
+        balanceFechaHasta = info.domingoStr;
+        balancePeriodoLabel = `Esta Semana (${info.label.replace('Semana ', '')})`;
+      }
+    })();
 
-      const semanasMap = {};
-      const actualInfo = obtenerInfoSemana(new Date());
-      if (actualInfo) {
-        semanasMap[actualInfo.key] = actualInfo;
+    function abrirModalCalendarioBalance() {
+      const modal = document.getElementById('modalCalendarioBalance');
+      if (!modal) return;
+
+      const inputDesde = document.getElementById('calFechaDesde');
+      const inputHasta = document.getElementById('calFechaHasta');
+
+      if (balanceFechaDesde) inputDesde.value = balanceFechaDesde;
+      else {
+        const info = obtenerInfoSemana(new Date());
+        if (info) inputDesde.value = info.lunesStr;
       }
 
-      function registrarFecha(fStr) {
-        const d = parsearFechaItem(fStr);
-        if (d) {
-          const info = obtenerInfoSemana(d);
-          if (info && !semanasMap[info.key]) {
-            semanasMap[info.key] = info;
-          }
-        }
+      if (balanceFechaHasta) inputHasta.value = balanceFechaHasta;
+      else {
+        const info = obtenerInfoSemana(new Date());
+        if (info) inputHasta.value = info.domingoStr;
       }
 
-      clientes.forEach(c => {
-        if (c.consumos_semana) c.consumos_semana.forEach(it => registrarFecha(it.fecha));
-      });
-      historial.forEach(h => {
-        if (h.consumos) h.consumos.forEach(it => registrarFecha(it.fecha));
-      });
+      modal.classList.add('active');
+    }
 
-      const semanasOrdenadas = Object.values(semanasMap).sort((a, b) => b.lunes.getTime() - a.lunes.getTime());
+    function cerrarModalCalendarioBalance() {
+      const modal = document.getElementById('modalCalendarioBalance');
+      if (modal) modal.classList.remove('active');
+    }
 
-      let html = '';
-      html += `<option value="actual" ${currentBalanceWeek === 'actual' ? 'selected' : ''}>🟢 Esta Semana (En curso)</option>`;
+    function seleccionarPresetCalendario(preset) {
+      const hoy = new Date();
+      const pad = n => String(n).padStart(2, '0');
+      const formatear = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+      const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 
-      semanasOrdenadas.forEach(s => {
-        const esLaActual = actualInfo && s.key === actualInfo.key;
-        if (!esLaActual) {
-          html += `<option value="${s.key}" ${currentBalanceWeek === s.key ? 'selected' : ''}>📅 ${s.label}</option>`;
-        }
-      });
+      if (preset === 'actual') {
+        const info = obtenerInfoSemana(hoy);
+        balanceFechaDesde = info.lunesStr;
+        balanceFechaHasta = info.domingoStr;
+        balancePeriodoLabel = `Esta Semana (${info.label.replace('Semana ', '')})`;
+      } else if (preset === 'finde') {
+        const info = obtenerInfoSemana(hoy);
+        const viernes = new Date(info.lunes);
+        viernes.setDate(info.lunes.getDate() + 4);
+        balanceFechaDesde = formatear(viernes);
+        balanceFechaHasta = info.domingoStr;
+        balancePeriodoLabel = `Fin de Semana (${pad(viernes.getDate())} al ${pad(info.domingo.getDate())} ${meses[info.domingo.getMonth()]})`;
+      } else if (preset === 'anterior') {
+        const lunesPasado = new Date(hoy);
+        const infoHoy = obtenerInfoSemana(hoy);
+        lunesPasado.setTime(infoHoy.lunes.getTime() - (7 * 24 * 60 * 60 * 1000));
+        const infoPasada = obtenerInfoSemana(lunesPasado);
+        balanceFechaDesde = infoPasada.lunesStr;
+        balanceFechaHasta = infoPasada.domingoStr;
+        balancePeriodoLabel = `Semana Pasada (${infoPasada.label.replace('Semana ', '')})`;
+      } else if (preset === 'todas') {
+        balanceFechaDesde = null;
+        balanceFechaHasta = null;
+        balancePeriodoLabel = `Todo el Historial (Acumulado Total)`;
+      }
 
-      html += `<option value="todas" ${currentBalanceWeek === 'todas' ? 'selected' : ''}>🌐 Todo el Historial (Acumulado Total)</option>`;
+      cerrarModalCalendarioBalance();
+      renderBalance();
+    }
 
-      select.innerHTML = html;
+    function aplicarRangoCalendario() {
+      const inputDesde = document.getElementById('calFechaDesde').value;
+      const inputHasta = document.getElementById('calFechaHasta').value;
+
+      if (!inputDesde || !inputHasta) {
+        alert("Por favor selecciona tanto la fecha inicial (Desde) como la fecha final (Hasta).");
+        return;
+      }
+
+      if (inputDesde > inputHasta) {
+        alert("La fecha inicial (Desde) no puede ser posterior a la fecha final (Hasta).");
+        return;
+      }
+
+      balanceFechaDesde = inputDesde;
+      balanceFechaHasta = inputHasta;
+
+      const pD = parsearFechaItem(inputDesde);
+      const pH = parsearFechaItem(inputHasta);
+      const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+
+      if (inputDesde === inputHasta) {
+        balancePeriodoLabel = `Día ${pD.getDate()} ${meses[pD.getMonth()]} ${pD.getFullYear()}`;
+      } else {
+        balancePeriodoLabel = `Del ${pD.getDate()} ${meses[pD.getMonth()]} al ${pH.getDate()} ${meses[pH.getMonth()]} ${pH.getFullYear()}`;
+      }
+
+      cerrarModalCalendarioBalance();
+      renderBalance();
     }
 
     // RENDER BALANCE Y GANANCIAS
     function renderBalance() {
-      actualizarSelectorSemanas();
-
-      const actualInfo = obtenerInfoSemana(new Date());
-      let semanaSeleccionadaInfo = null;
-
-      if (currentBalanceWeek === 'actual') {
-        semanaSeleccionadaInfo = actualInfo;
-      } else if (currentBalanceWeek !== 'todas') {
-        const parts = currentBalanceWeek.split('_');
-        if (parts.length === 2) {
-          const dLunes = parsearFechaItem(parts[0]);
-          if (dLunes) semanaSeleccionadaInfo = obtenerInfoSemana(dLunes);
-        }
-      }
-
       // Actualizar subtítulos e indicadores de periodo
       const subPeriodo = document.getElementById('balancePeriodSubtitle');
+      const btnLabel = document.getElementById('btnCalendarioLabel');
       const badgeVentas = document.getElementById('salesTablePeriodBadge');
-      if (currentBalanceWeek === 'actual') {
-        if (subPeriodo) subPeriodo.innerText = `Semana Actual (En curso: ${actualInfo.label})`;
-        if (badgeVentas) badgeVentas.innerText = `(Semana Actual)`;
-      } else if (currentBalanceWeek === 'todas') {
-        if (subPeriodo) subPeriodo.innerText = `Todo el Historial (Acumulado Total)`;
-        if (badgeVentas) badgeVentas.innerText = `(Historial Completo)`;
-      } else if (semanaSeleccionadaInfo) {
-        if (subPeriodo) subPeriodo.innerText = semanaSeleccionadaInfo.label;
-        if (badgeVentas) badgeVentas.innerText = `(${semanaSeleccionadaInfo.label})`;
-      }
+
+      if (subPeriodo) subPeriodo.innerText = balancePeriodoLabel;
+      if (btnLabel) btnLabel.innerText = balancePeriodoLabel.length > 25 ? balancePeriodoLabel.substring(0, 23) + '...' : balancePeriodoLabel;
+      if (badgeVentas) badgeVentas.innerText = `(${balancePeriodoLabel})`;
 
       // Alertas de grupo activo en tablas
       const alertUnit = document.getElementById('unitTableGroupAlert');
@@ -2510,22 +2618,25 @@
         unitTbody.appendChild(tr);
       });
 
-      // 2. Calcular Ventas y Costos según la semana seleccionada
+      // 2. Calcular Ventas y Costos según el periodo de fechas seleccionado
       const weeklyItemsMap = {};
       let totalVentasSemana = 0;
       let totalCostosSemana = 0;
 
-      function itemPerteneceASemana(item) {
-        if (currentBalanceWeek === 'todas') return true;
+      function itemPerteneceAPeriodo(item) {
+        if (!balanceFechaDesde && !balanceFechaHasta) return true; // Todo el historial
         const d = parsearFechaItem(item.fecha);
-        if (!d) return currentBalanceWeek === 'actual';
-        if (!semanaSeleccionadaInfo) return true;
-        const t = d.getTime();
-        return t >= semanaSeleccionadaInfo.lunes.getTime() && t <= semanaSeleccionadaInfo.domingo.getTime();
+        if (!d) return true;
+        const pad = n => String(n).padStart(2, '0');
+        const dStr = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+
+        if (balanceFechaDesde && dStr < balanceFechaDesde) return false;
+        if (balanceFechaHasta && dStr > balanceFechaHasta) return false;
+        return true;
       }
 
       function procesarItemSemanal(item) {
-        if (!itemPerteneceASemana(item)) return;
+        if (!itemPerteneceAPeriodo(item)) return;
 
         const p = inventario.find(inv => inv.id === item.producto_id || inv.nombre === item.nombre);
         const costoUnit = (p && p.precio_costo !== undefined) ? p.precio_costo : (item.precio_costo || 0);

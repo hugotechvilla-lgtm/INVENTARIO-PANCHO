@@ -7,7 +7,7 @@ echo ======================================================
 git rm -r --cached .idea 2>nul
 git add .
 git reset HEAD datos/ 2>nul
-git commit -m "Selector de semanas dinamico y tarjetas interactivas de grupos en Costos y Ganancias"
+git commit -m "Selector de fechas con calendario visual y accesos rapidos en Costos y Ganancias"
 git branch -M main
 git remote remove origin 2>nul
 git remote add origin https://github.com/hugotechvilla-lgtm/INVENTARIO-PANCHO.git
