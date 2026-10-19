@@ -966,58 +966,33 @@
 
   <!-- MODAL: SELECTOR DE CALENDARIO / PERIODO DE CONSULTA -->
   <div id="modalCalendarioBalance" class="modal-backdrop">
-    <div class="modal-box" style="max-width: 480px;">
+    <div class="modal-box" style="max-width: 440px;">
       <button class="modal-close" onclick="cerrarModalCalendarioBalance()">✕</button>
 
       <div style="text-align: center; margin-bottom: 18px;">
         <div style="font-size: 2.2rem; margin-bottom: 4px;">📅</div>
         <h2 style="font-size: 1.3rem; font-weight: 800; color: #FFAA00; margin: 0;">
-          Seleccionar Periodo en Calendario
+          Seleccionar Periodo
         </h2>
         <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 6px;">
-          Elige los días exactos que deseas consultar en el reporte
-        </div>
-      </div>
-
-      <!-- ACCESOS RÁPIDOS DE 1 TOQUE -->
-      <div style="margin-bottom: 18px;">
-        <label style="font-size: 0.82rem; font-weight: 800; color: var(--text-muted); display: block; margin-bottom: 8px;">
-          ⚡ Accesos Rápidos:
-        </label>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-          <button type="button" onclick="seleccionarPresetCalendario('actual')" class="btn-restock" style="background: rgba(255,170,0,0.12); color: #FFAA00; border-color: rgba(255,170,0,0.35); padding: 10px; font-weight: 800; font-size: 0.85rem;">
-            🟢 Esta Semana
-          </button>
-          <button type="button" onclick="seleccionarPresetCalendario('finde')" class="btn-restock" style="background: rgba(16,185,129,0.12); color: #34d399; border-color: rgba(16,185,129,0.35); padding: 10px; font-weight: 800; font-size: 0.85rem;">
-            🍻 Fin de Semana (Vie-Dom)
-          </button>
-          <button type="button" onclick="seleccionarPresetCalendario('anterior')" class="btn-restock" style="background: rgba(59,130,246,0.12); color: #60a5fa; border-color: rgba(59,130,246,0.35); padding: 10px; font-weight: 800; font-size: 0.85rem;">
-            ⏪ Semana Pasada
-          </button>
-          <button type="button" onclick="seleccionarPresetCalendario('todas')" class="btn-restock" style="background: rgba(255,255,255,0.06); color: #fff; border-color: var(--border-color); padding: 10px; font-weight: 800; font-size: 0.85rem;">
-            🌐 Todo el Historial
-          </button>
+          Elige el rango de fechas que deseas consultar
         </div>
       </div>
 
       <!-- SELECTOR DE FECHAS DESDE Y HASTA -->
-      <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-radius: 14px; padding: 16px; margin-bottom: 20px;">
-        <label style="font-size: 0.85rem; font-weight: 800; color: #fff; display: block; margin-bottom: 12px;">
-          🗓️ O selecciona tus días en el calendario:
-        </label>
-        
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 8px;">
+      <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-radius: 14px; padding: 18px; margin-bottom: 20px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 10px;">
           <div>
-            <label style="font-size: 0.78rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Desde:</label>
-            <input type="date" id="calFechaDesde" style="width: 100%; background: #121214; color: #fff; border: 1.5px solid var(--border-color); border-radius: 10px; padding: 10px; font-size: 0.92rem; outline: none; font-weight: 700; color-scheme: dark;">
+            <label style="font-size: 0.82rem; font-weight: 800; color: #FFAA00; display: block; margin-bottom: 6px;">📅 Desde:</label>
+            <input type="date" id="calFechaDesde" style="width: 100%; background: #121214; color: #fff; border: 1.5px solid var(--border-color); border-radius: 10px; padding: 11px; font-size: 0.95rem; outline: none; font-weight: 700; color-scheme: dark; cursor: pointer;">
           </div>
           <div>
-            <label style="font-size: 0.78rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Hasta:</label>
-            <input type="date" id="calFechaHasta" style="width: 100%; background: #121214; color: #fff; border: 1.5px solid var(--border-color); border-radius: 10px; padding: 10px; font-size: 0.92rem; outline: none; font-weight: 700; color-scheme: dark;">
+            <label style="font-size: 0.82rem; font-weight: 800; color: #FFAA00; display: block; margin-bottom: 6px;">📅 Hasta:</label>
+            <input type="date" id="calFechaHasta" style="width: 100%; background: #121214; color: #fff; border: 1.5px solid var(--border-color); border-radius: 10px; padding: 11px; font-size: 0.95rem; outline: none; font-weight: 700; color-scheme: dark; cursor: pointer;">
           </div>
         </div>
-        <div style="font-size: 0.74rem; color: var(--text-muted); text-align: center; margin-top: 4px;">
-          Toca cualquiera de las casillas para abrir el calendario y marcar el día
+        <div style="font-size: 0.76rem; color: var(--text-muted); text-align: center; margin-top: 6px;">
+          Toca cualquiera de las dos casillas para abrir el calendario
         </div>
       </div>
 
