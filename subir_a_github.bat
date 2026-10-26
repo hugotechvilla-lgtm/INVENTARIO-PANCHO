@@ -7,7 +7,7 @@ echo ======================================================
 git rm -r --cached .idea 2>nul
 git add .
 git reset HEAD datos/ 2>nul
-git commit -m "Aviso verde superior destacado de 5s y guardado automatico al crear cliente"
+git commit -m "Soporte oficial de llegadas y compras de mercancia en bodega"
 git branch -M main
 git remote remove origin 2>nul
 git remote add origin https://github.com/hugotechvilla-lgtm/INVENTARIO-PANCHO.git

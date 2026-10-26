@@ -759,7 +759,10 @@
       <div class="section-card">
         <div class="section-title" style="flex-wrap: wrap; gap: 10px;">
           <span>📦 Stock de Bebidas en Bodega</span>
-          <div style="display: flex; gap: 8px;">
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button type="button" class="btn-restock" style="background: rgba(16, 185, 129, 0.18); color: #10b981; border: 1.5px solid rgba(16, 185, 129, 0.45); font-weight: 800; padding: 10px 16px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);" onclick="abrirModalSoporteEntradas()">
+              📋 Ver Soporte de Llegadas / Compras
+            </button>
             <button id="btnToggleAllProducts" class="btn-restock" style="background: rgba(255,255,255,0.08); color: #fff; border-color: var(--border-color);" onclick="toggleVerTodasBebidas()">
               👁️ Ver Todo el Catálogo
             </button>
@@ -1015,6 +1018,77 @@
     </div>
   </div>
 
+  <!-- ============================================== -->
+  <!-- MODAL: SOPORTE DE ENTRADAS / COMPRAS DE INVENTARIO -->
+  <!-- ============================================== -->
+  <div id="modalSoporteEntradas" class="modal-backdrop">
+    <div class="modal-box" style="max-width: 760px; width: 95%; max-height: 90vh; display: flex; flex-direction: column; padding: 22px;">
+      <button class="modal-close" onclick="cerrarModalSoporteEntradas()">✕</button>
+
+      <!-- Encabezado -->
+      <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 14px; margin-bottom: 14px;">
+        <div style="font-size: 0.8rem; font-weight: 800; color: #10b981; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px;">
+          <span>📦</span> REGISTRO Y SOPORTE DE COMPRAS
+        </div>
+        <h2 style="font-size: 1.45rem; font-weight: 900; color: #fff; margin: 4px 0 0 0;">
+          Llegadas de Mercancía a Bodega
+        </h2>
+        <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 4px;">
+          Historial oficial de compras y abastecimiento de bebidas con fecha y hora.
+        </div>
+      </div>
+
+      <!-- Resumen Métricas de Compras -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-bottom: 14px;">
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 14px;">
+          <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Total Invertido</div>
+          <div id="soporteTotalInvertido" style="font-size: 1.25rem; font-weight: 900; color: #10b981;">$ 0</div>
+        </div>
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 14px;">
+          <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Bebidas Ingresadas</div>
+          <div id="soporteTotalUnidades" style="font-size: 1.25rem; font-weight: 900; color: #FFAA00;">0 uds</div>
+        </div>
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 14px;">
+          <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Llegadas Registradas</div>
+          <div id="soporteTotalRegistros" style="font-size: 1.25rem; font-weight: 900; color: #fff;">0</div>
+        </div>
+      </div>
+
+      <!-- Buscador y Filtro -->
+      <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+        <input type="text" id="searchSoporteEntradas" placeholder="🔍 Buscar por bebida o fecha..." class="select-custom" style="padding: 10px 14px; font-size: 0.88rem;" oninput="renderSoporteEntradas()">
+        <button type="button" onclick="vaciarHistorialEntradas()" title="Vaciar todo el historial de entradas" style="background: rgba(239, 68, 68, 0.12); color: var(--accent-red); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 10px; padding: 8px 14px; font-size: 0.82rem; font-weight: 700; cursor: pointer; white-space: nowrap;">
+          🗑️ Vaciar
+        </button>
+      </div>
+
+      <!-- Lista / Tabla scrolleable -->
+      <div style="flex: 1; overflow-y: auto; max-height: 48vh; border: 1px solid var(--border-color); border-radius: 10px; background: rgba(0,0,0,0.2);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.88rem;">
+          <thead>
+            <tr style="background: rgba(255,255,255,0.04); border-bottom: 1px solid var(--border-color); text-align: left; font-size: 0.76rem; color: var(--text-muted); text-transform: uppercase;">
+              <th style="padding: 10px 12px;">Fecha / Hora</th>
+              <th style="padding: 10px 12px;">Bebida</th>
+              <th style="padding: 10px 12px;">Llegada</th>
+              <th style="padding: 10px 12px;">Inversión Total</th>
+              <th style="padding: 10px 12px;">Bodega</th>
+              <th style="padding: 10px 12px; text-align: center;">Acción</th>
+            </tr>
+          </thead>
+          <tbody id="soporteEntradasTableBody">
+            <!-- Se llena con JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <div style="margin-top: 14px; text-align: right;">
+        <button type="button" onclick="cerrarModalSoporteEntradas()" style="background: rgba(255,255,255,0.08); border: 1px solid var(--border-color); color: #fff; border-radius: 10px; padding: 10px 20px; font-weight: 700; cursor: pointer;">
+          Cerrar Soporte
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: REGISTRAR ABONO O PAGO -->
   <div id="modalAbono" class="modal-backdrop">
     <div class="modal-box" style="max-width: 440px;">
@@ -1215,6 +1289,7 @@
     let inventario = [];
     let clientes = [];
     let historial = [];
+    let historialEntradas = [];
     let currentCategory = 'Todas';
     let selectedClientId = '';
     let cart = {}; // { prodId: quantity }
@@ -1251,15 +1326,17 @@
     // CARGA DE DATOS INICIALES
     async function loadData() {
       try {
-        const [resInv, resCli, resHist, resEst] = await Promise.all([
+        const [resInv, resCli, resHist, resEst, resEnt] = await Promise.all([
           fetch('/api/inventario').then(r => r.json()),
           fetch('/api/clientes').then(r => r.json()),
           fetch('/api/historial').then(r => r.json()),
-          fetch('/api/estado').then(r => r.json())
+          fetch('/api/estado').then(r => r.json()),
+          fetch('/api/inventario/entradas').then(r => r.json()).catch(() => [])
         ]);
         inventario = resInv;
         clientes = resCli;
         historial = resHist;
+        historialEntradas = Array.isArray(resEnt) ? resEnt : [];
 
         if (resEst && resEst.ip_local) {
           const pLocal = resEst.port || window.location.port || '5050';
@@ -2294,19 +2371,28 @@
       }
     }
 
-    async function reponerStock(prodId, cantidad) {
+    async function reponerStock(prodId, cantidad, nota = '') {
       try {
         const res = await fetch('/api/inventario/reponer', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ producto_id: prodId, cantidad })
+          body: JSON.stringify({ producto_id: prodId, cantidad, nota })
         });
         const data = await res.json();
         if (data.ok) {
           inventario = data.inventario;
+          if (data.entradas) historialEntradas = data.entradas;
           renderInventario();
           renderProducts();
-          showToast(`+${cantidad} unidades agregadas a stock.`);
+          renderBalance();
+          if (document.getElementById('modalSoporteEntradas') && document.getElementById('modalSoporteEntradas').classList.contains('active')) {
+            renderSoporteEntradas();
+          }
+          const p = inventario.find(i => i.id === prodId);
+          const nom = p ? p.nombre : 'la bebida';
+          showToast(`✅ +${cantidad} uds de '${nom}' ingresadas a bodega. Soporte registrado.`);
+        } else {
+          alert("Error: " + data.error);
         }
       } catch (e) {
         alert("Error al reponer stock: " + e);
@@ -2319,6 +2405,138 @@
       const cant = prompt(`¿Cuántas unidades de '${nombre}' llegaron para sumar a bodega?`);
       if (!cant || isNaN(cant) || Number(cant) <= 0) return;
       reponerStock(prodId, parseInt(cant));
+    }
+
+    // ==============================================
+    // FUNCIONES DEL MODAL: SOPORTE DE ENTRADAS / COMPRAS
+    // ==============================================
+    async function abrirModalSoporteEntradas() {
+      const modal = document.getElementById('modalSoporteEntradas');
+      if (!modal) return;
+      try {
+        const res = await fetch('/api/inventario/entradas');
+        const data = await res.json();
+        historialEntradas = Array.isArray(data) ? data : [];
+      } catch (e) {
+        console.error("Error cargando soporte de entradas:", e);
+      }
+      renderSoporteEntradas();
+      modal.classList.add('active');
+    }
+
+    function cerrarModalSoporteEntradas() {
+      const modal = document.getElementById('modalSoporteEntradas');
+      if (modal) modal.classList.remove('active');
+    }
+
+    function renderSoporteEntradas() {
+      const tbody = document.getElementById('soporteEntradasTableBody');
+      const search = (document.getElementById('searchSoporteEntradas').value || '').trim().toUpperCase();
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      let totalInvertido = 0;
+      let totalUnidades = 0;
+
+      const filtradas = (historialEntradas || []).filter(e => {
+        if (!search) return true;
+        const nom = (e.producto_nombre || '').toUpperCase();
+        const fec = (e.fecha || '').toUpperCase();
+        const cat = (e.categoria || '').toUpperCase();
+        return nom.includes(search) || fec.includes(search) || cat.includes(search);
+      });
+
+      (historialEntradas || []).forEach(e => {
+        totalInvertido += (e.total_costo || 0);
+        totalUnidades += (e.cantidad || 0);
+      });
+
+      const elInv = document.getElementById('soporteTotalInvertido');
+      const elUni = document.getElementById('soporteTotalUnidades');
+      const elReg = document.getElementById('soporteTotalRegistros');
+      if (elInv) elInv.innerText = formatMoney(totalInvertido);
+      if (elUni) elUni.innerText = `${totalUnidades} uds`;
+      if (elReg) elReg.innerText = `${(historialEntradas || []).length}`;
+
+      if (filtradas.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 26px; font-size: 0.9rem;">No hay registros de llegadas de mercancía para mostrar.</td></tr>`;
+        return;
+      }
+
+      // Mostrar las más recientes primero
+      filtradas.slice().reverse().forEach(ent => {
+        const tr = document.createElement('tr');
+        tr.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
+        tr.innerHTML = `
+          <td style="padding: 10px 12px; white-space: nowrap; font-weight: 700; color: #FFAA00;">
+            📅 ${ent.fecha || '-'}
+          </td>
+          <td style="padding: 10px 12px;">
+            <b style="color: #fff;">${ent.producto_nombre || 'Bebida'}</b>
+            ${ent.categoria ? `<br><small style="color: var(--text-muted); font-size: 0.74rem;">${ent.categoria}</small>` : ''}
+          </td>
+          <td style="padding: 10px 12px; font-weight: 800; color: #10b981; font-size: 0.95rem;">
+            +${ent.cantidad || 0} uds
+          </td>
+          <td style="padding: 10px 12px;">
+            <b style="color: #fff;">${formatMoney(ent.total_costo || 0)}</b>
+            ${ent.costo_unitario ? `<br><small style="color: var(--text-muted); font-size: 0.74rem;">(${formatMoney(ent.costo_unitario)} c/u)</small>` : ''}
+          </td>
+          <td style="padding: 10px 12px; font-size: 0.8rem; color: var(--text-muted);">
+            de <b>${ent.stock_anterior !== undefined ? ent.stock_anterior : '-'}</b> a <b style="color: #38bdf8;">${ent.stock_nuevo !== undefined ? ent.stock_nuevo : '-'} uds</b>
+          </td>
+          <td style="padding: 10px 12px; text-align: center;">
+            <button type="button" onclick="eliminarEntradaSoporte('${ent.id}', '${ent.producto_nombre}', ${ent.cantidad})" title="Anular llegada y devolver stock" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.35); color: #f87171; border-radius: 8px; padding: 5px 10px; font-size: 0.78rem; font-weight: 800; cursor: pointer;">
+              🗑️ Anular
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function eliminarEntradaSoporte(entradaId, nombre, cant) {
+      const confirmar = confirm(`⚠️ ¿Deseas anular este registro de llegada de +${cant} uds de '${nombre}'?\n\nAl anularlo, esas ${cant} unidades se descontarán de la bodega para que el inventario quede como estaba.`);
+      if (!confirmar) return;
+
+      try {
+        const res = await fetch('/api/inventario/eliminar-entrada', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ entrada_id: entradaId })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          inventario = data.inventario;
+          historialEntradas = data.entradas;
+          renderInventario();
+          renderProducts();
+          renderBalance();
+          renderSoporteEntradas();
+          showToast(`Llegada de '${nombre}' anulada y stock corregido.`);
+        } else {
+          alert("Error: " + data.error);
+        }
+      } catch (e) {
+        alert("Error anulando llegada: " + e);
+      }
+    }
+
+    async function vaciarHistorialEntradas() {
+      const confirmar = confirm("⚠️ ¿Estás seguro de que deseas vaciar todo el soporte de entradas?\n\n(Esto solo limpia el registro de compras, no modifica el stock actual de las bebidas).");
+      if (!confirmar) return;
+
+      try {
+        const res = await fetch('/api/inventario/borrar-entradas', { method: 'POST' });
+        const data = await res.json();
+        if (data.ok) {
+          historialEntradas = [];
+          renderSoporteEntradas();
+          showToast("Soporte de llegadas vaciado exitosamente.");
+        }
+      } catch (e) {
+        alert("Error vaciando soporte: " + e);
+      }
     }
 
     async function ajustarStockExacto(prodId) {

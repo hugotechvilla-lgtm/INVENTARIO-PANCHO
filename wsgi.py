@@ -11,7 +11,7 @@ if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
 from app import (
-    RUTA_INVENTARIO, RUTA_CLIENTES, RUTA_HISTORIAL,
+    RUTA_INVENTARIO, RUTA_CLIENTES, RUTA_HISTORIAL, RUTA_ENTRADAS,
     TICKETS_DIR, STATIC_DIR, BASE_DIR,
     leer_json, guardar_json, data_lock, get_local_ip,
     generar_ticket_cobro, agrupar_consumos_por_categoria,
@@ -76,6 +76,10 @@ def application(environ, start_response):
                 corregir_fechas_utc_oct18()
                 hist = leer_json(RUTA_HISTORIAL, [])
             return respond_json(hist)
+        elif path == '/api/inventario/entradas':
+            with data_lock:
+                entradas = leer_json(RUTA_ENTRADAS, [])
+            return respond_json(entradas)
         elif path.startswith('/tickets/'):
             filename = os.path.basename(path)
             ticket_path = os.path.join(TICKETS_DIR, filename)
@@ -523,6 +527,7 @@ def application(environ, start_response):
         elif path == "/api/inventario/reponer":
             producto_id = body.get("producto_id")
             cantidad = int(body.get("cantidad", 0))
+            nota = body.get("nota", "").strip()
             if not producto_id or cantidad <= 0:
                 return respond_json({"ok": False, "error": "Datos inválidos"}, '400 Bad Request')
             with data_lock:
@@ -530,9 +535,65 @@ def application(environ, start_response):
                 prod = next((p for p in inventario if p["id"] == producto_id), None)
                 if not prod:
                     return respond_json({"ok": False, "error": "No encontrado"}, '404 Not Found')
-                prod["stock"] += cantidad
+                stock_anterior = prod.get("stock", 0)
+                prod["stock"] = stock_anterior + cantidad
                 guardar_json(RUTA_INVENTARIO, inventario)
-            return respond_json({"ok": True, "inventario": inventario})
+
+                # Registrar soporte de entrada con fecha oficial Colombia (UTC-5)
+                ahora_dt = ahora_colombia()
+                costo_u = prod.get("precio_costo", 0)
+                total_inversion = costo_u * cantidad
+                registro_entrada = {
+                    "id": f"ENT-{ahora_dt.strftime('%Y%m%d%H%M%S')}",
+                    "fecha": ahora_dt.strftime("%d/%m/%Y %H:%M"),
+                    "producto_id": prod["id"],
+                    "producto_nombre": prod["nombre"],
+                    "categoria": prod.get("categoria", ""),
+                    "cantidad": cantidad,
+                    "stock_anterior": stock_anterior,
+                    "stock_nuevo": prod["stock"],
+                    "costo_unitario": costo_u,
+                    "total_costo": total_inversion,
+                    "nota": nota
+                }
+                entradas = leer_json(RUTA_ENTRADAS, [])
+                entradas.append(registro_entrada)
+                guardar_json(RUTA_ENTRADAS, entradas)
+
+            return respond_json({
+                "ok": True,
+                "inventario": inventario,
+                "entrada": registro_entrada,
+                "entradas": entradas
+            })
+
+        elif path == "/api/inventario/eliminar-entrada":
+            entrada_id = body.get("entrada_id")
+            if not entrada_id:
+                return respond_json({"ok": False, "error": "ID de entrada requerido"}, '400 Bad Request')
+
+            with data_lock:
+                entradas = leer_json(RUTA_ENTRADAS, [])
+                entrada = next((e for e in entradas if e["id"] == entrada_id), None)
+                if not entrada:
+                    return respond_json({"ok": False, "error": "Entrada no encontrada"}, '404 Not Found')
+
+                # Revertir stock en inventario
+                inventario = leer_json(RUTA_INVENTARIO, [])
+                prod = next((p for p in inventario if p["id"] == entrada.get("producto_id")), None)
+                if prod:
+                    prod["stock"] = max(0, prod.get("stock", 0) - entrada.get("cantidad", 0))
+                    guardar_json(RUTA_INVENTARIO, inventario)
+
+                entradas = [e for e in entradas if e["id"] != entrada_id]
+                guardar_json(RUTA_ENTRADAS, entradas)
+
+            return respond_json({"ok": True, "entradas": entradas, "inventario": inventario})
+
+        elif path == "/api/inventario/borrar-entradas":
+            with data_lock:
+                guardar_json(RUTA_ENTRADAS, [])
+            return respond_json({"ok": True, "entradas": []})
 
         elif path == "/api/inventario/ajustar-stock":
             producto_id = body.get("producto_id")

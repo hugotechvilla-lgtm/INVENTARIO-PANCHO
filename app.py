@@ -35,10 +35,11 @@ os.makedirs(DATOS_DIR, exist_ok=True)
 os.makedirs(TICKETS_DIR, exist_ok=True)
 os.makedirs(STATIC_DIR, exist_ok=True)
 
-# Rutas exactas a los 3 archivos de la base de datos:
+# Rutas exactas a los archivos de la base de datos:
 RUTA_INVENTARIO = os.path.join(DATOS_DIR, "inventario.json")       # Catálogo de cervezas, precios y stock
 RUTA_CLIENTES = os.path.join(DATOS_DIR, "clientes.json")           # Lista de clientes y saldos pendientes
 RUTA_HISTORIAL = os.path.join(DATOS_DIR, "historial_semanas.json") # Archivo histórico de todos los cobros
+RUTA_ENTRADAS = os.path.join(DATOS_DIR, "historial_entradas.json") # Soporte histórico de llegadas / compras de mercancía
 
 # Cerrojo de seguridad: evita que dos pedidos choquen si se tocan botones al mismo tiempo
 data_lock = threading.Lock()
@@ -212,6 +213,13 @@ class PanchoHandler(SimpleHTTPRequestHandler):
                 corregir_fechas_utc_oct18()
                 hist = leer_json(RUTA_HISTORIAL, [])
             self.send_json(hist)
+            return
+
+        # 4.1 API: HISTORIAL DE ENTRADAS / COMPRAS DE INVENTARIO
+        elif path == "/api/inventario/entradas":
+            with data_lock:
+                entradas = leer_json(RUTA_ENTRADAS, [])
+            self.send_json(entradas)
             return
 
         # 5. SERVIR TICKETS GENERADOS
@@ -771,10 +779,11 @@ class PanchoHandler(SimpleHTTPRequestHandler):
             self.send_json({"ok": True, "historial": []})
             return
 
-        # 4. API: REPONER STOCK EN INVENTARIO
+        # 4. API: REPONER STOCK EN INVENTARIO (CON REGISTRO DE SOPORTE)
         elif path == "/api/inventario/reponer":
             producto_id = body.get("producto_id")
             cantidad = int(body.get("cantidad", 0))
+            nota = body.get("nota", "").strip()
             if not producto_id or cantidad <= 0:
                 self.send_json({"ok": False, "error": "Datos inválidos"}, status=400)
                 return
@@ -785,10 +794,71 @@ class PanchoHandler(SimpleHTTPRequestHandler):
                 if not prod:
                     self.send_json({"ok": False, "error": "Producto no encontrado"}, status=404)
                     return
-                prod["stock"] += cantidad
+                stock_anterior = prod.get("stock", 0)
+                prod["stock"] = stock_anterior + cantidad
                 guardar_json(RUTA_INVENTARIO, inventario)
 
-            self.send_json({"ok": True, "inventario": inventario})
+                # Registrar soporte de entrada con fecha oficial Colombia (UTC-5)
+                ahora_dt = ahora_colombia()
+                costo_u = prod.get("precio_costo", 0)
+                total_inversion = costo_u * cantidad
+                registro_entrada = {
+                    "id": f"ENT-{ahora_dt.strftime('%Y%m%d%H%M%S')}",
+                    "fecha": ahora_dt.strftime("%d/%m/%Y %H:%M"),
+                    "producto_id": prod["id"],
+                    "producto_nombre": prod["nombre"],
+                    "categoria": prod.get("categoria", ""),
+                    "cantidad": cantidad,
+                    "stock_anterior": stock_anterior,
+                    "stock_nuevo": prod["stock"],
+                    "costo_unitario": costo_u,
+                    "total_costo": total_inversion,
+                    "nota": nota
+                }
+                entradas = leer_json(RUTA_ENTRADAS, [])
+                entradas.append(registro_entrada)
+                guardar_json(RUTA_ENTRADAS, entradas)
+
+            self.send_json({
+                "ok": True,
+                "inventario": inventario,
+                "entrada": registro_entrada,
+                "entradas": entradas
+            })
+            return
+
+        # 4.01 API: ELIMINAR / ANULAR ENTRADA DE INVENTARIO (DEVUELVE EL STOCK)
+        elif path == "/api/inventario/eliminar-entrada":
+            entrada_id = body.get("entrada_id")
+            if not entrada_id:
+                self.send_json({"ok": False, "error": "ID de entrada requerido"}, status=400)
+                return
+
+            with data_lock:
+                entradas = leer_json(RUTA_ENTRADAS, [])
+                entrada = next((e for e in entradas if e["id"] == entrada_id), None)
+                if not entrada:
+                    self.send_json({"ok": False, "error": "Entrada no encontrada"}, status=404)
+                    return
+
+                # Revertir stock en inventario
+                inventario = leer_json(RUTA_INVENTARIO, [])
+                prod = next((p for p in inventario if p["id"] == entrada.get("producto_id")), None)
+                if prod:
+                    prod["stock"] = max(0, prod.get("stock", 0) - entrada.get("cantidad", 0))
+                    guardar_json(RUTA_INVENTARIO, inventario)
+
+                entradas = [e for e in entradas if e["id"] != entrada_id]
+                guardar_json(RUTA_ENTRADAS, entradas)
+
+            self.send_json({"ok": True, "entradas": entradas, "inventario": inventario})
+            return
+
+        # 4.02 API: VACIAR HISTORIAL DE ENTRADAS
+        elif path == "/api/inventario/borrar-entradas":
+            with data_lock:
+                guardar_json(RUTA_ENTRADAS, [])
+            self.send_json({"ok": True, "entradas": []})
             return
 
         # 4.1 API: AJUSTAR STOCK EXACTO DIRECTO
