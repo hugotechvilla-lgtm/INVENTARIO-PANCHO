@@ -713,6 +713,19 @@
         </div>
 
       </div>
+
+      <!-- BARRA FLOTANTE FIJA PARA TABLET / MÓVIL AL ANOTAR PEDIDOS -->
+      <div id="floatingOrderBar" style="display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 999; background: #18181b; border-top: 2px solid #FFAA00; padding: 10px 16px; box-shadow: 0 -4px 20px rgba(0,0,0,0.6); align-items: center; justify-content: space-between; gap: 10px;">
+        <div style="font-size: 0.9rem; color: #fff; line-height: 1.2;">
+          <span id="floatBarInfo">🛒 0 bebidas ($ 0)</span>
+          <div id="floatBarClient" style="font-size: 0.78rem; color: #FFAA00; font-weight: 700;">Para: Ninguno seleccionado</div>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button type="button" onclick="guardarConsumoEnCuenta()" id="btnFloatSave" style="background: var(--brand-grad); color: #fff; border: none; padding: 10px 16px; border-radius: 10px; font-weight: 800; font-size: 0.9rem; cursor: pointer; white-space: nowrap; box-shadow: 0 4px 12px rgba(255,170,0,0.3);">
+            💾 Sumar a la Cuenta
+          </button>
+        </div>
+      </div>
     </section>
 
     <!-- ============================================== -->
@@ -1222,10 +1235,20 @@
     }
 
     function switchTab(tabId) {
+      if (tabId !== 'anotar' && Object.keys(cart).length > 0) {
+        const confirmar = confirm("⚠️ Tienes bebidas seleccionadas en la orden que aún NO se han guardado.\n\n¿Deseas salir a otra pestaña sin guardarlas?");
+        if (!confirmar) return;
+      }
       document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
       document.getElementById('tab-' + tabId).classList.add('active');
-      event.currentTarget.classList.add('active');
+      const targetBtn = Array.from(document.querySelectorAll('.nav-btn')).find(b => b.getAttribute('onclick') && b.getAttribute('onclick').includes(`'${tabId}'`));
+      if (targetBtn) targetBtn.classList.add('active');
+      else if (window.event && window.event.currentTarget && window.event.currentTarget.classList) window.event.currentTarget.classList.add('active');
+
+      const floatBar = document.getElementById('floatingOrderBar');
+      if (floatBar) floatBar.style.display = (tabId === 'anotar' && Object.keys(cart).length > 0) ? 'flex' : 'none';
+
       if (tabId === 'cuentas') renderCuentas();
       if (tabId === 'inventario') renderInventario();
       if (tabId === 'balance') renderBalance();
@@ -1288,6 +1311,13 @@
         title.innerText = 'SELECCIONA CLIENTE';
         badge.innerText = 'Ninguno seleccionado';
       }
+
+      // Actualizar también la barra flotante de móvil/tablet
+      const floatCli = document.getElementById('floatBarClient');
+      const btnFloat = document.getElementById('btnFloatSave');
+      if (floatCli) floatCli.innerHTML = client ? `Para: <b>${client.nombre}</b>` : '<span style="color: #ef4444;">⚠️ Elige o crea un cliente</span>';
+      if (btnFloat) btnFloat.disabled = !selectedClientId;
+
       updateSaveButton();
     }
 
@@ -1301,12 +1331,20 @@
           body: JSON.stringify({ nombre: nombre.trim().toUpperCase() })
         });
         const nuevo = await res.json();
-        clientes.push(nuevo);
+        const yaExiste = clientes.some(c => c.id === nuevo.id);
+        if (!yaExiste) clientes.push(nuevo);
+
         renderClientSelect();
         selectedClientId = nuevo.id;
         document.getElementById('clientSelect').value = nuevo.id;
         onSelectClient();
-        showToast(`Cliente '${nuevo.nombre}' creado.`);
+
+        // SI YA HABÍA BEBIDAS EN LA ORDEN, ¡GUARDAR AUTOMÁTICAMENTE Y DESCONTAR INVENTARIO!
+        if (Object.keys(cart).length > 0) {
+          await guardarConsumoEnCuenta();
+        } else {
+          showToast(`Cliente '${nuevo.nombre}' creado.`);
+        }
       } catch (e) {
         alert("Error creando cliente: " + e);
       }
@@ -1463,6 +1501,24 @@
 
       totalDisplay.innerText = formatMoney(total);
       updateSaveButton();
+
+      // Actualizar barra flotante para tablet/móvil
+      const floatBar = document.getElementById('floatingOrderBar');
+      const floatInfo = document.getElementById('floatBarInfo');
+      const floatCli = document.getElementById('floatBarClient');
+      const btnFloat = document.getElementById('btnFloatSave');
+      if (floatBar) {
+        if (itemIds.length > 0) {
+          floatBar.style.display = 'flex';
+          const cantTotal = itemIds.reduce((sum, id) => sum + (cart[id] || 0), 0);
+          if (floatInfo) floatInfo.innerHTML = `🛒 <b>${cantTotal}</b> bebidas (<b style="color: #FFAA00;">${formatMoney(total)}</b>)`;
+          const cli = clientes.find(c => c.id === selectedClientId);
+          if (floatCli) floatCli.innerHTML = cli ? `Para: <b>${cli.nombre}</b>` : '<span style="color: #ef4444;">⚠️ Elige o crea un cliente</span>';
+          if (btnFloat) btnFloat.disabled = !selectedClientId;
+        } else {
+          floatBar.style.display = 'none';
+        }
+      }
     }
 
     function updateSaveButton() {
@@ -1556,7 +1612,7 @@
         });
         const data = await res.json();
         if (data.ok) {
-          showToast(`✅ Consumo guardado en la cuenta de ${data.cliente.nombre}`);
+          showToast(`✅ ¡Listo! Consumo guardado en la cuenta de ${data.cliente.nombre} y stock descontado del inventario.`);
           // Actualizar datos locales
           inventario = data.inventario;
           const idx = clientes.findIndex(c => c.id === selectedClientId);
