@@ -7,7 +7,7 @@ echo ======================================================
 git rm -r --cached .idea 2>nul
 git add .
 git reset HEAD datos/ 2>nul
-git commit -m "Guardado automatico de consumos al crear cliente y barra flotante en tablet"
+git commit -m "Aviso verde superior destacado de 5s y guardado automatico al crear cliente"
 git branch -M main
 git remote remove origin 2>nul
 git remote add origin https://github.com/hugotechvilla-lgtm/INVENTARIO-PANCHO.git
