@@ -7,7 +7,7 @@ echo ======================================================
 git rm -r --cached .idea 2>nul
 git add .
 git reset HEAD datos/ 2>nul
-git commit -m "Soporte oficial de llegadas y compras de mercancia en bodega"
+git commit -m "Pago de contado elimina cliente y registra en historial sin descargar ticket"
 git branch -M main
 git remote remove origin 2>nul
 git remote add origin https://github.com/hugotechvilla-lgtm/INVENTARIO-PANCHO.git

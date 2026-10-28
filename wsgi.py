@@ -335,6 +335,11 @@ def application(environ, start_response):
                 }
                 historial.append(registro_historial)
 
+                # Si se proporcionó cliente_id, eliminar la tarjeta del cliente porque pagó de contado de una vez
+                if cliente_id:
+                    clientes = [c for c in clientes if c["id"] != cliente_id]
+                    guardar_json(RUTA_CLIENTES, clientes)
+
                 guardar_json(RUTA_INVENTARIO, inventario)
                 guardar_json(RUTA_HISTORIAL, historial)
 
@@ -345,6 +350,7 @@ def application(environ, start_response):
                 "total": subtotal_pedido,
                 "comprobante": comprobante,
                 "concepto": concepto_texto,
+                "clientes": clientes,
                 "inventario": inventario,
                 "historial": historial
             })

@@ -1612,16 +1612,24 @@
         });
         const data = await res.json();
         if (data.ok) {
-          showToast(`⚡ ¡Venta de contado registrada! Stock y ganancias actualizadas.`);
+          showToast(`⚡ ¡Pago de contado registrado ($ ${formatMoney(data.total)})! Cliente saldado, stock descontado y guardado en historial.`);
           inventario = data.inventario;
           if (data.historial) historial = data.historial;
+          if (data.clientes) {
+            clientes = data.clientes;
+          } else if (selectedClientId) {
+            clientes = clientes.filter(c => c.id !== selectedClientId);
+          }
+          selectedClientId = null;
           cart = {};
+          renderClientSelect();
+          onSelectClient();
+          renderCuentas();
           renderProducts();
           renderCart();
           renderInventario();
           renderBalance();
           renderHistorial();
-          showModalTicket(data.ticket_url, data.cliente_nombre, data.total, data.comprobante);
         } else {
           alert("Error: " + data.error);
         }
