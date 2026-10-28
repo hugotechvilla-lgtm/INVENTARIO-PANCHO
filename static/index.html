@@ -1385,13 +1385,28 @@
     }
 
     async function promptNewClient() {
-      const nombre = prompt("Ingresa el nombre del nuevo cliente:");
-      if (!nombre || !nombre.trim()) return;
+      const nombreRaw = prompt("Ingresa el nombre del nuevo cliente:");
+      if (!nombreRaw || !nombreRaw.trim()) return;
+      const nombreLimpio = nombreRaw.trim().toUpperCase();
+
+      // 1. Verificar si ya existe en la lista de clientes activos
+      const clienteExistente = clientes.find(c => c.nombre && c.nombre.trim().toUpperCase() === nombreLimpio);
+      if (clienteExistente) {
+        const saldoTxt = clienteExistente.saldo_actual > 0 ? ` (Deuda actual: ${formatMoney(clienteExistente.saldo_actual)})` : ' (Al día - $ 0)';
+        alert(`⚠️ El cliente '${clienteExistente.nombre}' YA ESTÁ CREADO${saldoTxt}.\n\nSe seleccionará automáticamente en pantalla para continuar.`);
+        selectedClientId = clienteExistente.id;
+        renderClientSelect();
+        document.getElementById('clientSelect').value = clienteExistente.id;
+        onSelectClient();
+        showToast(`ℹ️ Cliente '${clienteExistente.nombre}' ya existía y fue seleccionado.`);
+        return;
+      }
+
       try {
         const res = await fetch('/api/clientes/crear', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ nombre: nombre.trim().toUpperCase() })
+          body: JSON.stringify({ nombre: nombreLimpio })
         });
         const nuevo = await res.json();
         const yaExiste = clientes.some(c => c.id === nuevo.id);
