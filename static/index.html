@@ -3034,26 +3034,67 @@
       }
       historial.slice().reverse().forEach(h => {
         const tr = document.createElement('tr');
-        const metodoBadge = h.metodo ? (h.metodo === 'NEQUI' ? '🟣 Nequi' : '💵 Efectivo') : '💵 Pago';
-        
-        let accionHtml = '';
+
+        // Determinar tipo de pago y color del badge
+        let badgeTipo = '';
+        const conceptoUp = (h.concepto || '').toUpperCase();
+        const metodoUp = (h.metodo || '').toUpperCase();
+        const tipoUp = (h.tipo || '').toUpperCase();
+        const compUp = (h.comprobante || '').toUpperCase();
+
+        if (metodoUp === 'CONTADO' || conceptoUp.includes('CONTADO')) {
+          badgeTipo = `<span style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 6px; padding: 2px 8px; font-weight: 800; font-size: 0.72rem; text-transform: uppercase; display: inline-block; margin-bottom: 4px;">⚡ CONTADO</span>`;
+        } else if (tipoUp === 'ABONO' || compUp.startsWith('#AB') || conceptoUp.includes('ABONO')) {
+          badgeTipo = `<span style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); border-radius: 6px; padding: 2px 8px; font-weight: 800; font-size: 0.72rem; text-transform: uppercase; display: inline-block; margin-bottom: 4px;">💰 ABONO</span>`;
+        } else {
+          badgeTipo = `<span style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); border-radius: 6px; padding: 2px 8px; font-weight: 800; font-size: 0.72rem; text-transform: uppercase; display: inline-block; margin-bottom: 4px;">🧾 PAGO TOTAL</span>`;
+        }
+
+        // Desglose exacto de los productos consumidos
+        let detalleHtml = '';
+        if (Array.isArray(h.consumos) && h.consumos.length > 0) {
+          const agrupados = {};
+          h.consumos.forEach(item => {
+            const nom = (item.nombre || 'Bebida').trim();
+            agrupados[nom] = (agrupados[nom] || 0) + (Number(item.cantidad) || 1);
+          });
+          const listaItems = Object.entries(agrupados).map(([nom, cant]) => {
+            return `<span style="white-space: nowrap;"><b style="color: #FFAA00;">${cant}x</b> <span style="color: #f1f5f9;">${nom}</span></span>`;
+          });
+          detalleHtml = listaItems.join(' <span style="color: #64748b; margin: 0 4px;">·</span> ');
+        } else {
+          detalleHtml = `<span style="color: #94a3b8; font-size: 0.88rem;">${h.concepto || 'Abono a cuenta semanal'}</span>`;
+        }
+
+        let metodoBadge = '';
+        if (metodoUp === 'NEQUI') {
+          metodoBadge = '<span style="background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 6px; padding: 2px 6px; font-weight: 700; font-size: 0.75rem;">🟣 Nequi</span>';
+        } else if (metodoUp === 'EFECTIVO' || metodoUp === 'CONTADO') {
+          metodoBadge = '<span style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 6px; padding: 2px 6px; font-weight: 700; font-size: 0.75rem;">💵 Efectivo</span>';
+        } else {
+          metodoBadge = '<span style="background: rgba(255, 255, 255, 0.08); color: #cbd5e1; border-radius: 6px; padding: 2px 6px; font-weight: 700; font-size: 0.75rem;">💵 Pago</span>';
+        }
+
+        let canalHtml = `<div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">${metodoBadge}`;
         if (h.ticket_url) {
-          accionHtml = `
-            <button class="btn-restock" onclick="showModalTicket('${h.ticket_url}', '${h.cliente}', ${h.total}, '${h.comprobante}')">
+          canalHtml += `
+            <button class="btn-restock" style="padding: 4px 8px; font-size: 0.75rem; margin-top: 2px;" onclick="showModalTicket('${h.ticket_url}', '${h.cliente}', ${h.total}, '${h.comprobante}')">
               👁️ Ver Ticket
             </button>
           `;
-        } else {
-          accionHtml = `<span style="font-weight: 700; color: #10b981; font-size: 0.85rem;">${metodoBadge}</span>`;
         }
+        canalHtml += `</div>`;
 
         tr.innerHTML = `
-          <td>${h.fecha}</td>
-          <td><b>${h.comprobante}</b></td>
-          <td>${h.cliente}</td>
-          <td>${h.concepto}</td>
-          <td><b style="color: #10b981;">${formatMoney(h.total)}</b></td>
-          <td>${accionHtml}</td>
+          <td><span style="font-size: 0.82rem; color: #94a3b8;">${h.fecha}</span></td>
+          <td><b style="color: #fff; font-size: 0.9rem;">${h.comprobante}</b></td>
+          <td><b style="color: #FFAA00; font-size: 0.95rem;">${h.cliente}</b></td>
+          <td style="line-height: 1.4;">
+            <div>${badgeTipo}</div>
+            <div style="font-size: 0.9rem; margin-top: 2px;">${detalleHtml}</div>
+          </td>
+          <td><b style="color: #10b981; font-size: 1.05rem;">${formatMoney(h.total)}</b></td>
+          <td>${canalHtml}</td>
         `;
         tbody.appendChild(tr);
       });
