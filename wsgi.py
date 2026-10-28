@@ -50,7 +50,10 @@ def application(environ, start_response):
         start_response('200 OK', [
             ('Content-Type', content_type),
             ('Content-Length', str(len(content))),
-            ('Access-Control-Allow-Origin', '*')
+            ('Access-Control-Allow-Origin', '*'),
+            ('Cache-Control', 'no-cache, no-store, must-revalidate'),
+            ('Pragma', 'no-cache'),
+            ('Expires', '0')
         ])
         return [content]
 
