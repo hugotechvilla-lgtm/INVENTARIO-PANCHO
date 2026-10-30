@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>PANCHO · Sistema de Bebidas y Cuentas de Cobro</title>
-  <meta name="theme-color" content="#FFAA00">
+  <meta name="theme-color" content="#00f2fe">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -24,21 +24,23 @@
        Modifica estos valores para cambiar el aspecto de toda la página web:
        ========================================================================== */
     :root {
-      --bg-main: #121214;        /* Fondo oscuro principal de toda la pantalla */
-      --bg-card: #1c1c21;        /* Fondo de los cuadros, tarjetas y contenedores */
-      --bg-card-hover: #26262d;  /* Color del cuadro cuando pasas el cursor por encima */
-      --border-color: #2e2e38;   /* Color de las líneas de borde finas entre cuadros */
-      --text-main: #f4f4f6;      /* Color blanco principal del texto */
-      --text-muted: #9e9ea7;     /* Color gris secundario para subtítulos y notas */
-      --brand-orange: #FFAA00;   /* Amarillo/Naranja oficial de PANCHO (botones y títulos) */
-      --brand-red: #E8003A;      /* Rojo oficial de PANCHO (para alertas y degradados) */
-      --brand-grad: linear-gradient(135deg, #FFAA00 0%, #E8003A 100%); /* Degradado oficial de naranja a rojo */
-      --accent-green: #10b981;   /* Color verde brillante para ventas de contado y botones de éxito */
-      --accent-red: #ef4444;     /* Color rojo brillante para deudas y botón de borrar */
-      --accent-blue: #3b82f6;    /* Color azul para enlaces e información */
-      --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);    /* Sombra suave pequeña para cuadros */
-      --shadow-lg: 0 10px 25px rgba(0,0,0,0.5);  /* Sombra grande con profundidad 3D */
-      --radius: 14px;            /* Curvatura general de las esquinas de los cuadros (en píxeles) */
+      --bg-main: #070913;        /* Fondo oscuro obsidiana espacial */
+      --bg-card: #0e1322;        /* Fondo cristal tecnológico de tarjetas y cuadros */
+      --bg-card-hover: #161c30;  /* Color del cuadro con hover */
+      --border-color: rgba(0, 242, 254, 0.18); /* Líneas de borde cian neón de alta precisión */
+      --text-main: #f8fafc;      /* Blanco brillante de alta legibilidad */
+      --text-muted: #94a3b8;     /* Gris ciberespacial para subtítulos */
+      --brand-cyan: #00f2fe;     /* Cian láser eléctrico */
+      --brand-purple: #a855f7;   /* Violeta neón cyber */
+      --brand-orange: #00f2fe;   /* Acento eléctrico principal */
+      --brand-red: #f43f5e;      /* Rojo láser para alertas */
+      --brand-grad: linear-gradient(135deg, #00f2fe 0%, #a855f7 100%); /* Degradado Cyberpunk de cian a violeta */
+      --accent-green: #00ff9d;   /* Verde esmeralda neón para ventas de contado y éxito */
+      --accent-red: #f43f5e;     /* Rojo láser para deudas y botón de borrar */
+      --accent-blue: #38bdf8;    /* Azul cian para enlaces e información */
+      --shadow-sm: 0 4px 14px rgba(0,0,0,0.4);    /* Sombra suave para cuadros */
+      --shadow-lg: 0 12px 35px rgba(0,0,0,0.7), 0 0 25px rgba(0, 242, 254, 0.12);  /* Sombra 3D con resplandor neón */
+      --radius: 14px;            /* Curvatura general de las esquinas */
     }
 
     /* REGLAS GLOBALES DE TIPOGRAFÍA (Se aplican a todo el sitio) */
@@ -61,9 +63,10 @@
 
     /* HEADER */
     header {
-      background-color: rgba(28, 28, 33, 0.95);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--border-color);
+      background-color: rgba(11, 15, 28, 0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(0, 242, 254, 0.22);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
       padding: 12px 20px;
       position: sticky;
       top: 0;
@@ -83,7 +86,8 @@
       border-radius: 10px;
       object-fit: cover;
       background: #000;
-      border: 1px solid var(--border-color);
+      border: 1px solid rgba(0, 242, 254, 0.3);
+      box-shadow: 0 0 12px rgba(0, 242, 254, 0.25);
     }
     .brand-title {
       font-size: 1.25rem;
@@ -104,13 +108,14 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: rgba(16, 185, 129, 0.15);
+      background: rgba(0, 255, 157, 0.12);
       color: var(--accent-green);
       padding: 6px 12px;
       border-radius: 20px;
       font-size: 0.8rem;
       font-weight: 600;
-      border: 1px solid rgba(16, 185, 129, 0.3);
+      border: 1px solid rgba(0, 255, 157, 0.3);
+      box-shadow: 0 0 10px rgba(0, 255, 157, 0.2);
     }
     .dot { width: 8px; height: 8px; background: var(--accent-green); border-radius: 50%; display: inline-block; animation: pulse 2s infinite; }
     @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
@@ -118,8 +123,8 @@
     /* NAVIGATION TABS */
     nav {
       display: flex;
-      background: var(--bg-card);
-      border-bottom: 1px solid var(--border-color);
+      background: #0b0f1d;
+      border-bottom: 1px solid rgba(0, 242, 254, 0.15);
       padding: 4px 16px;
       overflow-x: auto;
       scrollbar-width: none;
@@ -142,8 +147,9 @@
     }
     .nav-btn:hover { color: var(--text-main); }
     .nav-btn.active {
-      color: #FFAA00;
-      border-bottom-color: #E8003A;
+      color: #00f2fe;
+      border-bottom-color: #00f2fe;
+      text-shadow: 0 0 12px rgba(0, 242, 254, 0.6);
     }
 
     /* MAIN CONTAINER */
@@ -205,19 +211,26 @@
       font-weight: 600;                      /* Grosor de la letra (negrita suave) */
       outline: none;
     }
-    .select-custom:focus { border-color: #FFAA00; } /* El borde se ilumina de amarillo al hacer clic */
+    .select-custom:focus { border-color: #00f2fe; box-shadow: 0 0 12px rgba(0, 242, 254, 0.3); }
 
     /* BOTÓN "+ NUEVO CLIENTE" */
     .btn-new-client {
-      background: rgba(255, 170, 0, 0.15);    /* Fondo amarillo semitransparente elegante */
-      color: #FFAA00;                        /* Letra amarilla de Pancho */
-      border: 1px solid rgba(255, 170, 0, 0.4); /* Borde amarillo suave */
-      padding: 12px 16px;                    /* Tamaño del botón */
-      border-radius: 10px;                   /* Esquinas redondeadas del botón */
-      font-weight: 700;                      /* Letra en negrita fuerte */
+      background: rgba(0, 242, 254, 0.12);
+      color: #00f2fe;
+      border: 1px solid rgba(0, 242, 254, 0.4);
+      box-shadow: 0 0 12px rgba(0, 242, 254, 0.2);
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-weight: 800;
       font-size: 0.9rem;
-      cursor: pointer;                       /* Manito al pasar el mouse */
+      cursor: pointer;
       white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .btn-new-client:hover {
+      background: rgba(0, 242, 254, 0.22);
+      box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);
+      transform: translateY(-1px);
     }
 
     /* FILTROS CATEGORÍA */
@@ -245,8 +258,10 @@
     .cat-pill:hover { border-color: var(--text-muted); color: var(--text-main); }
     .cat-pill.active {
       background: var(--brand-grad);
-      color: #fff;
+      color: #000;
+      font-weight: 900;
       border-color: transparent;
+      box-shadow: 0 0 15px rgba(0, 242, 254, 0.4);
     }
 
     /* GRID BEBIDAS */
@@ -263,14 +278,18 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      transition: transform 0.15s, border-color 0.15s;
+      transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
       box-shadow: var(--shadow-sm);
       position: relative;
     }
-    .product-card:hover { border-color: #FFAA00; transform: translateY(-2px); }
-    .p-cat { font-size: 0.7rem; font-weight: 700; color: #FFAA00; text-transform: uppercase; margin-bottom: 4px; }
+    .product-card:hover {
+      border-color: #00f2fe;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 242, 254, 0.16);
+    }
+    .p-cat { font-size: 0.7rem; font-weight: 800; color: #a855f7; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px; }
     .p-name { font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px; line-height: 1.3; }
-    .p-price { font-size: 1.15rem; font-weight: 800; color: #fff; margin-bottom: 10px; }
+    .p-price { font-size: 1.15rem; font-weight: 800; color: #00f2fe; margin-bottom: 10px; text-shadow: 0 0 10px rgba(0, 242, 254, 0.35); }
     .p-stock {
       font-size: 0.75rem;
       font-weight: 600;
@@ -280,8 +299,8 @@
       margin-bottom: 12px;
       width: fit-content;
     }
-    .stock-ok { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
-    .stock-low { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); }
+    .stock-ok { background: rgba(0, 255, 157, 0.12); color: var(--accent-green); border: 1px solid rgba(0, 255, 157, 0.25); }
+    .stock-low { background: rgba(244, 63, 94, 0.18); color: var(--accent-red); border: 1px solid rgba(244, 63, 94, 0.3); }
 
     .p-actions {
       display: flex;
@@ -307,8 +326,8 @@
       justify-content: center;
       transition: background 0.15s;
     }
-    .btn-qty:hover { background: #E8003A; color: #fff; }
-    .btn-qty.plus:hover { background: #FFAA00; color: #000; }
+    .btn-qty:hover { background: #f43f5e; color: #fff; }
+    .btn-qty.plus:hover { background: #00f2fe; color: #000; box-shadow: 0 0 10px rgba(0, 242, 254, 0.5); }
     .qty-display { font-weight: 800; font-size: 1rem; width: 30px; text-align: center; }
 
     /* PANEL LATERAL DE ORDEN */
@@ -334,7 +353,8 @@
     .order-client-name {
       font-size: 1.3rem;
       font-weight: 800;
-      color: #FFAA00;
+      color: #00f2fe;
+      text-shadow: 0 0 10px rgba(0, 242, 254, 0.4);
     }
     .order-items {
       max-height: 280px;
@@ -371,48 +391,48 @@
       border: 1px solid var(--border-color);
     }
     .order-total-label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; }
-    .order-total-val { font-size: 2rem; font-weight: 800; color: #fff; }
+    .order-total-val { font-size: 2rem; font-weight: 800; color: #00f2fe; text-shadow: 0 0 12px rgba(0, 242, 254, 0.4); }
 
     .btn-save-tab {
       width: 100%;
       background: var(--brand-grad);
-      color: #fff;
+      color: #000;
       border: none;
       padding: 14px;
       border-radius: 12px;
       font-size: 1rem;
-      font-weight: 800;
+      font-weight: 900;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 10px;
-      box-shadow: 0 4px 15px rgba(232, 0, 58, 0.4);
+      box-shadow: 0 4px 18px rgba(0, 242, 254, 0.35);
       transition: transform 0.15s, filter 0.15s;
     }
-    .btn-save-tab:hover { filter: brightness(1.1); transform: translateY(-2px); }
-    .btn-save-tab:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .btn-save-tab:hover { filter: brightness(1.15); transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0, 242, 254, 0.5); }
+    .btn-save-tab:disabled { opacity: 0.4; cursor: not-allowed; transform: none; background: #161c30; color: #64748b; box-shadow: none; }
 
     .btn-instant-pay {
       width: 100%;
-      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-      color: #fff;
+      background: linear-gradient(135deg, #00ff9d 0%, #059669 100%);
+      color: #000;
       border: none;
       padding: 14px;
       border-radius: 12px;
       font-size: 1rem;
-      font-weight: 800;
+      font-weight: 900;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 10px;
-      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);
+      box-shadow: 0 4px 18px rgba(0, 255, 157, 0.35);
       transition: transform 0.15s, filter 0.15s;
       margin-top: 10px;
     }
-    .btn-instant-pay:hover { filter: brightness(1.1); transform: translateY(-2px); }
-    .btn-instant-pay:disabled { opacity: 0.4; cursor: not-allowed; transform: none; background: #26262d; box-shadow: none; }
+    .btn-instant-pay:hover { filter: brightness(1.15); transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0, 255, 157, 0.5); }
+    .btn-instant-pay:disabled { opacity: 0.4; cursor: not-allowed; transform: none; background: #161c30; color: #64748b; box-shadow: none; }
 
     /* TAB: CUENTAS SEMANALES */
     .summary-metrics {
@@ -429,7 +449,7 @@
     }
     .m-lbl { font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; }
     .m-val { font-size: 1.8rem; font-weight: 800; color: #fff; }
-    .m-val.highlight { color: #FFAA00; }
+    .m-val.highlight { color: #00f2fe; text-shadow: 0 0 12px rgba(0, 242, 254, 0.4); }
 
     .clients-grid {
       display: grid;
@@ -444,9 +464,9 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      transition: border-color 0.2s;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
-    .client-card:hover { border-color: #FFAA00; }
+    .client-card:hover { border-color: #00f2fe; box-shadow: 0 6px 22px rgba(0, 242, 254, 0.18); }
     .client-top {
       display: flex;
       justify-content: space-between;
@@ -457,12 +477,14 @@
     .c-debt {
       font-size: 1.35rem;
       font-weight: 800;
-      color: #FFAA00;
-      background: rgba(255, 170, 0, 0.1);
+      color: #00f2fe;
+      background: rgba(0, 242, 254, 0.1);
+      border: 1px solid rgba(0, 242, 254, 0.3);
       padding: 4px 10px;
       border-radius: 8px;
+      text-shadow: 0 0 10px rgba(0, 242, 254, 0.3);
     }
-    .c-debt.zero { color: var(--accent-green); background: rgba(16, 185, 129, 0.1); font-size: 1rem; }
+    .c-debt.zero { color: var(--accent-green); background: rgba(0, 255, 157, 0.1); border-color: rgba(0, 255, 157, 0.3); font-size: 1rem; }
 
     .c-details-list {
       background: var(--bg-main);
@@ -472,7 +494,7 @@
       overflow-y: auto;
       font-size: 0.8rem;
       margin-bottom: 14px;
-      border: 1px solid rgba(255,255,255,0.05);
+      border: 1px solid rgba(0, 242, 254, 0.15);
     }
     .c-item-row { display: flex; justify-content: space-between; padding: 4px 0; color: var(--text-muted); }
     .c-item-row b { color: var(--text-main); }
@@ -480,20 +502,22 @@
     .btn-charge-week {
       width: 100%;
       background: var(--brand-grad);
-      color: #fff;
+      color: #000;
       border: none;
       padding: 12px;
       border-radius: 10px;
       font-size: 0.95rem;
-      font-weight: 800;
+      font-weight: 900;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
+      box-shadow: 0 4px 14px rgba(0, 242, 254, 0.35);
+      transition: all 0.2s;
     }
-    .btn-charge-week:hover { filter: brightness(1.1); }
-    .btn-charge-week:disabled { opacity: 0.4; cursor: not-allowed; background: var(--bg-card-hover); }
+    .btn-charge-week:hover { filter: brightness(1.15); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0, 242, 254, 0.5); }
+    .btn-charge-week:disabled { opacity: 0.4; cursor: not-allowed; background: var(--bg-card-hover); color: #64748b; }
 
     /* TAB: INVENTARIO */
     .inv-table-wrapper {
@@ -598,7 +622,7 @@
       text-decoration: none;
     }
     .btn-wa { background: #25D366; color: #000; }
-    .btn-dl { background: #FFAA00; color: #000; }
+    .btn-dl { background: linear-gradient(135deg, #00f2fe 0%, #a855f7 100%); color: #000; font-weight: 800; box-shadow: 0 0 15px rgba(0, 242, 254, 0.4); }
 
     /* TOAST NOTIFICACIÓN DESTACADA */
     .toast {
@@ -635,7 +659,7 @@
       <img src="logo.png" alt="PANCHO Logo" class="brand-logo" onerror="this.style.display='none'">
       <div>
         <h1 class="brand-title">PANCHO</h1>
-        <div class="brand-sub">Bebidas & Cuentas Semanales · <span style="background: rgba(255,170,0,0.2); border: 1px solid #FFAA00; color: #FFAA00; padding: 2px 7px; border-radius: 6px; font-size: 0.72rem; font-weight: 800;">v2.5 EDICIÓN ACTIVA</span></div>
+        <div class="brand-sub">Bebidas & Cuentas Semanales · <span style="background: rgba(0, 242, 254, 0.15); border: 1px solid #00f2fe; color: #00f2fe; padding: 2px 7px; border-radius: 6px; font-size: 0.72rem; font-weight: 800; box-shadow: 0 0 10px rgba(0, 242, 254, 0.25);">CYBERPUNK NEÓN</span></div>
       </div>
     </div>
     <div class="header-badge">
@@ -668,7 +692,7 @@
           <div class="section-card">
             <div class="section-title">
               <span>👤 Cliente para la cuenta:</span>
-              <span id="currentClientBadge" style="font-size: 0.85rem; color: #FFAA00;">Ninguno seleccionado</span>
+              <span id="currentClientBadge" style="font-size: 0.85rem; color: #00f2fe; text-shadow: 0 0 10px rgba(0, 242, 254, 0.4);">Ninguno seleccionado</span>
             </div>
             <div class="client-picker">
               <select id="clientSelect" class="select-custom" onchange="onSelectClient()">
@@ -796,16 +820,16 @@
     <!-- ============================================== -->
     <section id="tab-balance" class="tab-content">
       <!-- SELECTOR DE PERIODO / CALENDARIO -->
-      <div class="section-card" style="margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; padding: 16px 20px; background: linear-gradient(135deg, rgba(255,170,0,0.08) 0%, rgba(28,28,33,0.95) 100%); border: 1.5px solid rgba(255,170,0,0.35);">
+      <div class="section-card" style="margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; padding: 16px 20px; background: linear-gradient(135deg, rgba(0,242,254,0.08) 0%, rgba(14,19,34,0.95) 100%); border: 1.5px solid rgba(0,242,254,0.35); box-shadow: 0 0 20px rgba(0,242,254,0.12);">
         <div style="display: flex; align-items: center; gap: 12px;">
-          <span style="font-size: 1.6rem; background: rgba(255,170,0,0.15); width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 12px; border: 1px solid rgba(255,170,0,0.3);">📅</span>
+          <span style="font-size: 1.6rem; background: rgba(0,242,254,0.15); width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 12px; border: 1px solid rgba(0,242,254,0.3); box-shadow: 0 0 10px rgba(0,242,254,0.25);">📅</span>
           <div>
             <div style="font-size: 1rem; font-weight: 800; color: #fff;">Periodo de Consulta:</div>
-            <div style="font-size: 0.85rem; color: #FFAA00; font-weight: 700;" id="balancePeriodSubtitle">Esta Semana (En curso)</div>
+            <div style="font-size: 0.85rem; color: #00f2fe; font-weight: 700; text-shadow: 0 0 10px rgba(0,242,254,0.4);" id="balancePeriodSubtitle">Esta Semana (En curso)</div>
           </div>
         </div>
         <div style="display: flex; align-items: center; gap: 10px;">
-          <button type="button" onclick="abrirModalCalendarioBalance()" style="background: #121214; color: #FFAA00; border: 2px solid #FFAA00; padding: 10px 18px; border-radius: 12px; font-weight: 800; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(255,170,0,0.15); transition: transform 0.15s;">
+          <button type="button" onclick="abrirModalCalendarioBalance()" style="background: #0b0f1d; color: #00f2fe; border: 2px solid #00f2fe; padding: 10px 18px; border-radius: 12px; font-weight: 800; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 0 15px rgba(0,242,254,0.25); transition: all 0.2s;">
             <span>🗓️</span>
             <span id="btnCalendarioLabel">Elegir Días en Calendario</span>
             <span style="font-size: 0.75rem;">▼</span>
@@ -836,7 +860,7 @@
       <div class="section-card" style="margin-bottom: 24px;">
         <div class="section-title" style="flex-wrap: wrap; gap: 8px;">
           <span>📦 Dinero para Surtir vs Ganancia Limpia por Grupo</span>
-          <span style="font-size: 0.8rem; color: #FFAA00;">💡 Toca cualquier tarjeta para filtrar el detallado de abajo (toca de nuevo para ver todo)</span>
+          <span style="font-size: 0.8rem; color: #00f2fe;">💡 Toca cualquier tarjeta para filtrar el detallado de abajo (toca de nuevo para ver todo)</span>
         </div>
         <p style="color: var(--text-muted); font-size: 0.84rem; margin: 4px 0 16px 0;">
           Usa la plata de <b>"Para Surtir (Costo)"</b> para reponer la mercancía vendida en cada grupo. La <b>"Ganancia Limpia"</b> es tu utilidad real libre.
@@ -852,9 +876,9 @@
           <span>💰 Precios de Compra (Costo) vs Precio de Venta por Unidad</span>
           <span style="font-size: 0.82rem; color: var(--text-muted);">Configurados desde 📦 Inventario de Bebidas</span>
         </div>
-        <div id="unitTableGroupAlert" style="display: none; margin-bottom: 12px; padding: 10px 14px; background: rgba(255,170,0,0.1); border: 1px solid rgba(255,170,0,0.3); border-radius: 10px; font-size: 0.84rem; color: #FFAA00;">
+        <div id="unitTableGroupAlert" style="display: none; margin-bottom: 12px; padding: 10px 14px; background: rgba(0,242,254,0.1); border: 1px solid rgba(0,242,254,0.3); border-radius: 10px; font-size: 0.84rem; color: #00f2fe;">
           👁️ Mostrando solo productos del grupo: <b id="unitTableGroupAlertTxt"></b> 
-          <button onclick="toggleGrupoBalance('Todas')" style="background: rgba(255,170,0,0.2); border: 1px solid #FFAA00; color: #fff; border-radius: 6px; padding: 3px 8px; margin-left: 8px; cursor: pointer; font-weight: 700; font-size: 0.78rem;">Mostrar todos ✖</button>
+          <button onclick="toggleGrupoBalance('Todas')" style="background: rgba(0,242,254,0.2); border: 1px solid #00f2fe; color: #fff; border-radius: 6px; padding: 3px 8px; margin-left: 8px; cursor: pointer; font-weight: 700; font-size: 0.78rem;">Mostrar todos ✖</button>
         </div>
         <div class="inv-table-wrapper">
           <table>
@@ -879,11 +903,11 @@
       <!-- TABLA 2: BALANCE DE VENTAS DEL PERIODO -->
       <div class="section-card">
         <div class="section-title" style="flex-wrap: wrap; gap: 8px;">
-          <span>📈 Balance de Ventas por Bebida <span id="salesTablePeriodBadge" style="font-size: 0.82rem; color: #FFAA00; font-weight: 700;">(Semana Actual)</span></span>
+          <span>📈 Balance de Ventas por Bebida <span id="salesTablePeriodBadge" style="font-size: 0.82rem; color: #00f2fe; font-weight: 700;">(Semana Actual)</span></span>
         </div>
-        <div id="salesTableGroupAlert" style="display: none; margin-bottom: 12px; padding: 10px 14px; background: rgba(255,170,0,0.1); border: 1px solid rgba(255,170,0,0.3); border-radius: 10px; font-size: 0.84rem; color: #FFAA00;">
+        <div id="salesTableGroupAlert" style="display: none; margin-bottom: 12px; padding: 10px 14px; background: rgba(0,242,254,0.1); border: 1px solid rgba(0,242,254,0.3); border-radius: 10px; font-size: 0.84rem; color: #00f2fe;">
           👁️ Mostrando ventas solo del grupo: <b id="salesTableGroupAlertTxt"></b> 
-          <button onclick="toggleGrupoBalance('Todas')" style="background: rgba(255,170,0,0.2); border: 1px solid #FFAA00; color: #fff; border-radius: 6px; padding: 3px 8px; margin-left: 8px; cursor: pointer; font-weight: 700; font-size: 0.78rem;">Mostrar todos ✖</button>
+          <button onclick="toggleGrupoBalance('Todas')" style="background: rgba(0,242,254,0.2); border: 1px solid #00f2fe; color: #fff; border-radius: 6px; padding: 3px 8px; margin-left: 8px; cursor: pointer; font-weight: 700; font-size: 0.78rem;">Mostrar todos ✖</button>
         </div>
         <div class="inv-table-wrapper">
           <table>
@@ -942,7 +966,7 @@
   <div class="modal-backdrop" id="ticketModal">
     <div class="modal-box">
       <button class="modal-close" onclick="closeModal()">✕</button>
-      <h2 style="font-size: 1.3rem; font-weight: 800; text-align: center; color: #FFAA00;">
+      <h2 style="font-size: 1.3rem; font-weight: 800; text-align: center; color: var(--brand-cyan);">
         ¡Ticket de Cobro PANCHO Generado!
       </h2>
       <p style="text-align: center; color: var(--text-muted); font-size: 0.85rem; margin-top: 4px;" id="modalTicketSub">
@@ -952,7 +976,7 @@
       <img id="modalTicketImg" src="" alt="Ticket PANCHO" class="ticket-preview-img">
 
       <!-- TIPS GUÍA -->
-      <div style="background: rgba(255, 170, 0, 0.1); border: 1px solid rgba(255, 170, 0, 0.3); border-radius: 10px; padding: 12px; margin: 12px 0; font-size: 0.82rem; color: #ffca65; line-height: 1.5; text-align: center;">
+      <div style="background: rgba(0, 242, 254, 0.08); border: 1px solid rgba(0, 242, 254, 0.25); border-radius: 10px; padding: 12px; margin: 12px 0; font-size: 0.82rem; color: #a5f3fc; line-height: 1.5; text-align: center;">
         💡 <b>Cómo enviar la imagen por WhatsApp:</b><br>
         • <b>En Celular:</b> Toca <i>📲 Enviar a WhatsApp</i> y se adjunta la imagen automáticamente.<br>
         • <b>En PC:</b> Al tocar <i>📲 Enviar</i> la imagen se copia. En WhatsApp solo presiona <b>Ctrl + V</b> (Pegar) y Enviar.
@@ -981,7 +1005,7 @@
 
       <div style="text-align: center; margin-bottom: 18px;">
         <div style="font-size: 2.2rem; margin-bottom: 4px;">📅</div>
-        <h2 style="font-size: 1.3rem; font-weight: 800; color: #FFAA00; margin: 0;">
+        <h2 style="font-size: 1.3rem; font-weight: 800; color: var(--brand-cyan); margin: 0;">
           Seleccionar Periodo
         </h2>
         <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 6px;">
@@ -993,11 +1017,11 @@
       <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-radius: 14px; padding: 18px; margin-bottom: 20px;">
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 10px;">
           <div>
-            <label style="font-size: 0.82rem; font-weight: 800; color: #FFAA00; display: block; margin-bottom: 6px;">📅 Desde:</label>
+            <label style="font-size: 0.82rem; font-weight: 800; color: var(--brand-cyan); display: block; margin-bottom: 6px;">📅 Desde:</label>
             <input type="date" id="calFechaDesde" style="width: 100%; background: #121214; color: #fff; border: 1.5px solid var(--border-color); border-radius: 10px; padding: 11px; font-size: 0.95rem; outline: none; font-weight: 700; color-scheme: dark; cursor: pointer;">
           </div>
           <div>
-            <label style="font-size: 0.82rem; font-weight: 800; color: #FFAA00; display: block; margin-bottom: 6px;">📅 Hasta:</label>
+            <label style="font-size: 0.82rem; font-weight: 800; color: var(--brand-cyan); display: block; margin-bottom: 6px;">📅 Hasta:</label>
             <input type="date" id="calFechaHasta" style="width: 100%; background: #121214; color: #fff; border: 1.5px solid var(--border-color); border-radius: 10px; padding: 11px; font-size: 0.95rem; outline: none; font-weight: 700; color-scheme: dark; cursor: pointer;">
           </div>
         </div>
@@ -1011,7 +1035,7 @@
         <button type="button" onclick="cerrarModalCalendarioBalance()" style="background: rgba(255,255,255,0.08); border: 1px solid var(--border-color); color: var(--text-muted); border-radius: 12px; padding: 13px; font-weight: 700; cursor: pointer;">
           Cancelar
         </button>
-        <button type="button" onclick="aplicarRangoCalendario()" style="background: var(--brand-grad); border: none; color: #fff; border-radius: 12px; padding: 13px; font-weight: 800; font-size: 0.95rem; cursor: pointer; box-shadow: 0 4px 15px rgba(255,170,0,0.3);">
+        <button type="button" onclick="aplicarRangoCalendario()" style="background: var(--brand-grad); border: none; color: #070913; border-radius: 12px; padding: 13px; font-weight: 800; font-size: 0.95rem; cursor: pointer; box-shadow: 0 4px 15px rgba(0,242,254,0.35);">
           ✅ Aplicar Periodo
         </button>
       </div>
@@ -1046,7 +1070,7 @@
         </div>
         <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 14px;">
           <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Bebidas Ingresadas</div>
-          <div id="soporteTotalUnidades" style="font-size: 1.25rem; font-weight: 900; color: #FFAA00;">0 uds</div>
+          <div id="soporteTotalUnidades" style="font-size: 1.25rem; font-weight: 900; color: var(--brand-cyan);">0 uds</div>
         </div>
         <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 14px;">
           <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Llegadas Registradas</div>
@@ -1111,7 +1135,7 @@
         </label>
         <div style="display: flex; gap: 8px;">
           <input type="number" id="inputMontoAbono" placeholder="Ej: 20000" min="100" step="500" class="select-custom" style="font-size: 1.3rem; font-weight: 800; color: #fff; flex: 1;">
-          <button type="button" onclick="ponerTotalAbono()" style="background: rgba(255, 170, 0, 0.15); color: #FFAA00; border: 1px solid rgba(255, 170, 0, 0.4); border-radius: 10px; padding: 0 14px; font-size: 0.85rem; font-weight: 800; cursor: pointer; white-space: nowrap;">
+          <button type="button" onclick="ponerTotalAbono()" style="background: rgba(0, 242, 254, 0.15); color: var(--brand-cyan); border: 1px solid rgba(0, 242, 254, 0.4); border-radius: 10px; padding: 0 14px; font-size: 0.85rem; font-weight: 800; cursor: pointer; white-space: nowrap;">
             ⚡ Pagar Todo
           </button>
         </div>
@@ -1124,11 +1148,11 @@
         </label>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
           <label style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; font-weight: 700; font-size: 0.95rem;">
-            <input type="radio" name="metodoAbono" value="NEQUI" checked style="accent-color: #FFAA00; transform: scale(1.2);">
+            <input type="radio" name="metodoAbono" value="NEQUI" checked style="accent-color: var(--brand-purple); transform: scale(1.2);">
             🟣 Nequi
           </label>
           <label style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; font-weight: 700; font-size: 0.95rem;">
-            <input type="radio" name="metodoAbono" value="EFECTIVO" style="accent-color: #FFAA00; transform: scale(1.2);">
+            <input type="radio" name="metodoAbono" value="EFECTIVO" style="accent-color: var(--brand-cyan); transform: scale(1.2);">
             💵 Efectivo
           </label>
         </div>
@@ -1157,7 +1181,7 @@
       <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 14px; margin-bottom: 16px;">
         <div style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
           <div>
-            <div style="font-size: 0.78rem; font-weight: 800; color: #FFAA00; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px;">
+            <div style="font-size: 0.78rem; font-weight: 800; color: var(--brand-cyan); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px;">
               <span>📋</span> HOJA DE CUENTA SEMANAL
             </div>
             <h2 style="font-size: 1.55rem; font-weight: 900; color: #fff; margin: 4px 0 0 0;" id="hojaClienteNombre">
@@ -1181,7 +1205,7 @@
       <div style="margin-bottom: 14px;">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
           <span style="font-size: 0.9rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
-            🛒 Consumos de la Semana <span id="hojaCantidadItemsBadge" style="background: rgba(255,170,0,0.18); color: #FFAA00; padding: 2px 8px; border-radius: 10px; font-size: 0.76rem; font-weight: 800;">0</span>
+            🛒 Consumos de la Semana <span id="hojaCantidadItemsBadge" style="background: rgba(0,242,254,0.18); color: var(--brand-cyan); padding: 2px 8px; border-radius: 10px; font-size: 0.76rem; font-weight: 800;">0</span>
           </span>
           <span style="font-size: 0.74rem; color: var(--text-muted);">Edición con retorno a bodega</span>
         </div>
@@ -1197,9 +1221,9 @@
       </div>
 
       <!-- Resumen Total Barra -->
-      <div style="background: rgba(255, 170, 0, 0.08); border: 1px solid rgba(255, 170, 0, 0.25); border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+      <div style="background: rgba(0, 242, 254, 0.08); border: 1px solid rgba(0, 242, 254, 0.25); border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
         <span style="font-weight: 800; font-size: 0.95rem; color: #fff;">TOTAL A LIQUIDAR:</span>
-        <b id="hojaTotalLiquidar" style="font-size: 1.4rem; font-weight: 900; color: #FFAA00;">$ 0</b>
+        <b id="hojaTotalLiquidar" style="font-size: 1.4rem; font-weight: 900; color: var(--brand-cyan);">$ 0</b>
       </div>
 
       <!-- Barra de Acciones Principales -->
@@ -1239,11 +1263,11 @@
       </div>
 
       <!-- Monto a Pagar -->
-      <div style="background: rgba(255,170,0,0.1); border: 1px solid rgba(255,170,0,0.3); border-radius: 12px; padding: 14px; text-align: center; margin-bottom: 16px;">
+      <div style="background: rgba(0,242,254,0.1); border: 1px solid rgba(0,242,254,0.3); border-radius: 12px; padding: 14px; text-align: center; margin-bottom: 16px;">
         <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">
           Monto total que paga el cliente:
         </div>
-        <div id="pagoTotalMontoTexto" style="font-size: 1.8rem; font-weight: 900; color: #FFAA00; margin-top: 2px;">
+        <div id="pagoTotalMontoTexto" style="font-size: 1.8rem; font-weight: 900; color: var(--brand-cyan); margin-top: 2px;">
           $ 0
         </div>
       </div>
@@ -1259,7 +1283,7 @@
             💵 Efectivo
           </label>
           <label style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; font-weight: 700; font-size: 0.95rem;">
-            <input type="radio" name="metodoPagoTotal" value="NEQUI" style="accent-color: #FFAA00; transform: scale(1.2);">
+            <input type="radio" name="metodoPagoTotal" value="NEQUI" style="accent-color: var(--brand-purple); transform: scale(1.2);">
             🟣 Nequi
           </label>
         </div>
@@ -1496,7 +1520,7 @@
             <div class="p-name">${p.nombre}</div>
             <div class="p-price" style="display: flex; align-items: center; justify-content: space-between;">
               <span>${formatMoney(p.precio)}</span>
-              <button onclick="editarPrecioRapido('${p.id}')" title="Modificar precio" style="background: none; border: none; cursor: pointer; font-size: 0.85rem; color: #FFAA00;">✏️</button>
+              <button onclick="editarPrecioRapido('${p.id}')" title="Modificar precio" style="background: none; border: none; cursor: pointer; font-size: 0.85rem; color: var(--brand-cyan);">✏️</button>
             </div>
             ${stockBadgeHtml}
           </div>
@@ -1751,10 +1775,10 @@
             ${abonoBadgeHtml}
             <div style="font-size: 0.85rem; color: var(--text-muted); margin: 6px 0 12px 0; display: flex; align-items: center; justify-content: space-between;">
               <span>📦 <b>${cantConsumos}</b> ${cantConsumos === 1 ? 'producto consumido' : 'productos consumidos'}</span>
-              <span style="color: #FFAA00; font-size: 0.78rem; font-weight: 700;">Toca para abrir ➔</span>
+              <span style="color: var(--brand-cyan); font-size: 0.78rem; font-weight: 700;">Toca para abrir ➔</span>
             </div>
           </div>
-          <button class="btn-charge-week" style="width: 100%; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #111; border: none; font-weight: 900; font-size: 0.92rem; padding: 12px; border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35); cursor: pointer;" onclick="event.stopPropagation(); abrirHojaCliente('${c.id}')">
+          <button class="btn-charge-week" style="width: 100%; background: var(--brand-grad); color: #070913; border: none; font-weight: 900; font-size: 0.92rem; padding: 12px; border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(0, 242, 254, 0.35); cursor: pointer;" onclick="event.stopPropagation(); abrirHojaCliente('${c.id}')">
             📋 Abrir Hoja de Cuenta
           </button>
         `;
@@ -2004,13 +2028,13 @@
             <div style="flex: 1;">
               <div style="font-weight: 700; color: #fff; font-size: 0.95rem;">${item.nombre}</div>
               <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">
-                ${item.cantidad} un. · Subtotal: <b style="color: #FFAA00;">${formatMoney(item.subtotal)}</b>
+                ${item.cantidad} un. · Subtotal: <b style="color: var(--brand-cyan);">${formatMoney(item.subtotal)}</b>
                 ${item.fecha ? `<span style="font-size: 0.72rem; margin-left: 6px; color: rgba(255,255,255,0.4);">(${item.fecha.split(' ')[0]})</span>` : ''}
               </div>
             </div>
             <div style="display: flex; align-items: center; gap: 6px;">
               ${item.cantidad > 1 ? `
-                <button type="button" onclick="ejecutarEliminarConsumo('${c.id}', ${idx}, 1)" title="Quitar 1 unidad y devolver al stock" style="background: rgba(255,170,0,0.15); border: 1px solid rgba(255,170,0,0.4); color: #FFAA00; border-radius: 8px; padding: 6px 10px; font-size: 0.82rem; font-weight: 700; cursor: pointer;">
+                <button type="button" onclick="ejecutarEliminarConsumo('${c.id}', ${idx}, 1)" title="Quitar 1 unidad y devolver al stock" style="background: rgba(0, 242, 254, 0.15); border: 1px solid rgba(0, 242, 254, 0.4); color: var(--brand-cyan); border-radius: 8px; padding: 6px 10px; font-size: 0.82rem; font-weight: 700; cursor: pointer;">
                   -1 Unid.
                 </button>
               ` : ''}
@@ -2282,8 +2306,8 @@
       const btn = document.getElementById('btnToggleAllProducts');
       if (btn) {
         btn.innerText = verTodoElCatalogo ? "📦 Solo Físico (Bodega)" : "👁️ Ver Todo el Catálogo";
-        btn.style.background = verTodoElCatalogo ? "rgba(255,170,0,0.2)" : "rgba(255,255,255,0.08)";
-        btn.style.color = verTodoElCatalogo ? "#FFAA00" : "#fff";
+        btn.style.background = verTodoElCatalogo ? "rgba(0, 242, 254, 0.18)" : "rgba(255,255,255,0.08)";
+        btn.style.color = verTodoElCatalogo ? "var(--brand-cyan)" : "#fff";
       }
       renderInventario();
     }
@@ -2308,7 +2332,7 @@
         tr.innerHTML = `
           <td>
             <b>${p.nombre}</b>
-            ${esReceta ? '<br><small style="color: #FFAA00;">(Receta: descuenta cerveza base)</small>' : ''}
+            ${esReceta ? '<br><small style="color: var(--brand-cyan);">(Receta: descuenta cerveza base)</small>' : ''}
             ${esPrep ? '<br><small style="color: #60a5fa;">(Bebida preparada al momento)</small>' : ''}
           </td>
           <td><span class="p-cat">${p.categoria}</span></td>
@@ -2318,7 +2342,7 @@
             </button>
           </td>
           <td>
-            <button class="btn-restock" style="background: rgba(255,170,0,0.15); color: #FFAA00; border-color: rgba(255,170,0,0.3);" onclick="editarPrecioRapido('${p.id}')" title="Clic para editar precio de venta">
+            <button class="btn-restock" style="background: rgba(0, 242, 254, 0.15); color: var(--brand-cyan); border-color: rgba(0, 242, 254, 0.3);" onclick="editarPrecioRapido('${p.id}')" title="Clic para editar precio de venta">
               ✏️ ${formatMoney(p.precio)}
             </button>
           </td>
@@ -2491,7 +2515,7 @@
         const tr = document.createElement('tr');
         tr.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
         tr.innerHTML = `
-          <td style="padding: 10px 12px; white-space: nowrap; font-weight: 700; color: #FFAA00;">
+          <td style="padding: 10px 12px; white-space: nowrap; font-weight: 700; color: var(--brand-cyan);">
             📅 ${ent.fecha || '-'}
           </td>
           <td style="padding: 10px 12px;">
@@ -2851,7 +2875,7 @@
           <td><span class="p-cat">${grp}</span></td>
           <td>${stockCol}</td>
           <td><b style="color: #ef4444;">${formatMoney(costo)}</b></td>
-          <td><b style="color: #FFAA00;">${formatMoney(venta)}</b></td>
+          <td><b style="color: var(--brand-cyan);">${formatMoney(venta)}</b></td>
           <td><b style="color: #10b981;">+ ${formatMoney(ganancia)}</b></td>
           <td><b>${margen}%</b></td>
         `;
@@ -2954,11 +2978,11 @@
             ? `<span style="font-size: 0.78rem; background: rgba(59, 130, 246, 0.2); color: #60a5fa; padding: 4px 8px; border-radius: 8px; font-weight: 700; border: 1px solid rgba(59, 130, 246, 0.35);">🍹 Preparados</span>`
             : `<span style="font-size: 0.8rem; background: rgba(16, 185, 129, 0.18); color: #34d399; padding: 4px 9px; border-radius: 8px; font-weight: 800; border: 1px solid rgba(16, 185, 129, 0.4);">📦 Bodega: ${g.stockBodega} uds</span>`;
 
-          const estiloBorde = esActivo ? 'border: 2.5px solid #FFAA00; background: rgba(255,170,0,0.12); box-shadow: 0 0 16px rgba(255,170,0,0.25);' : 'border: 1.5px solid var(--border-color); background: rgba(255,255,255,0.02);';
+          const estiloBorde = esActivo ? 'border: 2.5px solid var(--brand-cyan); background: rgba(0,242,254,0.12); box-shadow: 0 0 16px rgba(0,242,254,0.3);' : 'border: 1.5px solid var(--border-color); background: rgba(255,255,255,0.02);';
 
           const footerTarjeta = esActivo
-            ? `<div style="font-size: 0.8rem; color: #FFAA00; font-weight: 800; text-align: right; margin-top: 10px; display: flex; align-items: center; justify-content: flex-end; gap: 4px;"><span>✓ Grupo Filtrado · Toca para ver todo</span> ✖</div>`
-            : `<div style="font-size: 0.76rem; color: var(--text-muted); text-align: right; margin-top: 10px;">Rentabilidad: <b>${margenG}%</b> · <span style="color: #FFAA00; font-weight: 700;">Toca para filtrar ➔</span></div>`;
+            ? `<div style="font-size: 0.8rem; color: var(--brand-cyan); font-weight: 800; text-align: right; margin-top: 10px; display: flex; align-items: center; justify-content: flex-end; gap: 4px;"><span>✓ Grupo Filtrado · Toca para ver todo</span> ✖</div>`
+            : `<div style="font-size: 0.76rem; color: var(--text-muted); text-align: right; margin-top: 10px;">Rentabilidad: <b>${margenG}%</b> · <span style="color: var(--brand-cyan); font-weight: 700;">Toca para filtrar ➔</span></div>`;
 
           return `
             <div class="metric-card" style="${estiloBorde} cursor: pointer; transition: all 0.2s; border-radius: 14px; padding: 16px;" onclick="toggleGrupoBalance('${g.nombre}')" title="Toca para filtrar o deseleccionar este grupo">
@@ -2968,7 +2992,7 @@
               </div>
               <div style="font-size: 0.82rem; color: var(--text-muted); display: flex; justify-content: space-between; margin-bottom: 6px;">
                 <span>🛒 Vendidas en Periodo:</span>
-                <b style="color: #FFAA00; font-size: 0.95rem;">${g.cant} uds</b>
+                <b style="color: var(--brand-cyan); font-size: 0.95rem;">${g.cant} uds</b>
               </div>
               <div style="font-size: 0.82rem; color: var(--text-muted); display: flex; justify-content: space-between; margin-bottom: 6px;">
                 <span>💵 Venta Generada:</span>
@@ -3006,7 +3030,7 @@
           tr.innerHTML = `
             <td><b>${v.nombre}</b> <br><small style="color: var(--text-muted);">${v.grupo}</small></td>
             <td><b style="color: ${isLowStock ? '#ef4444' : '#fff'};">${stockVal}</b></td>
-            <td><b style="color: #FFAA00;">${v.cantidad} uds</b></td>
+            <td><b style="color: var(--brand-cyan);">${v.cantidad} uds</b></td>
             <td><b>${formatMoney(v.totalVenta)}</b></td>
             <td><span style="color: #ef4444;">${formatMoney(v.totalCosto)}</span></td>
             <td><b style="color: #10b981;">+ ${formatMoney(util)}</b></td>
@@ -3074,7 +3098,7 @@
             agrupados[nom] = (agrupados[nom] || 0) + (Number(item.cantidad) || 1);
           });
           const listaItems = Object.entries(agrupados).map(([nom, cant]) => {
-            return `<span style="white-space: nowrap;"><b style="color: #FFAA00;">${cant}x</b> <span style="color: #f1f5f9;">${nom}</span></span>`;
+            return `<span style="white-space: nowrap;"><b style="color: var(--brand-cyan);">${cant}x</b> <span style="color: #f1f5f9;">${nom}</span></span>`;
           });
           detalleHtml = listaItems.join(' <span style="color: #64748b; margin: 0 4px;">·</span> ');
         } else {
@@ -3103,7 +3127,7 @@
         tr.innerHTML = `
           <td><span style="font-size: 0.82rem; color: #94a3b8;">${h.fecha}</span></td>
           <td><b style="color: #fff; font-size: 0.9rem;">${h.comprobante}</b></td>
-          <td><b style="color: #FFAA00; font-size: 0.95rem;">${h.cliente}</b></td>
+          <td><b style="color: var(--brand-cyan); font-size: 0.95rem;">${h.cliente}</b></td>
           <td style="line-height: 1.4;">
             <div>${badgeTipo}</div>
             <div style="font-size: 0.9rem; margin-top: 2px;">${detalleHtml}</div>
