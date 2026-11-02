@@ -15,7 +15,7 @@ from app import (
     TICKETS_DIR, STATIC_DIR, BASE_DIR,
     leer_json, guardar_json, data_lock, get_local_ip,
     generar_ticket_cobro, agrupar_consumos_por_categoria,
-    ahora_colombia, corregir_fechas_utc_oct18
+    ahora_colombia, corregir_fechas_utc_oct18, descontar_stock_peps
 )
 
 def application(environ, start_response):
@@ -243,13 +243,6 @@ def application(environ, start_response):
                 cliente = next((c for c in clientes if c["id"] == cliente_id), None)
                 if not cliente:
                     return respond_json({"ok": False, "error": "Cliente no encontrado"}, '404 Not Found')
-                for item in items:
-                    prod = next((p for p in inventario if p["id"] == item["id"]), None)
-                    if prod:
-                        id_base = prod.get("descuenta_de_id") or prod["id"]
-                        prod_base = next((p for p in inventario if p["id"] == id_base), prod)
-                        if "stock" in prod_base and prod_base.get("stock") is not None:
-                            prod_base["stock"] = max(0, prod_base["stock"] - item["cantidad"])
 
                 ahora_dt = ahora_colombia()
                 if fecha_personalizada and str(fecha_personalizada).strip():
@@ -261,19 +254,20 @@ def application(environ, start_response):
 
                 subtotal_pedido = 0
                 for item in items:
-                    sub = item.get("subtotal", item["precio_unitario"] * item["cantidad"])
-                    subtotal_pedido += sub
-                    p_obj = next((p for p in inventario if p["id"] == item["id"]), None)
-                    costo_u = p_obj.get("precio_costo", 0) if p_obj else 0
-                    cliente["consumos_semana"].append({
-                        "fecha": ahora_str,
-                        "producto_id": item["id"],
-                        "nombre": item["nombre"],
-                        "cantidad": item["cantidad"],
-                        "precio_unitario": item["precio_unitario"],
-                        "precio_costo": costo_u,
-                        "subtotal": sub
-                    })
+                    partes_peps = descontar_stock_peps(inventario, item)
+                    for parte in partes_peps:
+                        sub = parte["subtotal"]
+                        subtotal_pedido += sub
+                        cliente["consumos_semana"].append({
+                            "fecha": ahora_str,
+                            "producto_id": parte["producto_id"],
+                            "nombre": parte["nombre"],
+                            "cantidad": parte["cantidad"],
+                            "precio_unitario": parte["precio_unitario"],
+                            "precio_costo": parte["precio_costo"],
+                            "subtotal": sub
+                        })
+
                 cliente["saldo_actual"] += subtotal_pedido
                 guardar_json(RUTA_INVENTARIO, inventario)
                 guardar_json(RUTA_CLIENTES, clientes)
@@ -296,14 +290,6 @@ def application(environ, start_response):
                 cliente = next((c for c in clientes if c["id"] == cliente_id), None)
                 nombre_cliente = cliente["nombre"] if cliente else (nombre_custom or "CLIENTE DE CONTADO")
 
-                for item in items:
-                    prod = next((p for p in inventario if p["id"] == item["id"]), None)
-                    if prod:
-                        id_base = prod.get("descuenta_de_id") or prod["id"]
-                        prod_base = next((p for p in inventario if p["id"] == id_base), prod)
-                        if "stock" in prod_base and prod_base.get("stock") is not None:
-                            prod_base["stock"] = max(0, prod_base["stock"] - item["cantidad"])
-
                 ahora_dt = ahora_colombia()
                 if fecha_personalizada and str(fecha_personalizada).strip():
                     f_limpia = str(fecha_personalizada).strip().split(" ")[0]
@@ -321,19 +307,19 @@ def application(environ, start_response):
                 subtotal_pedido = 0
                 consumos_detallados = []
                 for item in items:
-                    sub = item.get("subtotal", item["precio_unitario"] * item["cantidad"])
-                    subtotal_pedido += sub
-                    p_obj = next((p for p in inventario if p["id"] == item["id"]), None)
-                    costo_u = p_obj.get("precio_costo", 0) if p_obj else 0
-                    consumos_detallados.append({
-                        "fecha": ahora_str,
-                        "producto_id": item["id"],
-                        "nombre": item["nombre"],
-                        "cantidad": item["cantidad"],
-                        "precio_unitario": item["precio_unitario"],
-                        "precio_costo": costo_u,
-                        "subtotal": sub
-                    })
+                    partes_peps = descontar_stock_peps(inventario, item)
+                    for parte in partes_peps:
+                        sub = parte["subtotal"]
+                        subtotal_pedido += sub
+                        consumos_detallados.append({
+                            "fecha": ahora_str,
+                            "producto_id": parte["producto_id"],
+                            "nombre": parte["nombre"],
+                            "cantidad": parte["cantidad"],
+                            "precio_unitario": parte["precio_unitario"],
+                            "precio_costo": parte["precio_costo"],
+                            "subtotal": sub
+                        })
 
                 partes_concepto = agrupar_consumos_por_categoria(consumos_detallados)
                 concepto_texto = " · ".join(partes_concepto)
@@ -559,6 +545,7 @@ def application(environ, start_response):
         elif path == "/api/inventario/reponer":
             producto_id = body.get("producto_id")
             cantidad = int(body.get("cantidad", 0))
+            costo_compra = body.get("costo")
             nota = body.get("nota", "").strip()
             if not producto_id or cantidad <= 0:
                 return respond_json({"ok": False, "error": "Datos inválidos"}, '400 Bad Request')
@@ -569,11 +556,32 @@ def application(environ, start_response):
                     return respond_json({"ok": False, "error": "No encontrado"}, '404 Not Found')
                 stock_anterior = prod.get("stock", 0)
                 prod["stock"] = stock_anterior + cantidad
+
+                ahora_dt = ahora_colombia()
+                costo_u = int(costo_compra) if costo_compra is not None and int(costo_compra) > 0 else prod.get("precio_costo", 0)
+
+                # Registrar nuevo lote al final de la cola (PEPS)
+                if "lotes" not in prod:
+                    prod["lotes"] = []
+                    if stock_anterior > 0:
+                        prod["lotes"].append({
+                            "cantidad": stock_anterior,
+                            "costo": prod.get("precio_costo", 0),
+                            "fecha": "Anterior"
+                        })
+
+                prod["lotes"].append({
+                    "cantidad": cantidad,
+                    "costo": costo_u,
+                    "fecha": ahora_dt.strftime("%d/%m/%Y %H:%M")
+                })
+
+                if stock_anterior == 0 or not prod.get("precio_costo"):
+                    prod["precio_costo"] = costo_u
+
                 guardar_json(RUTA_INVENTARIO, inventario)
 
                 # Registrar soporte de entrada con fecha oficial Colombia (UTC-5)
-                ahora_dt = ahora_colombia()
-                costo_u = prod.get("precio_costo", 0)
                 total_inversion = costo_u * cantidad
                 registro_entrada = {
                     "id": f"ENT-{ahora_dt.strftime('%Y%m%d%H%M%S')}",

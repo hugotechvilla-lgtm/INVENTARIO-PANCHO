@@ -2469,12 +2469,16 @@
       }
     }
 
-    async function reponerStock(prodId, cantidad, nota = '') {
+    async function reponerStock(prodId, cantidad, costo = null, nota = '') {
       try {
+        const payload = { producto_id: prodId, cantidad, nota };
+        if (costo !== null && !isNaN(costo) && Number(costo) > 0) {
+          payload.costo = parseInt(costo);
+        }
         const res = await fetch('/api/inventario/reponer', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ producto_id: prodId, cantidad, nota })
+          body: JSON.stringify(payload)
         });
         const data = await res.json();
         if (data.ok) {
@@ -2500,9 +2504,16 @@
     async function reponerStockCustom(prodId) {
       const p = inventario.find(item => item.id === prodId);
       const nombre = p ? p.nombre : "esta bebida";
+      const costoActual = p ? (p.precio_costo || 0) : 0;
+
       const cant = prompt(`¿Cuántas unidades de '${nombre}' llegaron para sumar a bodega?`);
       if (!cant || isNaN(cant) || Number(cant) <= 0) return;
-      reponerStock(prodId, parseInt(cant));
+
+      const costoPrompt = prompt(`¿A qué costo unitario compraste este lote de '${nombre}'? (Deja igual o cambia si llegó a otro precio):`, costoActual);
+      if (costoPrompt === null) return;
+      const costoVal = (!costoPrompt || isNaN(costoPrompt) || Number(costoPrompt) <= 0) ? costoActual : parseInt(costoPrompt);
+
+      reponerStock(prodId, parseInt(cant), costoVal);
     }
 
     // ==============================================

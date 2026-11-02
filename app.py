@@ -161,6 +161,95 @@ def corregir_fechas_utc_oct18():
 with data_lock:
     corregir_fechas_utc_oct18()
 
+def descontar_stock_peps(inventario, item):
+    """
+    Descuenta stock usando el método PEPS (FIFO: Primeras en entrar, primeras en salir).
+    Soporta bebidas normales, recetas y bebidas derivadas.
+    Retorna una lista de consumos desglosados por lote con su costo unitario real.
+    """
+    prod = next((p for p in inventario if p["id"] == item["id"]), None)
+    if not prod:
+        return [{
+            "producto_id": item["id"],
+            "nombre": item["nombre"],
+            "cantidad": item["cantidad"],
+            "precio_unitario": item["precio_unitario"],
+            "precio_costo": 0,
+            "subtotal": item.get("subtotal", item["precio_unitario"] * item["cantidad"])
+        }]
+
+    id_base = prod.get("descuenta_de_id") or prod["id"]
+    prod_base = next((p for p in inventario if p["id"] == id_base), prod)
+
+    # Si es producto preparado sin stock
+    if "stock" not in prod_base or prod_base.get("stock") is None:
+        costo_u = prod.get("precio_costo", 0)
+        return [{
+            "producto_id": item["id"],
+            "nombre": item["nombre"],
+            "cantidad": item["cantidad"],
+            "precio_unitario": item["precio_unitario"],
+            "precio_costo": costo_u,
+            "subtotal": item.get("subtotal", item["precio_unitario"] * item["cantidad"])
+        }]
+
+    cant_pedida = item["cantidad"]
+    # Descontar del total de stock
+    prod_base["stock"] = max(0, prod_base.get("stock", 0) - cant_pedida)
+
+    # Si no tiene lista de lotes, inicializarla
+    if "lotes" not in prod_base or not prod_base["lotes"]:
+        prod_base["lotes"] = [{
+            "cantidad": prod_base["stock"] + cant_pedida,
+            "costo": prod_base.get("precio_costo", 0),
+            "fecha": "Inicial"
+        }]
+
+    partes = []
+    restante = cant_pedida
+    lotes = prod_base["lotes"]
+
+    while restante > 0 and len(lotes) > 0:
+        lote_actual = lotes[0]
+        cant_lote = lote_actual.get("cantidad", 0)
+        costo_lote = lote_actual.get("costo", prod_base.get("precio_costo", 0))
+
+        if cant_lote <= restante:
+            usar = cant_lote
+            lotes.pop(0) # Se agota este lote viejo
+        else:
+            usar = restante
+            lote_actual["cantidad"] -= usar
+
+        if usar > 0:
+            partes.append({
+                "producto_id": item["id"],
+                "nombre": item["nombre"],
+                "cantidad": usar,
+                "precio_unitario": item["precio_unitario"],
+                "precio_costo": costo_lote,
+                "subtotal": item["precio_unitario"] * usar
+            })
+            restante -= usar
+
+    # Si el pedido superó los lotes registrados, el resto usa el costo actual del producto
+    if restante > 0:
+        costo_resto = prod_base.get("precio_costo", 0)
+        partes.append({
+            "producto_id": item["id"],
+            "nombre": item["nombre"],
+            "cantidad": restante,
+            "precio_unitario": item["precio_unitario"],
+            "precio_costo": costo_resto,
+            "subtotal": item["precio_unitario"] * restante
+        })
+
+    # Actualizar precio_costo visible del producto al costo del lote que quedó al frente
+    if lotes:
+        prod_base["precio_costo"] = lotes[0].get("costo", prod_base.get("precio_costo", 0))
+
+    return partes
+
 class PanchoHandler(SimpleHTTPRequestHandler):
     def send_json(self, data, status=200):
         body = json.dumps(data, ensure_ascii=False).encode("utf-8")
@@ -454,15 +543,6 @@ class PanchoHandler(SimpleHTTPRequestHandler):
                     self.send_json({"ok": False, "error": "Cliente no encontrado"}, status=404)
                     return
 
-                # Descontar stock de inventario (soporta recetas / bebidas preparadas)
-                for item in items:
-                    prod = next((p for p in inventario if p["id"] == item["id"]), None)
-                    if prod:
-                        id_base = prod.get("descuenta_de_id") or prod["id"]
-                        prod_base = next((p for p in inventario if p["id"] == id_base), prod)
-                        if "stock" in prod_base and prod_base.get("stock") is not None:
-                            prod_base["stock"] = max(0, prod_base["stock"] - item["cantidad"])
-
                 # Determinar fecha a estampar
                 ahora_dt = ahora_colombia()
                 if fecha_personalizada and str(fecha_personalizada).strip():
@@ -474,19 +554,19 @@ class PanchoHandler(SimpleHTTPRequestHandler):
 
                 subtotal_pedido = 0
                 for item in items:
-                    sub = item.get("subtotal", item["precio_unitario"] * item["cantidad"])
-                    subtotal_pedido += sub
-                    p_obj = next((p for p in inventario if p["id"] == item["id"]), None)
-                    costo_u = p_obj.get("precio_costo", 0) if p_obj else 0
-                    cliente["consumos_semana"].append({
-                        "fecha": ahora_str,
-                        "producto_id": item["id"],
-                        "nombre": item["nombre"],
-                        "cantidad": item["cantidad"],
-                        "precio_unitario": item["precio_unitario"],
-                        "precio_costo": costo_u,
-                        "subtotal": sub
-                    })
+                    partes_peps = descontar_stock_peps(inventario, item)
+                    for parte in partes_peps:
+                        sub = parte["subtotal"]
+                        subtotal_pedido += sub
+                        cliente["consumos_semana"].append({
+                            "fecha": ahora_str,
+                            "producto_id": parte["producto_id"],
+                            "nombre": parte["nombre"],
+                            "cantidad": parte["cantidad"],
+                            "precio_unitario": parte["precio_unitario"],
+                            "precio_costo": parte["precio_costo"],
+                            "subtotal": sub
+                        })
 
                 cliente["saldo_actual"] += subtotal_pedido
 
@@ -520,16 +600,7 @@ class PanchoHandler(SimpleHTTPRequestHandler):
                 cliente = next((c for c in clientes if c["id"] == cliente_id), None)
                 nombre_cliente = cliente["nombre"] if cliente else (nombre_custom or "CLIENTE DE CONTADO")
 
-                # 1. Descontar stock de inventario (soporta recetas)
-                for item in items:
-                    prod = next((p for p in inventario if p["id"] == item["id"]), None)
-                    if prod:
-                        id_base = prod.get("descuenta_de_id") or prod["id"]
-                        prod_base = next((p for p in inventario if p["id"] == id_base), prod)
-                        if "stock" in prod_base and prod_base.get("stock") is not None:
-                            prod_base["stock"] = max(0, prod_base["stock"] - item["cantidad"])
-
-                # 2. Calcular total y preparar consumos para balance y ganancia
+                # 1. Descontar stock con método PEPS y calcular consumos detallados
                 ahora_dt = ahora_colombia()
                 if fecha_personalizada and str(fecha_personalizada).strip():
                     f_limpia = str(fecha_personalizada).strip().split(" ")[0]
@@ -547,19 +618,19 @@ class PanchoHandler(SimpleHTTPRequestHandler):
                 subtotal_pedido = 0
                 consumos_detallados = []
                 for item in items:
-                    sub = item.get("subtotal", item["precio_unitario"] * item["cantidad"])
-                    subtotal_pedido += sub
-                    p_obj = next((p for p in inventario if p["id"] == item["id"]), None)
-                    costo_u = p_obj.get("precio_costo", 0) if p_obj else 0
-                    consumos_detallados.append({
-                        "fecha": ahora_str,
-                        "producto_id": item["id"],
-                        "nombre": item["nombre"],
-                        "cantidad": item["cantidad"],
-                        "precio_unitario": item["precio_unitario"],
-                        "precio_costo": costo_u,
-                        "subtotal": sub
-                    })
+                    partes_peps = descontar_stock_peps(inventario, item)
+                    for parte in partes_peps:
+                        sub = parte["subtotal"]
+                        subtotal_pedido += sub
+                        consumos_detallados.append({
+                            "fecha": ahora_str,
+                            "producto_id": parte["producto_id"],
+                            "nombre": parte["nombre"],
+                            "cantidad": parte["cantidad"],
+                            "precio_unitario": parte["precio_unitario"],
+                            "precio_costo": parte["precio_costo"],
+                            "subtotal": sub
+                        })
 
                 # 3. Armar texto del concepto agrupado por categoría (ej: 10 CERVEZAS)
                 partes_concepto = agrupar_consumos_por_categoria(consumos_detallados)
@@ -807,10 +878,11 @@ class PanchoHandler(SimpleHTTPRequestHandler):
             self.send_json({"ok": True, "historial": []})
             return
 
-        # 4. API: REPONER STOCK EN INVENTARIO (CON REGISTRO DE SOPORTE)
+        # 4. API: REPONER STOCK EN INVENTARIO (CON REGISTRO DE SOPORTE Y LOTES PEPS)
         elif path == "/api/inventario/reponer":
             producto_id = body.get("producto_id")
             cantidad = int(body.get("cantidad", 0))
+            costo_compra = body.get("costo") # Opcional: costo unitario de esta compra
             nota = body.get("nota", "").strip()
             if not producto_id or cantidad <= 0:
                 self.send_json({"ok": False, "error": "Datos inválidos"}, status=400)
@@ -824,11 +896,33 @@ class PanchoHandler(SimpleHTTPRequestHandler):
                     return
                 stock_anterior = prod.get("stock", 0)
                 prod["stock"] = stock_anterior + cantidad
+
+                ahora_dt = ahora_colombia()
+                costo_u = int(costo_compra) if costo_compra is not None and int(costo_compra) > 0 else prod.get("precio_costo", 0)
+
+                # Registrar nuevo lote al final de la cola (PEPS)
+                if "lotes" not in prod:
+                    prod["lotes"] = []
+                    if stock_anterior > 0:
+                        prod["lotes"].append({
+                            "cantidad": stock_anterior,
+                            "costo": prod.get("precio_costo", 0),
+                            "fecha": "Anterior"
+                        })
+
+                prod["lotes"].append({
+                    "cantidad": cantidad,
+                    "costo": costo_u,
+                    "fecha": ahora_dt.strftime("%d/%m/%Y %H:%M")
+                })
+
+                # Si el stock viejo estaba en 0, el precio_costo actual asume el nuevo costo
+                if stock_anterior == 0 or not prod.get("precio_costo"):
+                    prod["precio_costo"] = costo_u
+
                 guardar_json(RUTA_INVENTARIO, inventario)
 
                 # Registrar soporte de entrada con fecha oficial Colombia (UTC-5)
-                ahora_dt = ahora_colombia()
-                costo_u = prod.get("precio_costo", 0)
                 total_inversion = costo_u * cantidad
                 registro_entrada = {
                     "id": f"ENT-{ahora_dt.strftime('%Y%m%d%H%M%S')}",
