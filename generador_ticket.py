@@ -155,19 +155,27 @@ def generar_ticket_cobro(cliente, concepto, monto_val, titular_nequi="HUGO BRION
     radio_externo = 22
     radio_tarjeta = 14
 
-    color_top = hex_to_rgb("#FFAA00")
-    color_bot = hex_to_rgb("#E8003A")
-    color_marco = "#1A1A1A"
-    color_texto = "#1A1A1A"
-    color_secundario = "#555555"
+    color_top = hex_to_rgb("#070913")
+    color_mid = hex_to_rgb("#0b1020")
+    color_bot = hex_to_rgb("#130a24")
+    color_marco = (0, 242, 254, 200)
+    color_texto = "#FFFFFF"
+    color_secundario = "#94a3b8"
 
-    # Degradado oficial PANCHO (100% nativo Pillow)
+    # Degradado oficial PANCHO Cyberpunk Neón (100% nativo Pillow)
     grad_base = Image.new("RGB", (1, alto))
     for y in range(alto):
         t = y / alto
-        r = int(color_top[0] + (color_bot[0] - color_top[0]) * t)
-        g = int(color_top[1] + (color_bot[1] - color_top[1]) * t)
-        b = int(color_top[2] + (color_bot[2] - color_top[2]) * t)
+        if t < 0.5:
+            f = t / 0.5
+            r = int(color_top[0] + (color_mid[0] - color_top[0]) * f)
+            g = int(color_top[1] + (color_mid[1] - color_top[1]) * f)
+            b = int(color_top[2] + (color_mid[2] - color_top[2]) * f)
+        else:
+            f = (t - 0.5) / 0.5
+            r = int(color_mid[0] + (color_bot[0] - color_mid[0]) * f)
+            g = int(color_mid[1] + (color_bot[1] - color_mid[1]) * f)
+            b = int(color_mid[2] + (color_bot[2] - color_mid[2]) * f)
         grad_base.putpixel((0, y), (r, g, b))
 
     ticket = grad_base.resize((ancho, alto), Image.Resampling.BILINEAR).convert("RGBA")
@@ -188,9 +196,9 @@ def generar_ticket_cobro(cliente, concepto, monto_val, titular_nequi="HUGO BRION
             logo_h = int(logo_base.height * (logo_w / logo_base.width))
             logo_corner = logo_base.resize((logo_w, logo_h), Image.Resampling.LANCZOS)
             
-            # Efecto marca de agua suave (opacidad al 38%)
+            # Efecto marca de agua suave (opacidad al 35%)
             r, g, b, a = logo_corner.split()
-            a = a.point(lambda p: int(p * 0.38))
+            a = a.point(lambda p: int(p * 0.35))
             logo_corner.putalpha(a)
 
             # Integrar como marca de agua con alpha blending perfecto
@@ -201,7 +209,7 @@ def generar_ticket_cobro(cliente, concepto, monto_val, titular_nequi="HUGO BRION
             print(f"[!] Error al aplicar logo como marca de agua: {e}")
 
     draw = ImageDraw.Draw(ticket)
-    draw.rounded_rectangle([(4, 4), (ancho - 5, alto - 5)], radius=radio_externo, outline=color_marco, width=2)
+    draw.rounded_rectangle([(3, 3), (ancho - 4, alto - 4)], radius=radio_externo, outline=color_marco, width=2)
 
     # Carga de tipografías con soporte para listas de alternativas
     def cargar_fuente(nombres, tam):
@@ -247,29 +255,30 @@ def generar_ticket_cobro(cliente, concepto, monto_val, titular_nequi="HUGO BRION
     titulo = "PANCHO"
     bbox_t = draw.textbbox((0, 0), titulo, font=font_titulo)
     w_t = bbox_t[2] - bbox_t[0]
-    draw.text((cx - w_t // 2 - bbox_t[0], 2), titulo, font=font_titulo, fill=color_texto)
+    # Sombra cyan glow
+    draw.text((cx - w_t // 2 - bbox_t[0] + 1, 3), titulo, font=font_titulo, fill=(0, 242, 254, 120))
+    draw.text((cx - w_t // 2 - bbox_t[0], 2), titulo, font=font_titulo, fill="#FFFFFF")
 
     badge_tipo = "CUENTA DE COBRO DIGITAL"
     bbox_bt = draw.textbbox((0, 0), badge_tipo, font=font_sub)
     ancho_bt = bbox_bt[2] - bbox_bt[0]
-    badge_y = 66
+    badge_y = 64
     draw.rounded_rectangle(
         [(cx - ancho_bt // 2 - 12, badge_y), (cx + ancho_bt // 2 + 12, badge_y + 24)],
         radius=11,
-        fill="#FFFFFF",
-        outline=color_marco,
+        fill=(14, 19, 34, 240),
+        outline=(0, 242, 254, 150),
         width=1
     )
-    draw.text((cx - ancho_bt // 2, badge_y + 4), badge_tipo, font=font_sub, fill=color_texto)
+    draw.text((cx - ancho_bt // 2, badge_y + 4), badge_tipo, font=font_sub, fill="#00f2fe")
 
     # 1. Caja Hero: TOTAL A PAGAR
-    box1_x1, box1_y1 = 30, 104
-    box1_x2, box1_y2 = ancho - 30, 194
+    box1_x1, box1_y1 = 30, 102
+    box1_x2, box1_y2 = ancho - 30, 192
 
     overlay1 = Image.new("RGBA", (ancho, alto), (0, 0, 0, 0))
     d_ov1 = ImageDraw.Draw(overlay1)
-    d_ov1.rounded_rectangle([(box1_x1 + 1, box1_y1 + 2), (box1_x2 + 1, box1_y2 + 2)], radius=radio_tarjeta, fill=(0, 0, 0, 35))
-    d_ov1.rounded_rectangle([(box1_x1, box1_y1), (box1_x2, box1_y2)], radius=radio_tarjeta, fill=(255, 255, 255, 245), outline=(30, 30, 30, 180), width=1)
+    d_ov1.rounded_rectangle([(box1_x1, box1_y1), (box1_x2, box1_y2)], radius=radio_tarjeta, fill=(14, 19, 34, 235), outline=(0, 242, 254, 160), width=2)
     ticket = Image.alpha_composite(ticket, overlay1)
     draw = ImageDraw.Draw(ticket)
 
@@ -278,16 +287,15 @@ def generar_ticket_cobro(cliente, concepto, monto_val, titular_nequi="HUGO BRION
     draw.text((cx - (bbox_ls[2] - bbox_ls[0]) // 2, box1_y1 + 14), lbl_saldo, font=font_lbl_cobro, fill=color_secundario)
 
     bbox_m = draw.textbbox((0, 0), txt_monto, font=font_monto)
-    draw.text((cx - (bbox_m[2] - bbox_m[0]) // 2, box1_y1 + 36), txt_monto, font=font_monto, fill=color_texto)
+    draw.text((cx - (bbox_m[2] - bbox_m[0]) // 2, box1_y1 + 36), txt_monto, font=font_monto, fill="#00f2fe")
 
     # 2. Tarjeta de Detalles y Consumos
-    box2_x1, box2_y1 = 30, 210
-    box2_x2, box2_y2 = ancho - 30, 420
+    box2_x1, box2_y1 = 30, 206
+    box2_x2, box2_y2 = ancho - 30, 422
 
     overlay2 = Image.new("RGBA", (ancho, alto), (0, 0, 0, 0))
     d_ov2 = ImageDraw.Draw(overlay2)
-    d_ov2.rounded_rectangle([(box2_x1 + 1, box2_y1 + 2), (box2_x2 + 1, box2_y2 + 2)], radius=radio_tarjeta, fill=(0, 0, 0, 35))
-    d_ov2.rounded_rectangle([(box2_x1, box2_y1), (box2_x2, box2_y2)], radius=radio_tarjeta, fill=(255, 255, 255, 245), outline=(30, 30, 30, 180), width=1)
+    d_ov2.rounded_rectangle([(box2_x1, box2_y1), (box2_x2, box2_y2)], radius=radio_tarjeta, fill=(14, 19, 34, 235), outline=(0, 242, 254, 100), width=1)
     ticket = Image.alpha_composite(ticket, overlay2)
     draw = ImageDraw.Draw(ticket)
 
@@ -296,23 +304,23 @@ def generar_ticket_cobro(cliente, concepto, monto_val, titular_nequi="HUGO BRION
     draw.text((box2_x1 + 18, y_r1), "CLIENTE", font=font_campo_lbl, fill=color_secundario)
     nom_cli = cliente.upper()
     bbox_cli = draw.textbbox((0, 0), nom_cli, font=font_campo_val)
-    draw.text((box2_x2 - 18 - (bbox_cli[2] - bbox_cli[0]), y_r1 - 2), nom_cli, font=font_campo_val, fill=color_texto)
-    draw.line([(box2_x1 + 16, y_r1 + 26), (box2_x2 - 16, y_r1 + 26)], fill=(225, 225, 225, 255), width=1)
+    draw.text((box2_x2 - 18 - (bbox_cli[2] - bbox_cli[0]), y_r1 - 2), nom_cli, font=font_campo_val, fill="#FFFFFF")
+    draw.line([(box2_x1 + 16, y_r1 + 26), (box2_x2 - 16, y_r1 + 26)], fill=(255, 255, 255, 25), width=1)
 
     # Fila 2: FECHA DE EMISIÓN
     y_r2 = y_r1 + 34
     draw.text((box2_x1 + 18, y_r2), "FECHA DE EMISIÓN", font=font_campo_lbl, fill=color_secundario)
     txt_fecha = ahora_colombia().strftime("%d / %m / %Y")
     bbox_fec = draw.textbbox((0, 0), txt_fecha, font=font_campo_val)
-    draw.text((box2_x2 - 18 - (bbox_fec[2] - bbox_fec[0]), y_r2 - 2), txt_fecha, font=font_campo_val, fill=color_texto)
-    draw.line([(box2_x1 + 16, y_r2 + 26), (box2_x2 - 16, y_r2 + 26)], fill=(225, 225, 225, 255), width=1)
+    draw.text((box2_x2 - 18 - (bbox_fec[2] - bbox_fec[0]), y_r2 - 2), txt_fecha, font=font_campo_val, fill="#FFFFFF")
+    draw.line([(box2_x1 + 16, y_r2 + 26), (box2_x2 - 16, y_r2 + 26)], fill=(255, 255, 255, 25), width=1)
 
     # Fila 3: N° DE COMPROBANTE
     y_r3 = y_r2 + 34
     draw.text((box2_x1 + 18, y_r3), "N° DE COMPROBANTE", font=font_campo_lbl, fill=color_secundario)
     bbox_comp = draw.textbbox((0, 0), numero_comprobante, font=font_campo_val)
-    draw.text((box2_x2 - 18 - (bbox_comp[2] - bbox_comp[0]), y_r3 - 2), numero_comprobante, font=font_campo_val, fill=color_texto)
-    draw.line([(box2_x1 + 16, y_r3 + 26), (box2_x2 - 16, y_r3 + 26)], fill=(225, 225, 225, 255), width=1)
+    draw.text((box2_x2 - 18 - (bbox_comp[2] - bbox_comp[0]), y_r3 - 2), numero_comprobante, font=font_campo_val, fill="#00f2fe")
+    draw.line([(box2_x1 + 16, y_r3 + 26), (box2_x2 - 16, y_r3 + 26)], fill=(255, 255, 255, 25), width=1)
 
     # Fila 4: CONSUMO(S)
     y_r4 = y_r3 + 34
@@ -323,47 +331,46 @@ def generar_ticket_cobro(cliente, concepto, monto_val, titular_nequi="HUGO BRION
         bbox_it = draw.textbbox((0, 0), it, font=font_consumo)
         ancho_it = bbox_it[2] - bbox_it[0]
         if ancho_it < (box2_x2 - box2_x1 - 190):
-            draw.text((box2_x2 - 18 - ancho_it, y_r4 - 2), it, font=font_consumo, fill=color_texto)
+            draw.text((box2_x2 - 18 - ancho_it, y_r4 - 2), it, font=font_consumo, fill="#e2e8f0")
         else:
             it_txt = it if len(it) <= 32 else it[:29] + "..."
-            draw.text((box2_x1 + 22, y_r4 + 22), f"•  {it_txt}", font=font_consumo, fill=color_texto)
+            draw.text((box2_x1 + 22, y_r4 + 22), f"•  {it_txt}", font=font_consumo, fill="#e2e8f0")
     else:
         badge_sem = "SEMANA"
         bbox_bs = draw.textbbox((0, 0), badge_sem, font=font_sub)
-        draw.text((box2_x2 - 18 - (bbox_bs[2] - bbox_bs[0]), y_r4), badge_sem, font=font_sub, fill=color_secundario)
+        draw.text((box2_x2 - 18 - (bbox_bs[2] - bbox_bs[0]), y_r4), badge_sem, font=font_sub, fill="#a855f7")
 
         y_item = y_r4 + 22
         for item in lineas_concepto[:3]:
             it_txt = item if len(item) <= 32 else item[:29] + "..."
-            draw.text((box2_x1 + 22, y_item), f"•  {it_txt}", font=font_consumo, fill=color_texto)
+            draw.text((box2_x1 + 22, y_item), f"•  {it_txt}", font=font_consumo, fill="#e2e8f0")
             y_item += 22
 
     # 3. Caja Canal de Pago (Nequi)
-    box3_x1, box3_y1 = 30, 434
-    box3_x2, box3_y2 = ancho - 30, 546
+    box3_x1, box3_y1 = 30, 436
+    box3_x2, box3_y2 = ancho - 30, 548
 
     overlay3 = Image.new("RGBA", (ancho, alto), (0, 0, 0, 0))
     d_ov3 = ImageDraw.Draw(overlay3)
-    d_ov3.rounded_rectangle([(box3_x1 + 1, box3_y1 + 2), (box3_x2 + 1, box3_y2 + 2)], radius=radio_tarjeta, fill=(0, 0, 0, 35))
-    d_ov3.rounded_rectangle([(box3_x1, box3_y1), (box3_x2, box3_y2)], radius=radio_tarjeta, fill=(255, 255, 255, 245), outline=(20, 20, 20, 200), width=2)
+    d_ov3.rounded_rectangle([(box3_x1, box3_y1), (box3_x2, box3_y2)], radius=radio_tarjeta, fill=(14, 19, 34, 235), outline=(168, 85, 247, 180), width=2)
     ticket = Image.alpha_composite(ticket, overlay3)
     draw = ImageDraw.Draw(ticket)
 
-    tit_transf = "CANAL DE PAGO"
+    tit_transf = "CANAL DE PAGO OFICIAL"
     bbox_pt = draw.textbbox((0, 0), tit_transf, font=font_pago_tit)
-    draw.text((cx - (bbox_pt[2] - bbox_pt[0]) // 2, box3_y1 + 14), tit_transf, font=font_pago_tit, fill=color_secundario)
+    draw.text((cx - (bbox_pt[2] - bbox_pt[0]) // 2, box3_y1 + 14), tit_transf, font=font_pago_tit, fill="#a855f7")
 
-    draw.line([(box3_x1 + 25, box3_y1 + 38), (box3_x2 - 25, box3_y1 + 38)], fill=(215, 215, 215, 255), width=1)
+    draw.line([(box3_x1 + 25, box3_y1 + 38), (box3_x2 - 25, box3_y1 + 38)], fill=(168, 85, 247, 60), width=1)
 
     nequi_txt = "NEQUI: 301 343 27 75"
     bbox_nq = draw.textbbox((0, 0), nequi_txt, font=font_pago_num)
-    draw.text((cx - (bbox_nq[2] - bbox_nq[0]) // 2, box3_y1 + 48), nequi_txt, font=font_pago_num, fill="#111111")
+    draw.text((cx - (bbox_nq[2] - bbox_nq[0]) // 2, box3_y1 + 48), nequi_txt, font=font_pago_num, fill="#FFFFFF")
 
     sub_nequi = f"A NOMBRE DE: {titular_nequi.upper()}"
     bbox_sn = draw.textbbox((0, 0), sub_nequi, font=font_nota)
     draw.text((cx - (bbox_sn[2] - bbox_sn[0]) // 2, box3_y1 + 82), sub_nequi, font=font_nota, fill=color_secundario)
 
-    # 4. Footer Minimalista (Solicitado por Hugo: Única y exclusivamente la frase de agradecimiento)
+    # 4. Footer Minimalista
     pie = "¡MUCHAS GRACIAS POR SU PREFERENCIA!"
     bbox_pie = draw.textbbox((0, 0), pie, font=font_pie)
     pie_w = bbox_pie[2] - bbox_pie[0]
@@ -371,9 +378,8 @@ def generar_ticket_cobro(cliente, concepto, monto_val, titular_nequi="HUGO BRION
     pie_x = cx - pie_w // 2
     pie_y = 612 - pie_h // 2
 
-    # Sombra sutil de 1px para máximo relieve y legibilidad sobre el rojo
-    draw.text((pie_x + 1, pie_y + 1), pie, font=font_pie, fill=(0, 0, 0, 90))
-    draw.text((pie_x, pie_y), pie, font=font_pie, fill="#FFFFFF")
+    # Texto en cyan electrico brillante
+    draw.text((pie_x, pie_y), pie, font=font_pie, fill="#00f2fe")
 
     # Guardado de imagen
     cli_slug = limpiar_nombre_archivo(cliente)
