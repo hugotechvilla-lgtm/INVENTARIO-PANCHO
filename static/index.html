@@ -735,6 +735,22 @@
             <div class="order-total-val" id="orderTotalDisplay">$ 0</div>
           </div>
 
+          <!-- SELECTOR DE FECHA DE VENTA (PARA INGRESOS EN EL DÍA O RETROACTIVOS DEL DOMINGO) -->
+          <div style="background: rgba(0, 242, 254, 0.05); border: 1px solid rgba(0, 242, 254, 0.2); border-radius: 10px; padding: 10px 12px; margin-bottom: 12px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px;">
+              <label for="orderFechaVenta" style="font-size: 0.78rem; font-weight: 800; color: var(--brand-cyan); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 4px;">
+                <span>📅</span> Fecha del Consumo:
+              </label>
+              <button type="button" onclick="setOrderFechaHoy()" style="background: none; border: none; color: #a855f7; font-size: 0.75rem; font-weight: 800; cursor: pointer; text-decoration: underline;">
+                Hoy
+              </button>
+            </div>
+            <input type="date" id="orderFechaVenta" style="width: 100%; background: #070913; color: #fff; border: 1.5px solid var(--border-color); border-radius: 8px; padding: 8px 10px; font-size: 0.9rem; font-weight: 700; color-scheme: dark; outline: none; cursor: pointer;">
+            <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; line-height: 1.2;">
+              💡 Si estás registrando cuentas atrasadas del fin de semana, elige el día exacto aquí.
+            </div>
+          </div>
+
           <button id="btnSaveTab" class="btn-save-tab" onclick="guardarConsumoEnCuenta()" disabled>
             💾 Sumar a la Semana del Cliente
           </button>
@@ -1367,6 +1383,7 @@
           document.getElementById('ipDisplay').innerText = resEst.ip_local + ':' + pLocal;
         }
 
+        try { initOrderFecha(); } catch (err) { console.error("Error initOrderFecha:", err); }
         try { renderClientSelect(); } catch (err) { console.error("Error renderClientSelect:", err); }
         try { renderProducts(); } catch (err) { console.error("Error renderProducts:", err); }
         try { renderCuentas(); } catch (err) { console.error("Error renderCuentas:", err); }
@@ -1375,6 +1392,29 @@
         try { renderHistorial(); } catch (err) { console.error("Error renderHistorial:", err); }
       } catch (e) {
         console.error("Error al cargar datos:", e);
+      }
+    }
+
+    function obtenerFechaHoyStr() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function initOrderFecha() {
+      const inp = document.getElementById('orderFechaVenta');
+      if (inp && !inp.value) {
+        inp.value = obtenerFechaHoyStr();
+      }
+    }
+
+    function setOrderFechaHoy() {
+      const inp = document.getElementById('orderFechaVenta');
+      if (inp) {
+        inp.value = obtenerFechaHoyStr();
+        showToast("📅 Fecha fijada a Hoy.");
       }
     }
 
@@ -1639,6 +1679,9 @@
         };
       });
 
+      const fechaVentaInput = document.getElementById('orderFechaVenta');
+      const fechaVenta = fechaVentaInput ? fechaVentaInput.value : '';
+
       try {
         const res = await fetch('/api/clientes/pago-contado', {
           method: 'POST',
@@ -1646,7 +1689,8 @@
           body: JSON.stringify({
             cliente_id: selectedClientId || null,
             nombre_cliente: nombreCliente,
-            items: items
+            items: items,
+            fecha: fechaVenta || null
           })
         });
         const data = await res.json();
@@ -1696,11 +1740,18 @@
         };
       });
 
+      const fechaVentaInput = document.getElementById('orderFechaVenta');
+      const fechaVenta = fechaVentaInput ? fechaVentaInput.value : '';
+
       try {
         const res = await fetch('/api/clientes/consumo', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ cliente_id: selectedClientId, items })
+          body: JSON.stringify({
+            cliente_id: selectedClientId,
+            items: items,
+            fecha: fechaVenta || null
+          })
         });
         const data = await res.json();
         if (data.ok) {

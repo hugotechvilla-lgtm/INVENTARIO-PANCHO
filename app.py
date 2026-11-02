@@ -439,6 +439,7 @@ class PanchoHandler(SimpleHTTPRequestHandler):
         elif path == "/api/clientes/consumo":
             cliente_id = body.get("cliente_id")
             items = body.get("items", []) # [{id, nombre, cantidad, precio_unitario, subtotal}]
+            fecha_personalizada = body.get("fecha") # Opcional: "YYYY-MM-DD" para retroactivos
 
             if not cliente_id or not items:
                 self.send_json({"ok": False, "error": "Faltan datos de cliente o productos"}, status=400)
@@ -462,8 +463,15 @@ class PanchoHandler(SimpleHTTPRequestHandler):
                         if "stock" in prod_base and prod_base.get("stock") is not None:
                             prod_base["stock"] = max(0, prod_base["stock"] - item["cantidad"])
 
-                # Sumar a consumos del cliente
-                ahora_str = ahora_colombia().strftime("%Y-%m-%d %H:%M")
+                # Determinar fecha a estampar
+                ahora_dt = ahora_colombia()
+                if fecha_personalizada and str(fecha_personalizada).strip():
+                    f_limpia = str(fecha_personalizada).strip().split(" ")[0]
+                    hora_str = ahora_dt.strftime("%H:%M")
+                    ahora_str = f"{f_limpia} {hora_str}"
+                else:
+                    ahora_str = ahora_dt.strftime("%Y-%m-%d %H:%M")
+
                 subtotal_pedido = 0
                 for item in items:
                     sub = item.get("subtotal", item["precio_unitario"] * item["cantidad"])
@@ -498,6 +506,7 @@ class PanchoHandler(SimpleHTTPRequestHandler):
             cliente_id = body.get("cliente_id")
             items = body.get("items", [])
             nombre_custom = body.get("nombre_cliente", "").strip().upper()
+            fecha_personalizada = body.get("fecha") # Opcional: "YYYY-MM-DD" para retroactivos
 
             if not items:
                 self.send_json({"ok": False, "error": "No hay productos en el pedido"}, status=400)
@@ -521,7 +530,20 @@ class PanchoHandler(SimpleHTTPRequestHandler):
                             prod_base["stock"] = max(0, prod_base["stock"] - item["cantidad"])
 
                 # 2. Calcular total y preparar consumos para balance y ganancia
-                ahora_str = ahora_colombia().strftime("%Y-%m-%d %H:%M")
+                ahora_dt = ahora_colombia()
+                if fecha_personalizada and str(fecha_personalizada).strip():
+                    f_limpia = str(fecha_personalizada).strip().split(" ")[0]
+                    hora_str = ahora_dt.strftime("%H:%M")
+                    ahora_str = f"{f_limpia} {hora_str}"
+                    partes_f = f_limpia.split("-")
+                    if len(partes_f) == 3:
+                        fecha_historial_str = f"{partes_f[2]}/{partes_f[1]}/{partes_f[0]} {hora_str}"
+                    else:
+                        fecha_historial_str = ahora_dt.strftime("%d/%m/%Y %H:%M")
+                else:
+                    ahora_str = ahora_dt.strftime("%Y-%m-%d %H:%M")
+                    fecha_historial_str = ahora_dt.strftime("%d/%m/%Y %H:%M")
+
                 subtotal_pedido = 0
                 consumos_detallados = []
                 for item in items:
@@ -557,7 +579,7 @@ class PanchoHandler(SimpleHTTPRequestHandler):
 
                 # 5. Registrar en historial de cobros (PAGADO - no suma deuda)
                 registro_historial = {
-                    "fecha": ahora_colombia().strftime("%d/%m/%Y %H:%M"),
+                    "fecha": fecha_historial_str,
                     "cliente": nombre_cliente,
                     "total": subtotal_pedido,
                     "comprobante": comprobante,

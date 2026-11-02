@@ -234,6 +234,7 @@ def application(environ, start_response):
         elif path == "/api/clientes/consumo":
             cliente_id = body.get("cliente_id")
             items = body.get("items", [])
+            fecha_personalizada = body.get("fecha") # Opcional: "YYYY-MM-DD" para retroactivos
             if not cliente_id or not items:
                 return respond_json({"ok": False, "error": "Faltan datos"}, '400 Bad Request')
             with data_lock:
@@ -249,7 +250,15 @@ def application(environ, start_response):
                         prod_base = next((p for p in inventario if p["id"] == id_base), prod)
                         if "stock" in prod_base and prod_base.get("stock") is not None:
                             prod_base["stock"] = max(0, prod_base["stock"] - item["cantidad"])
-                ahora_str = ahora_colombia().strftime("%Y-%m-%d %H:%M")
+
+                ahora_dt = ahora_colombia()
+                if fecha_personalizada and str(fecha_personalizada).strip():
+                    f_limpia = str(fecha_personalizada).strip().split(" ")[0]
+                    hora_str = ahora_dt.strftime("%H:%M")
+                    ahora_str = f"{f_limpia} {hora_str}"
+                else:
+                    ahora_str = ahora_dt.strftime("%Y-%m-%d %H:%M")
+
                 subtotal_pedido = 0
                 for item in items:
                     sub = item.get("subtotal", item["precio_unitario"] * item["cantidad"])
@@ -274,6 +283,7 @@ def application(environ, start_response):
             cliente_id = body.get("cliente_id")
             items = body.get("items", [])
             nombre_custom = body.get("nombre_cliente", "").strip().upper()
+            fecha_personalizada = body.get("fecha") # Opcional: "YYYY-MM-DD" para retroactivos
 
             if not items:
                 return respond_json({"ok": False, "error": "No hay productos en el pedido"}, '400 Bad Request')
@@ -294,7 +304,20 @@ def application(environ, start_response):
                         if "stock" in prod_base and prod_base.get("stock") is not None:
                             prod_base["stock"] = max(0, prod_base["stock"] - item["cantidad"])
 
-                ahora_str = ahora_colombia().strftime("%Y-%m-%d %H:%M")
+                ahora_dt = ahora_colombia()
+                if fecha_personalizada and str(fecha_personalizada).strip():
+                    f_limpia = str(fecha_personalizada).strip().split(" ")[0]
+                    hora_str = ahora_dt.strftime("%H:%M")
+                    ahora_str = f"{f_limpia} {hora_str}"
+                    partes_f = f_limpia.split("-")
+                    if len(partes_f) == 3:
+                        fecha_historial_str = f"{partes_f[2]}/{partes_f[1]}/{partes_f[0]} {hora_str}"
+                    else:
+                        fecha_historial_str = ahora_dt.strftime("%d/%m/%Y %H:%M")
+                else:
+                    ahora_str = ahora_dt.strftime("%Y-%m-%d %H:%M")
+                    fecha_historial_str = ahora_dt.strftime("%d/%m/%Y %H:%M")
+
                 subtotal_pedido = 0
                 consumos_detallados = []
                 for item in items:
@@ -327,7 +350,7 @@ def application(environ, start_response):
                     return respond_json({"ok": False, "error": f"Error generando ticket: {err}"}, '500 Internal Server Error')
 
                 registro_historial = {
-                    "fecha": ahora_colombia().strftime("%d/%m/%Y %H:%M"),
+                    "fecha": fecha_historial_str,
                     "cliente": nombre_cliente,
                     "total": subtotal_pedido,
                     "comprobante": comprobante,
