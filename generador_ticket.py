@@ -237,7 +237,8 @@ def generar_ticket_cobro(cliente, concepto, monto_val, titular_nequi="HUGO BRION
         return ImageFont.load_default()
 
     FONT_SUPLEX = ["Suplexmentary Comic NC.ttf", "SUPLEX.ttf"]
-    font_titulo = cargar_fuente("HAPPY.ttf", 40)
+    FONT_RUGIS = ["rugis.otf", "rugis.ttf", "RUGIS.otf", "HAPPY.ttf"]
+    font_titulo = cargar_fuente(FONT_RUGIS, 46)
     font_sub = cargar_fuente(FONT_SUPLEX, 13)
     font_lbl_cobro = cargar_fuente(FONT_SUPLEX, 13)
     font_monto = cargar_fuente(FONT_SUPLEX, 42)
@@ -251,13 +252,15 @@ def generar_ticket_cobro(cliente, concepto, monto_val, titular_nequi="HUGO BRION
 
     cx = ancho // 2
 
-    # Encabezado PANCHO
+    # Encabezado PANCHO (Con fuente RUGIS y color Cyan Eléctrico Neón)
     titulo = "PANCHO"
     bbox_t = draw.textbbox((0, 0), titulo, font=font_titulo)
     w_t = bbox_t[2] - bbox_t[0]
-    # Sombra cyan glow
-    draw.text((cx - w_t // 2 - bbox_t[0] + 1, 3), titulo, font=font_titulo, fill=(0, 242, 254, 120))
-    draw.text((cx - w_t // 2 - bbox_t[0], 2), titulo, font=font_titulo, fill="#FFFFFF")
+    y_titulo = 12
+    # Sombra cyan glow suave
+    draw.text((cx - w_t // 2 - bbox_t[0] + 1, y_titulo + 1), titulo, font=font_titulo, fill=(0, 242, 254, 80))
+    # Texto principal en Cyan Neón oficial (#00f2fe)
+    draw.text((cx - w_t // 2 - bbox_t[0], y_titulo), titulo, font=font_titulo, fill="#00f2fe")
 
     badge_tipo = "CUENTA DE COBRO DIGITAL"
     bbox_bt = draw.textbbox((0, 0), badge_tipo, font=font_sub)
