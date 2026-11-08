@@ -151,7 +151,7 @@ def generar_ticket_cobro(cliente, concepto, monto_val, titular_nequi="HUGO BRION
         lineas_concepto = ["CONSUMO SEMANAL"]
 
     # Dimensiones
-    ancho, alto = 560, 680
+    ancho, alto = 560, 800
     radio_externo = 22
     radio_tarjeta = 14
 
@@ -294,7 +294,7 @@ def generar_ticket_cobro(cliente, concepto, monto_val, titular_nequi="HUGO BRION
 
     # 2. Tarjeta de Detalles y Consumos
     box2_x1, box2_y1 = 30, 206
-    box2_x2, box2_y2 = ancho - 30, 422
+    box2_x2, box2_y2 = ancho - 30, 535
 
     overlay2 = Image.new("RGBA", (ancho, alto), (0, 0, 0, 0))
     d_ov2 = ImageDraw.Draw(overlay2)
@@ -344,14 +344,14 @@ def generar_ticket_cobro(cliente, concepto, monto_val, titular_nequi="HUGO BRION
         draw.text((box2_x2 - 18 - (bbox_bs[2] - bbox_bs[0]), y_r4), badge_sem, font=font_sub, fill="#a855f7")
 
         y_item = y_r4 + 22
-        for item in lineas_concepto[:3]:
+        for item in lineas_concepto[:8]:
             it_txt = item if len(item) <= 32 else item[:29] + "..."
             draw.text((box2_x1 + 22, y_item), f"•  {it_txt}", font=font_consumo, fill="#e2e8f0")
             y_item += 22
 
     # 3. Caja Canal de Pago (Nequi)
-    box3_x1, box3_y1 = 30, 436
-    box3_x2, box3_y2 = ancho - 30, 548
+    box3_x1, box3_y1 = 30, 550
+    box3_x2, box3_y2 = ancho - 30, 662
 
     overlay3 = Image.new("RGBA", (ancho, alto), (0, 0, 0, 0))
     d_ov3 = ImageDraw.Draw(overlay3)
@@ -379,7 +379,7 @@ def generar_ticket_cobro(cliente, concepto, monto_val, titular_nequi="HUGO BRION
     pie_w = bbox_pie[2] - bbox_pie[0]
     pie_h = bbox_pie[3] - bbox_pie[1]
     pie_x = cx - pie_w // 2
-    pie_y = 612 - pie_h // 2
+    pie_y = 732 - pie_h // 2
 
     # Texto en cyan electrico brillante
     draw.text((pie_x, pie_y), pie, font=font_pie, fill="#00f2fe")
