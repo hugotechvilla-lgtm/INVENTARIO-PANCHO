@@ -555,6 +555,32 @@
     }
     .btn-restock:hover { background: var(--accent-green); color: #000; }
 
+    /* FILTROS HISTORIAL DE PAGOS */
+    .btn-filtro-historial {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      border-radius: 9px;
+      padding: 8px 13px;
+      font-size: 0.84rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-filtro-historial:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+    .btn-filtro-historial.active {
+      background: rgba(0, 242, 254, 0.15);
+      border-color: var(--brand-cyan);
+      color: var(--brand-cyan);
+      box-shadow: 0 0 12px rgba(0, 242, 254, 0.25);
+    }
+
     /* MODAL TICKET GENERADO */
     .modal-backdrop {
       position: fixed;
@@ -950,12 +976,36 @@
     <!-- ============================================== -->
     <section id="tab-historial" class="tab-content">
       <div class="section-card">
-        <div class="section-title">
+        <div class="section-title" style="flex-wrap: wrap; gap: 12px;">
           <span>💰 Historial de Pagos y Abonos Recibidos</span>
           <button onclick="borrarHistorialCobros()" title="Limpiar todo el historial de pagos" style="background: rgba(239, 68, 68, 0.15); color: var(--accent-red); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 10px; padding: 8px 14px; font-size: 0.85rem; font-weight: 700; cursor: pointer;">
             🗑️ Vaciar Historial
           </button>
         </div>
+
+        <!-- BARRA INTELIGENTE DE FILTROS -->
+        <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin: 14px 0 18px 0; padding: 14px 16px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: 14px;">
+          
+          <!-- Buscador en vivo por cliente -->
+          <div style="flex: 1; min-width: 240px;">
+            <input type="text" id="searchHistorial" placeholder="🔍 Filtrar por cliente (ej: YOGI, MONA, CONTADO...)" class="select-custom" style="width: 100%;" oninput="renderHistorial()">
+          </div>
+
+          <!-- Botones rápidos de tipo de pago -->
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button type="button" class="btn-filtro-historial active" id="btnFiltroHistTodos" onclick="setFiltroHistorial('TODOS')">🌟 Todos</button>
+            <button type="button" class="btn-filtro-historial" id="btnFiltroHistContado" onclick="setFiltroHistorial('CONTADO')">⚡ De Contado / Inmediatos</button>
+            <button type="button" class="btn-filtro-historial" id="btnFiltroHistAbono" onclick="setFiltroHistorial('ABONO')">💰 Abonos</button>
+            <button type="button" class="btn-filtro-historial" id="btnFiltroHistTotal" onclick="setFiltroHistorial('TOTAL')">🧾 Cuentas Saldadas</button>
+          </div>
+
+          <!-- Resumen de dinero filtrado -->
+          <div style="background: rgba(0, 242, 254, 0.08); border: 1px solid rgba(0, 242, 254, 0.3); border-radius: 10px; padding: 8px 14px; font-size: 0.86rem; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 6px;">
+            <span>Total Filtrado: <b id="historialTotalFiltrado" style="color: var(--brand-cyan); font-size: 1rem;">$ 0</b> (<span id="historialCantidadFiltrada">0</span> pagos)</span>
+          </div>
+
+        </div>
+
         <div class="inv-table-wrapper">
           <table>
             <thead>
@@ -3125,15 +3175,82 @@
       }
     }
 
+    // ==============================================
+    // CONTROL Y FILTROS DEL HISTORIAL DE PAGOS
+    // ==============================================
+    let filtroHistorialTipo = 'TODOS';
+
+    function setFiltroHistorial(tipo) {
+      filtroHistorialTipo = tipo;
+      document.querySelectorAll('.btn-filtro-historial').forEach(b => b.classList.remove('active'));
+      if (tipo === 'TODOS') document.getElementById('btnFiltroHistTodos')?.classList.add('active');
+      if (tipo === 'CONTADO') document.getElementById('btnFiltroHistContado')?.classList.add('active');
+      if (tipo === 'ABONO') document.getElementById('btnFiltroHistAbono')?.classList.add('active');
+      if (tipo === 'TOTAL') document.getElementById('btnFiltroHistTotal')?.classList.add('active');
+      renderHistorial();
+    }
+
     // RENDER HISTORIAL DE PAGOS
     function renderHistorial() {
       const tbody = document.getElementById('historyTableBody');
       tbody.innerHTML = '';
+
       if (historial.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 20px;">Aún no hay registros de pagos o abonos recibidos.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">Aún no hay registros de pagos o abonos recibidos.</td></tr>`;
+        const elTotal = document.getElementById('historialTotalFiltrado');
+        const elCant = document.getElementById('historialCantidadFiltrada');
+        if (elTotal) elTotal.innerText = "$ 0";
+        if (elCant) elCant.innerText = "0";
         return;
       }
-      historial.slice().reverse().forEach(h => {
+
+      const query = (document.getElementById('searchHistorial')?.value || '').trim().toUpperCase();
+
+      let filtrados = historial.slice().reverse();
+
+      // 1. Filtro por tipo de pago
+      if (filtroHistorialTipo !== 'TODOS') {
+        filtrados = filtrados.filter(h => {
+          const conceptoUp = (h.concepto || '').toUpperCase();
+          const metodoUp = (h.metodo || '').toUpperCase();
+          const tipoUp = (h.tipo || '').toUpperCase();
+          const compUp = (h.comprobante || '').toUpperCase();
+
+          const esContado = metodoUp === 'CONTADO' || conceptoUp.includes('CONTADO');
+          const esAbono = tipoUp === 'ABONO' || compUp.startsWith('#AB') || conceptoUp.includes('ABONO');
+          const esPagoTotal = tipoUp === 'PAGO_TOTAL' || (!esContado && !esAbono);
+
+          if (filtroHistorialTipo === 'CONTADO') return esContado;
+          if (filtroHistorialTipo === 'ABONO') return esAbono;
+          if (filtroHistorialTipo === 'TOTAL') return esPagoTotal;
+          return true;
+        });
+      }
+
+      // 2. Filtro por texto (Cliente, Comprobante o Concepto)
+      if (query) {
+        filtrados = filtrados.filter(h => {
+          const cli = (h.cliente || '').toUpperCase();
+          const comp = (h.comprobante || '').toUpperCase();
+          const con = (h.concepto || '').toUpperCase();
+          return cli.includes(query) || comp.includes(query) || con.includes(query);
+        });
+      }
+
+      // 3. Actualizar resumen de dinero y conteo de la búsqueda
+      let totalSuma = 0;
+      filtrados.forEach(h => { totalSuma += Number(h.total || 0); });
+      const elTotal = document.getElementById('historialTotalFiltrado');
+      const elCant = document.getElementById('historialCantidadFiltrada');
+      if (elTotal) elTotal.innerText = formatMoney(totalSuma);
+      if (elCant) elCant.innerText = filtrados.length;
+
+      if (filtrados.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">🔍 No se encontraron pagos que coincidan con la búsqueda.</td></tr>`;
+        return;
+      }
+
+      filtrados.forEach(h => {
         const tr = document.createElement('tr');
 
         // Determinar tipo de pago y color del badge
