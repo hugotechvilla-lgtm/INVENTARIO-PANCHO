@@ -975,6 +975,24 @@
     <!-- 5. PESTAÑA: HISTORIAL -->
     <!-- ============================================== -->
     <section id="tab-historial" class="tab-content">
+      <!-- SELECTOR DE PERIODO / CALENDARIO EN HISTORIAL -->
+      <div class="section-card" style="margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; padding: 16px 20px; background: linear-gradient(135deg, rgba(0,242,254,0.08) 0%, rgba(14,19,34,0.95) 100%); border: 1.5px solid rgba(0,242,254,0.35); box-shadow: 0 0 20px rgba(0,242,254,0.12);">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span style="font-size: 1.6rem; background: rgba(0,242,254,0.15); width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 12px; border: 1px solid rgba(0,242,254,0.3); box-shadow: 0 0 10px rgba(0,242,254,0.25);">📅</span>
+          <div>
+            <div style="font-size: 1rem; font-weight: 800; color: #fff;">Periodo de Consulta:</div>
+            <div style="font-size: 0.85rem; color: #00f2fe; font-weight: 700; text-shadow: 0 0 10px rgba(0,242,254,0.4);" id="historialPeriodSubtitle">Esta Semana (En curso)</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <button type="button" onclick="abrirModalCalendarioBalance()" style="background: #0b0f1d; color: #00f2fe; border: 2px solid #00f2fe; padding: 10px 18px; border-radius: 12px; font-weight: 800; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 0 15px rgba(0,242,254,0.25); transition: all 0.2s;">
+            <span>🗓️</span>
+            <span id="btnCalendarioHistorialLabel">Elegir Días en Calendario</span>
+            <span style="font-size: 0.75rem;">▼</span>
+          </button>
+        </div>
+      </div>
+
       <div class="section-card">
         <div class="section-title" style="flex-wrap: wrap; gap: 12px;">
           <span>💰 Historial de Pagos y Abonos Recibidos</span>
@@ -1077,6 +1095,19 @@
         <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 6px;">
           Elige el rango de fechas que deseas consultar
         </div>
+      </div>
+
+      <!-- ACCESOS RÁPIDOS DE PERIODO -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 14px;">
+        <button type="button" onclick="seleccionarPresetCalendario('actual')" style="background: rgba(0, 242, 254, 0.12); border: 1px solid rgba(0, 242, 254, 0.4); color: var(--brand-cyan); border-radius: 10px; padding: 10px 6px; font-size: 0.8rem; font-weight: 800; cursor: pointer;">
+          📅 Esta Semana
+        </button>
+        <button type="button" onclick="seleccionarPresetCalendario('anterior')" style="background: rgba(255, 255, 255, 0.06); border: 1px solid var(--border-color); color: #e2e8f0; border-radius: 10px; padding: 10px 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer;">
+          ⏮️ Semana Pasada
+        </button>
+        <button type="button" onclick="seleccionarPresetCalendario('todas')" style="background: rgba(168, 85, 247, 0.12); border: 1px solid rgba(168, 85, 247, 0.4); color: #c084fc; border-radius: 10px; padding: 10px 6px; font-size: 0.8rem; font-weight: 800; cursor: pointer;">
+          🌟 Todo el Historial
+        </button>
       </div>
 
       <!-- SELECTOR DE FECHAS DESDE Y HASTA -->
@@ -2886,6 +2917,7 @@
 
       cerrarModalCalendarioBalance();
       renderBalance();
+      renderHistorial();
     }
 
     function aplicarRangoCalendario() {
@@ -2917,6 +2949,7 @@
 
       cerrarModalCalendarioBalance();
       renderBalance();
+      renderHistorial();
     }
 
     // RENDER BALANCE Y GANANCIAS
@@ -3192,6 +3225,11 @@
 
     // RENDER HISTORIAL DE PAGOS
     function renderHistorial() {
+      const subPeriodoH = document.getElementById('historialPeriodSubtitle');
+      const btnLabelH = document.getElementById('btnCalendarioHistorialLabel');
+      if (subPeriodoH) subPeriodoH.innerText = balancePeriodoLabel;
+      if (btnLabelH) btnLabelH.innerText = balancePeriodoLabel.length > 25 ? balancePeriodoLabel.substring(0, 23) + '...' : balancePeriodoLabel;
+
       const tbody = document.getElementById('historyTableBody');
       tbody.innerHTML = '';
 
@@ -3207,6 +3245,19 @@
       const query = (document.getElementById('searchHistorial')?.value || '').trim().toUpperCase();
 
       let filtrados = historial.slice().reverse();
+
+      // 0. Filtro por periodo de fechas del Calendario (Desde / Hasta)
+      if (balanceFechaDesde || balanceFechaHasta) {
+        const pad = n => String(n).padStart(2, '0');
+        filtrados = filtrados.filter(h => {
+          const d = parsearFechaItem(h.fecha);
+          if (!d) return true;
+          const dStr = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+          if (balanceFechaDesde && dStr < balanceFechaDesde) return false;
+          if (balanceFechaHasta && dStr > balanceFechaHasta) return false;
+          return true;
+        });
+      }
 
       // 1. Filtro por tipo de pago
       if (filtroHistorialTipo !== 'TODOS') {
@@ -3246,7 +3297,7 @@
       if (elCant) elCant.innerText = filtrados.length;
 
       if (filtrados.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">🔍 No se encontraron pagos que coincidan con la búsqueda.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">🔍 No hay pagos registrados en el periodo <b>${balancePeriodoLabel}</b> con los filtros seleccionados.</td></tr>`;
         return;
       }
 
