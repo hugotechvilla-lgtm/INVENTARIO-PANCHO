@@ -97,66 +97,102 @@ RUTA_FIX_OCT18 = os.path.join(DATOS_DIR, ".fix_utc_oct18_done")
 
 def corregir_fechas_utc_oct18():
     """Corrige automáticamente las ventas registradas el 18 de octubre que quedaron con fecha 19 de octubre por el reloj UTC del servidor."""
-    if os.path.exists(RUTA_FIX_OCT18):
-        return
-    try:
-        clientes = leer_json(RUTA_CLIENTES, [])
-        historial = leer_json(RUTA_HISTORIAL, [])
-        mod_cli = False
-        mod_hist = False
+    if not os.path.exists(RUTA_FIX_OCT18):
+        try:
+            clientes = leer_json(RUTA_CLIENTES, [])
+            historial = leer_json(RUTA_HISTORIAL, [])
+            mod_cli = False
+            mod_hist = False
 
-        for c in clientes:
-            if str(c.get("fecha_inicio_semana", "")).startswith("2026-10-19"):
-                c["fecha_inicio_semana"] = "2026-10-18"
-                mod_cli = True
-            for item in c.get("consumos_semana", []):
-                f_it = str(item.get("fecha", ""))
-                if f_it.startswith("2026-10-19"):
-                    item["fecha"] = "2026-10-18" + f_it[10:]
+            for c in clientes:
+                if str(c.get("fecha_inicio_semana", "")).startswith("2026-10-19"):
+                    c["fecha_inicio_semana"] = "2026-10-18"
                     mod_cli = True
-                elif f_it.startswith("19/10/2026"):
-                    item["fecha"] = "18/10/2026" + f_it[10:]
+                for item in c.get("consumos_semana", []):
+                    f_it = str(item.get("fecha", ""))
+                    if f_it.startswith("2026-10-19"):
+                        item["fecha"] = "2026-10-18" + f_it[10:]
+                        mod_cli = True
+                    elif f_it.startswith("19/10/2026"):
+                        item["fecha"] = "18/10/2026" + f_it[10:]
+                        mod_cli = True
+                ut = c.get("ultimo_ticket")
+                if isinstance(ut, dict) and str(ut.get("fecha", "")).startswith("19/10/2026"):
+                    ut["fecha"] = "18/10/2026" + str(ut["fecha"])[10:]
                     mod_cli = True
-            ut = c.get("ultimo_ticket")
-            if isinstance(ut, dict) and str(ut.get("fecha", "")).startswith("19/10/2026"):
-                ut["fecha"] = "18/10/2026" + str(ut["fecha"])[10:]
-                mod_cli = True
-            ua = c.get("ultimo_abono")
-            if isinstance(ua, dict) and str(ua.get("fecha", "")).startswith("19/10/2026"):
-                ua["fecha"] = "18/10/2026" + str(ua["fecha"])[10:]
-                mod_cli = True
-            for ab in c.get("abonos", []):
-                f_ab = str(ab.get("fecha", ""))
-                if f_ab.startswith("19/10/2026"):
-                    ab["fecha"] = "18/10/2026" + f_ab[10:]
+                ua = c.get("ultimo_abono")
+                if isinstance(ua, dict) and str(ua.get("fecha", "")).startswith("19/10/2026"):
+                    ua["fecha"] = "18/10/2026" + str(ua["fecha"])[10:]
                     mod_cli = True
+                for ab in c.get("abonos", []):
+                    f_ab = str(ab.get("fecha", ""))
+                    if f_ab.startswith("19/10/2026"):
+                        ab["fecha"] = "18/10/2026" + f_ab[10:]
+                        mod_cli = True
 
-        for h in historial:
-            f_h = str(h.get("fecha", ""))
-            if f_h.startswith("19/10/2026"):
-                h["fecha"] = "18/10/2026" + f_h[10:]
-                mod_hist = True
-            elif f_h.startswith("2026-10-19"):
-                h["fecha"] = "2026-10-18" + f_h[10:]
-                mod_hist = True
-            for item in h.get("consumos", []):
-                f_it = str(item.get("fecha", ""))
-                if f_it.startswith("2026-10-19"):
-                    item["fecha"] = "2026-10-18" + f_it[10:]
+            for h in historial:
+                f_h = str(h.get("fecha", ""))
+                if f_h.startswith("19/10/2026"):
+                    h["fecha"] = "18/10/2026" + f_h[10:]
                     mod_hist = True
-                elif f_it.startswith("19/10/2026"):
-                    item["fecha"] = "18/10/2026" + f_it[10:]
+                elif f_h.startswith("2026-10-19"):
+                    h["fecha"] = "2026-10-18" + f_h[10:]
                     mod_hist = True
+                for item in h.get("consumos", []):
+                    f_it = str(item.get("fecha", ""))
+                    if f_it.startswith("2026-10-19"):
+                        item["fecha"] = "2026-10-18" + f_it[10:]
+                        mod_hist = True
+                    elif f_it.startswith("19/10/2026"):
+                        item["fecha"] = "18/10/2026" + f_it[10:]
+                        mod_hist = True
 
-        if mod_cli:
-            guardar_json(RUTA_CLIENTES, clientes)
-        if mod_hist:
-            guardar_json(RUTA_HISTORIAL, historial)
+            if mod_cli:
+                guardar_json(RUTA_CLIENTES, clientes)
+            if mod_hist:
+                guardar_json(RUTA_HISTORIAL, historial)
 
-        with open(RUTA_FIX_OCT18, "w", encoding="utf-8") as f:
-            f.write("ok")
-    except Exception as e:
-        print(f"[!] Aviso en corrección automática de fechas: {e}")
+            with open(RUTA_FIX_OCT18, "w", encoding="utf-8") as f:
+                f.write("ok")
+        except Exception as e:
+            print(f"[!] Aviso en corrección automática de fechas: {e}")
+
+    # 5.2 CORRECCIÓN DE VENTAS DEL 10 DE NOVIEMBRE GUARDADAS CON FECHA 07/11 POR PESTAÑA ABIERTA
+    ruta_fix_nov10 = os.path.join(DATOS_DIR, ".fix_nov07_to_nov10_done")
+    if not os.path.exists(ruta_fix_nov10):
+        try:
+            clientes = leer_json(RUTA_CLIENTES, [])
+            historial = leer_json(RUTA_HISTORIAL, [])
+            mod_c = False
+            mod_h = False
+
+            for c in clientes:
+                for item in c.get("consumos_semana", []):
+                    f_it = str(item.get("fecha", ""))
+                    if f_it.startswith("2026-11-07 20:"):
+                        item["fecha"] = "2026-11-10" + f_it[10:]
+                        mod_c = True
+
+            for h in historial:
+                f_h = str(h.get("fecha", ""))
+                if f_h.startswith("07/11/2026 20:"):
+                    h["fecha"] = "10/11/2026" + f_h[10:]
+                    mod_h = True
+                for item in h.get("consumos", []):
+                    f_it = str(item.get("fecha", ""))
+                    if f_it.startswith("2026-11-07 20:"):
+                        item["fecha"] = "2026-11-10" + f_it[10:]
+                        mod_h = True
+
+            if mod_c:
+                guardar_json(RUTA_CLIENTES, clientes)
+            if mod_h:
+                guardar_json(RUTA_HISTORIAL, historial)
+
+            with open(ruta_fix_nov10, "w", encoding="utf-8") as f:
+                f.write("ok")
+        except Exception as e:
+            print(f"[!] Aviso en corrección nov10: {e}")
 
 with data_lock:
     corregir_fechas_utc_oct18()
