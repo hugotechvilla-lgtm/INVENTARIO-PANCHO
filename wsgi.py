@@ -15,7 +15,8 @@ from app import (
     TICKETS_DIR, STATIC_DIR, BASE_DIR,
     leer_json, guardar_json, data_lock, get_local_ip,
     generar_ticket_cobro, agrupar_consumos_por_categoria,
-    ahora_colombia, corregir_fechas_utc_oct18, descontar_stock_peps
+    ahora_colombia, corregir_fechas_utc_oct18, descontar_stock_peps,
+    descontar_consumos_por_abono
 )
 
 def application(environ, start_response):
@@ -447,6 +448,11 @@ def application(environ, start_response):
                     consumos_saldados = list(cliente.get("consumos_semana", []))
                     cliente["consumos_semana"] = []
                     cliente["fecha_inicio_semana"] = ahora_dt.strftime("%Y-%m-%d")
+                else:
+                    consumos_saldados, consumos_restantes = descontar_consumos_por_abono(
+                        cliente.get("consumos_semana", []), monto_real
+                    )
+                    cliente["consumos_semana"] = consumos_restantes
 
                 comp_abono = f"ABONO-{ahora_dt.strftime('%Y%m%d%H%M%S')}"
                 concepto_abono = f"ABONO · {metodo} (DEUDA: ${saldo_anterior:,} · RESTA: ${nuevo_saldo:,})".replace(",", ".")

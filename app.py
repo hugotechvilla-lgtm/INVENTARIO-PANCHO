@@ -92,8 +92,90 @@ def guardar_json(ruta, data):
     with open(ruta, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
-# 5.1 CORRECCIÓN AUTOMÁTICA DE REGISTROS GUARDADOS EN UTC (19/10/2026 -> 18/10/2026)
+# 5.1 CORRECCIÓN AUTOMÁTICA DE REGISTROS Y DESCUENTO INTELIGENTE DE PRODUCTOS EN ABONOS
 RUTA_FIX_OCT18 = os.path.join(DATOS_DIR, ".fix_utc_oct18_done")
+
+def descontar_consumos_por_abono(consumos_semana, monto_abono):
+    """
+    Descuenta de la lista de consumos los productos o unidades que alcanzan
+    a cubrirse con el valor del abono (priorizando los más antiguos).
+    Retorna: (consumos_pagados, consumos_restantes)
+    """
+    if not consumos_semana or monto_abono <= 0:
+        return [], list(consumos_semana or [])
+
+    unidades = []
+    for item in consumos_semana:
+        cant = max(1, int(item.get("cantidad", 1)))
+        sub_total = int(item.get("subtotal", 0))
+        precio_u = int(item.get("precio_unitario") or (sub_total // cant))
+        for i in range(cant):
+            val_u = precio_u if i < cant - 1 else (sub_total - precio_u * (cant - 1))
+            u = dict(item)
+            u["cantidad"] = 1
+            u["precio_unitario"] = val_u
+            u["subtotal"] = val_u
+            unidades.append(u)
+
+    dp = {0: []}
+    for idx, u in enumerate(unidades):
+        val = u["subtotal"]
+        if val <= 0:
+            continue
+        nuevos = {}
+        for s, idxs in dp.items():
+            ns = s + val
+            if ns <= monto_abono and ns not in dp and ns not in nuevos:
+                nuevos[ns] = idxs + [idx]
+        dp.update(nuevos)
+
+    mejor_suma = max(dp.keys())
+    pagados_set = set(dp[mejor_suma])
+    resto = monto_abono - mejor_suma
+
+    unidades_pagadas = []
+    unidades_restantes = []
+
+    for idx, u in enumerate(unidades):
+        if idx in pagados_set:
+            unidades_pagadas.append(u)
+        else:
+            unidades_restantes.append(u)
+
+    if resto > 0 and unidades_restantes:
+        for u in unidades_restantes:
+            aplicar = min(resto, u["subtotal"])
+            if aplicar > 0:
+                u_pag = dict(u)
+                u_pag["precio_unitario"] = aplicar
+                u_pag["subtotal"] = aplicar
+                unidades_pagadas.append(u_pag)
+                u["subtotal"] -= aplicar
+                u["precio_unitario"] = u["subtotal"]
+                resto -= aplicar
+            if resto <= 0:
+                break
+        unidades_restantes = [u for u in unidades_restantes if u["subtotal"] > 0]
+
+    def compactar(lista_u):
+        res = []
+        for u in lista_u:
+            encontrado = False
+            for r in res:
+                if (r.get("producto_id") == u.get("producto_id") and
+                    r.get("nombre") == u.get("nombre") and
+                    r.get("fecha") == u.get("fecha") and
+                    r.get("precio_unitario") == u.get("precio_unitario") and
+                    r.get("precio_costo") == u.get("precio_costo")):
+                    r["cantidad"] += 1
+                    r["subtotal"] += u["subtotal"]
+                    encontrado = True
+                    break
+            if not encontrado:
+                res.append(dict(u))
+        return res
+
+    return compactar(unidades_pagadas), compactar(unidades_restantes)
 
 def corregir_fechas_utc_oct18():
     """Corrige automáticamente las ventas registradas el 18 de octubre que quedaron con fecha 19 de octubre por el reloj UTC del servidor."""
@@ -193,6 +275,56 @@ def corregir_fechas_utc_oct18():
                 f.write("ok")
         except Exception as e:
             print(f"[!] Aviso en corrección nov10: {e}")
+
+    # 5.3 SINCRONIZACIÓN DE PRODUCTOS YA ABONADOS EN CUENTAS ACTIVAS
+    ruta_fix_abonos = os.path.join(DATOS_DIR, ".fix_abonos_consumos_sync_done")
+    if not os.path.exists(ruta_fix_abonos):
+        try:
+            clientes = leer_json(RUTA_CLIENTES, [])
+            historial = leer_json(RUTA_HISTORIAL, [])
+            mod_ca = False
+            mod_ha = False
+
+            for c in clientes:
+                consumos_act = c.get("consumos_semana", [])
+                suma_items = sum(int(i.get("subtotal", 0)) for i in consumos_act)
+                saldo_act = int(c.get("saldo_actual", 0))
+                if suma_items > saldo_act:
+                    diferencia = suma_items - saldo_act
+                    abonos_cli = c.get("abonos", [])
+                    # Intentar asignar por cada abono registrado del cliente
+                    restante_por_descontar = diferencia
+                    for ab in abonos_cli:
+                        if restante_por_descontar <= 0:
+                            break
+                        monto_ab = min(int(ab.get("monto", 0)), restante_por_descontar)
+                        if monto_ab <= 0:
+                            continue
+                        pagados_ab, consumos_act = descontar_consumos_por_abono(consumos_act, monto_ab)
+                        restante_por_descontar -= sum(int(x.get("subtotal", 0)) for x in pagados_ab)
+                        # Buscar el registro correspondiente en historial para adjuntarle los productos pagados
+                        for h in reversed(historial):
+                            if (h.get("cliente", "").strip().upper() == c.get("nombre", "").strip().upper() and
+                                h.get("tipo") == "ABONO" and
+                                int(h.get("total", 0)) == int(ab.get("monto", 0)) and
+                                not h.get("consumos")):
+                                h["consumos"] = pagados_ab
+                                mod_ha = True
+                                break
+                    if restante_por_descontar > 0:
+                        _, consumos_act = descontar_consumos_por_abono(consumos_act, restante_por_descontar)
+                    c["consumos_semana"] = consumos_act
+                    mod_ca = True
+
+            if mod_ca:
+                guardar_json(RUTA_CLIENTES, clientes)
+            if mod_ha:
+                guardar_json(RUTA_HISTORIAL, historial)
+
+            with open(ruta_fix_abonos, "w", encoding="utf-8") as f:
+                f.write("ok")
+        except Exception as e:
+            print(f"[!] Aviso en sincronización de abonos: {e}")
 
 with data_lock:
     corregir_fechas_utc_oct18()
@@ -812,6 +944,11 @@ class PanchoHandler(SimpleHTTPRequestHandler):
                     consumos_saldados = list(cliente.get("consumos_semana", []))
                     cliente["consumos_semana"] = []
                     cliente["fecha_inicio_semana"] = ahora_dt.strftime("%Y-%m-%d")
+                else:
+                    consumos_saldados, consumos_restantes = descontar_consumos_por_abono(
+                        cliente.get("consumos_semana", []), monto_real
+                    )
+                    cliente["consumos_semana"] = consumos_restantes
 
                 comp_abono = f"ABONO-{ahora_dt.strftime('%Y%m%d%H%M%S')}"
                 concepto_abono = f"ABONO · {metodo} (DEUDA: ${saldo_anterior:,} · RESTA: ${nuevo_saldo:,})".replace(",", ".")
