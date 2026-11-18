@@ -41,72 +41,25 @@ def hex_to_rgb(hex_color):
 
 def agrupar_consumos_por_categoria(consumos):
     """
-    Agrupa una lista de consumos por categoría general según la directriz de Hugo:
-    Ejemplo: 5 Águila Light + 3 Poker + 2 Corona -> "10 CERVEZAS"
-    Retorna una lista de strings: ["10 CERVEZAS", "2 MICHELADAS"]
+    Agrupa una lista de consumos por nombre exacto del producto sumando sus cantidades:
+    Ejemplo: 3 SODA + 2 SODA -> ["5 SODA"]
+    Retorna una lista de strings con cantidad y nombre exacto: ["5 SODA", "2 CERVEZA AGUILA LIGHT"]
     """
     if not consumos:
         return ["CONSUMO SEMANAL"]
 
-    categorias_cuenta = {
-        "CERVEZAS": 0,
-        "MICHELADAS": 0,
-        "LIMONADAS_GRANIZADOS": 0,
-        "SODAS_MEZCLADORES": 0,
-        "ENERGIZANTES": 0,
-        "SHOTS": 0,
-        "BOTELLAS": 0,
-        "SNACKS": 0
-    }
-    otros_cuenta = {}
-
+    conteo_productos = {}
     for item in consumos:
-        cant = item.get("cantidad", 1)
-        nom = item.get("nombre", "").upper()
-        cat = item.get("categoria", "").upper()
-
-        if "MICHELADA" in nom or "ENDIABLADA" in nom or "MICHELADA" in cat:
-            categorias_cuenta["MICHELADAS"] += cant
-        elif any(k in nom for k in ["CERVEZA", "POKER", "AGUILA", "CORONA", "CLUB", "PILSEN", "HEINEKEN", "STELLA", "COSTENA", "ANDINA"]) or "CERVEZA" in cat:
-            categorias_cuenta["CERVEZAS"] += cant
-        elif any(k in nom for k in ["LIMONADA", "GRANIZADO"]) or "LIMONADA" in cat or "GRANIZADO" in cat:
-            categorias_cuenta["LIMONADAS_GRANIZADOS"] += cant
-        elif any(k in nom for k in ["TAMARINDO", "SODA", "GINGER"]):
-            categorias_cuenta["SODAS_MEZCLADORES"] += cant
-        elif any(k in nom for k in ["RED BULL", "GATORADE", "MONSTER", "SPEED"]) or "ENERGIZANTE" in cat:
-            categorias_cuenta["ENERGIZANTES"] += cant
-        elif any(k in nom for k in ["SHOT", "TRAGO"]) or "TRAGO" in cat or "SHOT" in cat:
-            categorias_cuenta["SHOTS"] += cant
-        elif any(k in nom for k in ["BOTELLA", "MEDIA"]) or "LICOR" in cat or any(k in nom for k in ["AGUARDIENTE", "RON ", "WHISKY", "VODKA", "TEQUILA"]):
-            categorias_cuenta["BOTELLAS"] += cant
-        elif "SNACK" in cat or any(k in nom for k in ["PAPAS", "MANI", "PLÁTANO", "PLATANO"]):
-            categorias_cuenta["SNACKS"] += cant
-        elif any(k in nom for k in ["AGUA", "JUGO"]) or "BEBIDA" in cat:
-            categorias_cuenta["SODAS_MEZCLADORES"] += cant
-        else:
-            nom_limpio = nom.replace("CERVEZA ", "").replace("TRAGO / SHOT DE ", "SHOT ").strip()
-            otros_cuenta[nom_limpio] = otros_cuenta.get(nom_limpio, 0) + cant
+        cant = int(item.get("cantidad", 1) or 1)
+        nom = str(item.get("nombre", "")).strip().upper()
+        if not nom:
+            nom = "BEBIDA"
+        conteo_productos[nom] = conteo_productos.get(nom, 0) + cant
 
     resultado = []
-    if categorias_cuenta["CERVEZAS"] > 0:
-        resultado.append(f"{categorias_cuenta['CERVEZAS']} CERVEZAS" if categorias_cuenta['CERVEZAS'] > 1 else "1 CERVEZA")
-    if categorias_cuenta["MICHELADAS"] > 0:
-        resultado.append(f"{categorias_cuenta['MICHELADAS']} MICHELADAS" if categorias_cuenta['MICHELADAS'] > 1 else "1 MICHELADA")
-    if categorias_cuenta["LIMONADAS_GRANIZADOS"] > 0:
-        resultado.append(f"{categorias_cuenta['LIMONADAS_GRANIZADOS']} LIMONADAS Y GRANIZADOS" if categorias_cuenta['LIMONADAS_GRANIZADOS'] > 1 else "1 LIMONADA / GRANIZADO")
-    if categorias_cuenta["SODAS_MEZCLADORES"] > 0:
-        resultado.append(f"{categorias_cuenta['SODAS_MEZCLADORES']} TAMARINDO / SODA / GINGER" if categorias_cuenta['SODAS_MEZCLADORES'] > 1 else "1 SODA / BEBIDA")
-    if categorias_cuenta["ENERGIZANTES"] > 0:
-        resultado.append(f"{categorias_cuenta['ENERGIZANTES']} ENERGIZANTES" if categorias_cuenta['ENERGIZANTES'] > 1 else "1 ENERGIZANTE")
-    if categorias_cuenta["SHOTS"] > 0:
-        resultado.append(f"{categorias_cuenta['SHOTS']} SHOTS" if categorias_cuenta['SHOTS'] > 1 else "1 SHOT")
-    if categorias_cuenta["BOTELLAS"] > 0:
-        resultado.append(f"{categorias_cuenta['BOTELLAS']} BOTELLAS" if categorias_cuenta['BOTELLAS'] > 1 else "1 BOTELLA")
-    if categorias_cuenta["SNACKS"] > 0:
-        resultado.append(f"{categorias_cuenta['SNACKS']} SNACKS" if categorias_cuenta['SNACKS'] > 1 else "1 SNACK")
-
-    for nom, cant in otros_cuenta.items():
-        resultado.append(f"{cant} {nom}")
+    for nom, cant in conteo_productos.items():
+        if cant > 0:
+            resultado.append(f"{cant} {nom}")
 
     if not resultado:
         return ["CONSUMO SEMANAL"]
@@ -336,7 +289,7 @@ def generar_ticket_cobro(cliente, concepto, monto_val, titular_nequi="HUGO BRION
         if ancho_it < (box2_x2 - box2_x1 - 190):
             draw.text((box2_x2 - 18 - ancho_it, y_r4 - 2), it, font=font_consumo, fill="#e2e8f0")
         else:
-            it_txt = it if len(it) <= 32 else it[:29] + "..."
+            it_txt = it if len(it) <= 38 else it[:35] + "..."
             draw.text((box2_x1 + 22, y_r4 + 22), f"•  {it_txt}", font=font_consumo, fill="#e2e8f0")
     else:
         badge_sem = "SEMANA"
@@ -345,7 +298,7 @@ def generar_ticket_cobro(cliente, concepto, monto_val, titular_nequi="HUGO BRION
 
         y_item = y_r4 + 22
         for item in lineas_concepto[:8]:
-            it_txt = item if len(item) <= 32 else item[:29] + "..."
+            it_txt = item if len(item) <= 38 else item[:35] + "..."
             draw.text((box2_x1 + 22, y_item), f"•  {it_txt}", font=font_consumo, fill="#e2e8f0")
             y_item += 22
 
